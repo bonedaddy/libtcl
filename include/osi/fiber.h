@@ -6,8 +6,7 @@
  * Here we go, i warn you..
  */
 
-/**
- * @file osi/fiber.h
+/*!@file osi/fiber.h
  * @author uael
  */
 #ifndef __TEMPOW_OSI_FIBER_H

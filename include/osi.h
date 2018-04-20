@@ -6,8 +6,7 @@
  * Here we go, i warn you..
  */
 
-/**
- * @file osi.h
+/*!@file osi.h
  * @author uael
  */
 #ifndef __TEMPOW_OSI_H
