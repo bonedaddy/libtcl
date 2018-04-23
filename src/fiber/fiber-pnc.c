@@ -6,12 +6,9 @@
  * Here we go, i warn you..
  */
 
-#include "osi/conf.h"
-#include "osi/fiber.h"
+#include "fiber.h"
 
-#if !defined HAS_FIBER && defined OS_PROVENCORE
-# define HAS_FIBER
-
+#if defined FIBER_PNC
 # include <errno.h>
 # include <string.h>
 
@@ -63,5 +60,4 @@ int osi_fiber_yield(osi_fiber_t *fiber) {
 	yield();
 	return 0;
 }
-
-#endif
+#endif /* defined FIBER_PNC */

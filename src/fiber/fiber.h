@@ -8,3 +8,11 @@
 
 #include "osi/conf.h"
 #include "osi/fiber.h"
+
+#ifndef HAS_FIBER
+# if defined OS_PROVENCORE
+#   define FIBER_PNC
+# else
+#   define FIBER_NATIVE
+# endif
+#endif
