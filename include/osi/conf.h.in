@@ -1,0 +1,7 @@
+#cmakedefine HAS_BZERO
+
+#cmakedefine OS_PROVENCORE
+#cmakedefine OS_LINUX
+#cmakedefine OS_WINDOWS
+
+#cmakedefine ARCH_ARM

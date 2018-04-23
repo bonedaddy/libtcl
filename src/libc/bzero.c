@@ -7,4 +7,15 @@
  */
 
 #include "osi/conf.h"
-#include "osi/fiber.h"
+
+#ifndef HAS_BZERO
+# define HAS_BZERO
+
+# include <sizes.h>
+# include <string.h>
+
+void bzero(void *ptr, size_t n) {
+	memset(ptr, 0, n);
+}
+
+#endif
