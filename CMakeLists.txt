@@ -17,6 +17,7 @@ configure_file(${osi_INC_DIR}/osi/conf.h.in
   ${osi_INC_DIR}/osi/conf.h)
 
 file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.c)
+file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.h)
 file(GLOB_RECURSE osi_HDRS ${osi_HDRS} ${osi_INC_DIR}/osi/*.h)
 set(osi_HDR ${osi_INC_DIR}/osi.h)
 

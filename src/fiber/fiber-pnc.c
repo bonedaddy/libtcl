@@ -22,31 +22,36 @@ struct osi_fiber {
 	void *arg;
 };
 
-int osi_fiber_ctor(osi_fiber_t *fiber, osi_fiber_fn_t *fn, uint16_t ss) {
+int osi_fiber_ctor(osi_fiber_t *fiber, osi_fiber_fn_t *fn, uint16_t ss)
+{
 	bzero(fiber, sizeof(osi_fiber_t));
 	fiber->fn = fn;
 	fiber->stack_size = ss;
 	return 0;
 }
 
-int osi_fiber_dtor(osi_fiber_t *fiber) {
+int osi_fiber_dtor(osi_fiber_t *fiber)
+{
 	(void)fiber;
 	return 0;
 }
 
-static int run(osi_fiber_t *fiber) {
+static int run(osi_fiber_t *fiber)
+{
 	fiber->fn(fiber, fiber->arg);
 	return 0;
 }
 
-int	osi_fiber_start(osi_fiber_t *fiber, void *arg) {
+int	osi_fiber_start(osi_fiber_t *fiber, void *arg)
+{
 	fiber->arg = arg;
 	fiber->ctx = create_context(fiber->stack_size, 0, 0, 0,
 		(int (*)(void *)) run, fiber);
 	return fiber->ctx == NULL;
 }
 
-int	osi_fiber_join(osi_fiber_t *fiber) {
+int	osi_fiber_join(osi_fiber_t *fiber)
+{
 	if (!fiber->ctx) {
 		errno = EINVAL;
 		return -1;
@@ -55,7 +60,8 @@ int	osi_fiber_join(osi_fiber_t *fiber) {
 	return 0;
 }
 
-int osi_fiber_yield(osi_fiber_t *fiber) {
+int osi_fiber_yield(osi_fiber_t *fiber)
+{
 	(void)fiber;
 	yield();
 	return 0;
