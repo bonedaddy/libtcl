@@ -76,4 +76,5 @@ int osi_yield(osi_fiber_t *fiber)
 	yield();
 	return 0;
 }
+
 #endif /* FIBER_PNC */
