@@ -27,20 +27,32 @@
 #include <osi/fiber.h>
 #include <osi/conf.h>
 #include <osi/stack.h>
+
 #ifdef HAS_UCONTEXT_H
-#  include <ucontext.h>
+# include <ucontext.h>
+#endif
+
+#ifdef OS_WIN
+# define _WIN32_WINNT 0x0502
+# define WIN32_LEAN_AND_MEAN
+
+# include <windows.h>
+# include <winsock2.h>
+# include <Mswsock.h>
+# include <ws2tcpip.h>
 #endif
 
 #include "event.h"
 
 struct osi_fiber
 {
-	void *stack;
-
 	osi_event_t *stop_ev;
 
 #ifdef HAS_UCONTEXT_H
+	void *stack;
 	ucontext_t context;
+#elif defined(OS_WIN)
+	LPVOID handle;
 #endif
 };
 

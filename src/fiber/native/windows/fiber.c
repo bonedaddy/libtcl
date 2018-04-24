@@ -16,6 +16,27 @@
  * limitations under the License.
  */
 
-#include "internal.h"
+#include "../internal.h"
 
-OSI_STACK_IMPL(, osi_fibers, osi_fiber_t, uint16_t)
+#define _WIN32_WINNT 0x0502
+
+#define WIN32_LEAN_AND_MEAN
+
+#include <windows.h>
+#include <winsock2.h>
+#include <Mswsock.h>
+#include <ws2tcpip.h>
+
+int osi_fiber_ctor(osi_fiber_t *fiber, osi_fiber_fn_t *fn, uint16_t ss)
+{
+	bzero(fiber, sizeof(osi_fiber_t));
+	if (!(fiber->handle = CreateFiber(ss, (LPFIBER_START_ROUTINE)fn, fiber)))
+		return -1;
+	return 0;
+}
+
+int osi_fiber_dtor(osi_fiber_t *fiber)
+{
+	DeleteFiber(fiber->handle);
+	return 0;
+}
