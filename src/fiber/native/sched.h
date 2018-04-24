@@ -16,13 +16,30 @@
  * limitations under the License.
  */
 
-#include <osi/conf.h>
+/*!@file fiber/native/sched.h
+ * @author uael
+ *
+ * @addtogroup osi.fiber.sched @{
+ */
+#ifndef __OSI_FIBER_NATIVE_SCHED_H
+# define __OSI_FIBER_NATIVE_SCHED_H
 
-#ifndef HAS_BZERO
-# include <sizes.h>
-# include <string.h>
+#include <osi/fiber.h>
 
-void bzero(void *ptr, size_t n) {
-	memset(ptr, 0, n);
-}
-#endif /* HAS_BZERO */
+/*!@private
+ *
+ * @brief
+ *
+ * @param fiber
+ */
+__private__ void osi_sched_push(osi_fiber_t *fiber);
+
+/*!@private
+ *
+ * @brief
+ * @return
+ */
+__private__ osi_fiber_t	*osi_sched_current(void);
+
+#endif /* __OSI_FIBER_SCHED_H */
+/*!@} */

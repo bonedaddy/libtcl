@@ -16,17 +16,14 @@
  * limitations under the License.
  */
 
-/*!@file fiber/unix/event.h
+/*!@file fiber/native/event.h
  * @author uael
  *
  * @addtogroup osi.fiber.event @{
  */
-#ifndef __OSI_FIBER_UNIX_EVENT_H
-# define __OSI_FIBER_UNIX_EVENT_H
+#ifndef __OSI_FIBER_NATIVE_EVENT_H
+# define __OSI_FIBER_NATIVE_EVENT_H
 
-#include "fiber/unix/internal.h"
-
-#ifdef FIBER_UNIX
 # include <pp.h>
 
 /*!@private
@@ -101,8 +98,6 @@ __private__ int osi_event_isset(osi_event_t *event);
  * @param event The event to wait for.
  */
 __private__ void osi_event_wait(osi_event_t *event);
-
-#endif /* FIBER_UNIX */
 
 #endif /* __OSI_FIBER_EVENT_H */
 /*!@} */

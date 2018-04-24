@@ -1,8 +1,2 @@
 #cmakedefine HAS_UCONTEXT_H
-
-#cmakedefine HAS_BZERO
-#cmakedefine HAS_MEMSET
-#cmakedefine HAS_MALLOC
-#cmakedefine HAS_FREE
-
 #cmakedefine OS_PROVENCORE

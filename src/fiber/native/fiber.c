@@ -16,39 +16,29 @@
  * limitations under the License.
  */
 
-/*!@file fiber/unix/internal.h
- * @author uael
- *
- * @addtogroup osi.fiber.unix @{
- */
-#ifndef __OSI_FIBER_UNIX_INTERNAL_H
-# define __OSI_FIBER_UNIX_INTERNAL_H
+#include "internal.h"
 
-#include "fiber/internal.h"
-
-#ifdef FIBER_UNIX
+OSI_STACK_IMPL(, osi_fibers, osi_fiber_t, uint16_t)
 
 # ifdef HAS_UCONTEXT_H
 #   include <ucontext.h>
-# endif
-# include <osi/stack.h>
 
-struct osi_event;
-
-struct osi_fiber
+int osi_fiber_ctor(osi_fiber_t *fiber, osi_fiber_fn_t *fn, uint16_t ss)
 {
-	void *stack;
+	bzero(fiber, sizeof(osi_fiber_t));
+	fiber->stack = calloc(ss, sizeof(char));
+	getcontext(&fiber->context);
+	fiber->context.uc_stack.ss_sp = fiber->stack;
+	fiber->context.uc_stack.ss_size = ss;
+	fiber->context.uc_link = NULL;
+	makecontext(&fiber->context, (void (*)())fn, 1, fiber);
+	return 0;
+}
 
-	struct osi_event *stop_ev;
+int osi_fiber_dtor(osi_fiber_t *fiber)
+{
+	free(fiber->stack);
+	return 0;
+}
 
-# ifdef HAS_UCONTEXT_H
-	ucontext_t context;
-# endif
-};
-
-OSI_STACK_DECLARE(__api__, osi_fibers, osi_fiber_t, uint16_t)
-
-#endif /* FIBER_UNIX */
-
-#endif /* __OSI_FIBER_UNIX_INTERNAL_H */
-/*!@} */
+#endif /* FIBER_NATIVE */

@@ -16,10 +16,9 @@
  * limitations under the License.
  */
 
+#include "internal.h"
 #include "event.h"
 #include "sched.h"
-
-#ifdef FIBER_UNIX
 
 struct osi_event {
 	osi_fibers_t pending;
@@ -87,5 +86,3 @@ void osi_event_wait(osi_event_t *event)
 		event->isset = 0;
 	}
 }
-
-#endif /* FIBER_UNIX */

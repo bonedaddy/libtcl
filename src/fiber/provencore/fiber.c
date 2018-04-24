@@ -16,14 +16,13 @@
  * limitations under the License.
  */
 
-#include "fiber/internal.h"
+#include <osi/fiber.h>
 
-#if defined(FIBER_PNC)
-# include <errno.h>
-# include <string.h>
+#include <errno.h>
+#include <string.h>
 
-# include <strings.h>
-# include <threads/threads.h>
+#include <strings.h>
+#include <threads/threads.h>
 
 struct osi_fiber {
 	osi_fiber_fn_t *fn;
@@ -76,5 +75,3 @@ int osi_yield(osi_fiber_t *fiber)
 	yield();
 	return 0;
 }
-
-#endif /* FIBER_PNC */

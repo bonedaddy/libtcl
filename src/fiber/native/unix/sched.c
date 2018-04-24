@@ -16,10 +16,7 @@
  * limitations under the License.
  */
 
-#include "sched.h"
-
-#ifdef FIBER_UNIX
-# include "sched.h"
+#include "../internal.h"
 
 static osi_fiber_t main_fiber = { };
 static osi_fiber_t *current_fiber = &main_fiber;
@@ -35,9 +32,6 @@ osi_fiber_t	*osi_sched_current(void)
 	return current_fiber;
 }
 
-# ifdef HAS_UCONTEXT_H
-#   include <ucontext.h>
-
 /*static void sched_switch(osi_fiber_t *fiber)
 {
 	ucontext_t *current_context;
@@ -46,7 +40,3 @@ osi_fiber_t	*osi_sched_current(void)
 	current_fiber = fiber;
 	swapcontext(current_context, &fiber->context);
 }*/
-
-# endif /* HAS_UCONTEXT_H */
-
-#endif /* FIBER_UNIX */

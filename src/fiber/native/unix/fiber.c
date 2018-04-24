@@ -16,27 +16,22 @@
  * limitations under the License.
  */
 
-/*!@file fiber/internal.h
- * @author uael
- *
- * @addtogroup osi.fiber @{
- */
-#ifndef __OSI_FIBER_INTERNAL_H
-# define __OSI_FIBER_INTERNAL_H
+#include "../internal.h"
 
-#include <osi/conf.h>
-#include <osi/fiber.h>
+int osi_fiber_ctor(osi_fiber_t *fiber, osi_fiber_fn_t *fn, uint16_t ss)
+{
+	bzero(fiber, sizeof(osi_fiber_t));
+	fiber->stack = calloc(ss, sizeof(char));
+	getcontext(&fiber->context);
+	fiber->context.uc_stack.ss_sp = fiber->stack;
+	fiber->context.uc_stack.ss_size = ss;
+	fiber->context.uc_link = NULL;
+	makecontext(&fiber->context, (void (*)())fn, 1, fiber);
+	return 0;
+}
 
-#ifndef HAS_FIBER
-# if defined(OS_PROVENCORE)
-#   define FIBER_PNC
-# elif defined(OS_UNIX)
-#   define FIBER_UNIX
-# elif defined(OS_WIN)
-#   define FIBER_WIN
-# else
-#   define FIBER_HW
-# endif
-#endif
-
-#endif /* __OSI_FIBER_INTERNAL_H */
+int osi_fiber_dtor(osi_fiber_t *fiber)
+{
+	free(fiber->stack);
+	return 0;
+}
