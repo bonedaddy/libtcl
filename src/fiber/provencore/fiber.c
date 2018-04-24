@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-#include "fiber.h"
+#include "fiber/internal.h"
 
-#if defined FIBER_PNC
+#if defined(FIBER_PNC)
 # include <errno.h>
 # include <string.h>
 
@@ -70,10 +70,10 @@ int	osi_fiber_join(osi_fiber_t *fiber)
 	return 0;
 }
 
-int osi_fiber_yield(osi_fiber_t *fiber)
+int osi_yield(osi_fiber_t *fiber)
 {
 	(void)fiber;
 	yield();
 	return 0;
 }
-#endif /* defined FIBER_PNC */
+#endif /* FIBER_PNC */

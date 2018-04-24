@@ -17,9 +17,6 @@ check_include_file(ucontext.h HAS_UCONTEXT_H)
 # TODO: Here we check for every libc function we use
 include(CheckFunctionExists)
 check_function_exists(bzero HAS_BZERO)
-check_function_exists(memset HAS_MEMSET)
-check_function_exists(malloc HAS_MALLOC)
-check_function_exists(free HAS_FREE)
 
 configure_file(${osi_INC_DIR}/osi/conf.h.in
   ${osi_INC_DIR}/osi/conf.h)
@@ -30,7 +27,7 @@ file(GLOB_RECURSE osi_HDRS ${osi_HDRS} ${osi_INC_DIR}/osi/*.h)
 set(osi_HDR ${osi_INC_DIR}/osi.h)
 
 add_library(osi ${osi_SRCS} ${osi_HDRS} ${osi_HDR})
-target_include_directories(osi PUBLIC ${osi_INC_DIR})
+target_include_directories(osi PUBLIC ${osi_INC_DIR} PRIVATE ${osi_SRC_DIR})
 target_link_libraries(osi PUBLIC pp)
 add_dependencies(osi pp)
 

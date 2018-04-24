@@ -16,13 +16,27 @@
  * limitations under the License.
  */
 
-#include "osi/conf.h"
-#include "osi/fiber.h"
+/*!@file fiber/internal.h
+ * @author uael
+ *
+ * @addtogroup osi.fiber @{
+ */
+#ifndef __OSI_FIBER_INTERNAL_H
+# define __OSI_FIBER_INTERNAL_H
+
+#include <osi/conf.h>
+#include <osi/fiber.h>
 
 #ifndef HAS_FIBER
-# if defined OS_PROVENCORE
+# if defined(OS_PROVENCORE)
 #   define FIBER_PNC
+# elif defined(OS_UNIX)
+#   define FIBER_UNIX
+# elif defined(OS_WIN)
+#   define FIBER_WIN
 # else
-#   define FIBER_NATIVE
+#   define FIBER_HW
 # endif
 #endif
+
+#endif /* __OSI_FIBER_INTERNAL_H */

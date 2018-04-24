@@ -21,8 +21,8 @@
  *
  * @addtogroup osi.fiber @{
  */
-#ifndef __TEMPOW_OSI_FIBER_H
-# define __TEMPOW_OSI_FIBER_H
+#ifndef __OSI_FIBER_H
+# define __OSI_FIBER_H
 
 #include <pp.h>
 
@@ -89,7 +89,7 @@ __api__ int	osi_fiber_join(osi_fiber_t *fiber);
  * @param fiber
  * @return
  */
-__api__ int osi_fiber_yield(osi_fiber_t *fiber);
+__api__ int osi_yield(void);
 
-#endif /* __TEMPOW_OSI_FIBER_H */
+#endif /* __OSI_FIBER_H */
 /*!@} */

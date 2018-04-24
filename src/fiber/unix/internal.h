@@ -16,13 +16,39 @@
  * limitations under the License.
  */
 
-#include <osi/conf.h>
+/*!@file fiber/unix/internal.h
+ * @author uael
+ *
+ * @addtogroup osi.fiber.unix @{
+ */
+#ifndef __OSI_FIBER_UNIX_INTERNAL_H
+# define __OSI_FIBER_UNIX_INTERNAL_H
 
-#ifndef HAS_BZERO
-# include <sizes.h>
-# include <string.h>
+#include "fiber/internal.h"
 
-void bzero(void *ptr, size_t n) {
-	memset(ptr, 0, n);
-}
-#endif /* HAS_BZERO */
+#ifdef FIBER_UNIX
+
+# ifdef HAS_UCONTEXT_H
+#   include <ucontext.h>
+# endif
+# include <osi/stack.h>
+
+struct osi_event;
+
+struct osi_fiber
+{
+	void *stack;
+
+	struct osi_event *stop_ev;
+
+# ifdef HAS_UCONTEXT_H
+	ucontext_t context;
+# endif
+};
+
+OSI_STACK_DECLARE(__api__, osi_fibers, osi_fiber_t, uint16_t)
+
+#endif /* FIBER_UNIX */
+
+#endif /* __OSI_FIBER_UNIX_INTERNAL_H */
+/*!@} */

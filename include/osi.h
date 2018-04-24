@@ -19,9 +19,10 @@
 /*!@file osi.h
  * @author uael
  */
-#ifndef __TEMPOW_OSI_H
-# define __TEMPOW_OSI_H
+#ifndef __OSI_H
+# define __OSI_H
 
 #include "osi/fiber.h"
+#include "osi/stack.h"
 
-#endif /* __TEMPOW_OSI_H */
+#endif /* __OSI_H */

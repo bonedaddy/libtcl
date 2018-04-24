@@ -6,7 +6,3 @@
 #cmakedefine HAS_FREE
 
 #cmakedefine OS_PROVENCORE
-#cmakedefine OS_LINUX
-#cmakedefine OS_WINDOWS
-
-#cmakedefine ARCH_ARM
