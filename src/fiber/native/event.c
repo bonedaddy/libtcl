@@ -20,12 +20,6 @@
 #include "event.h"
 #include "sched.h"
 
-struct osi_event {
-	osi_fibers_t pending;
-	osi_eventk_t kind;
-	int isset;
-};
-
 void osi_event_ctor(osi_event_t *event, osi_eventk_t kind)
 {
 	bzero(event, sizeof(osi_event_t));

@@ -32,11 +32,26 @@ osi_fiber_t	*osi_sched_current(void)
 	return current_fiber;
 }
 
-/*static void sched_switch(osi_fiber_t *fiber)
+void osi_sched_switch(osi_fiber_t *fiber)
 {
-	ucontext_t *current_context;
+	ucontext_t *ucontext;
 
-	current_context = &current_fiber->context;
-	current_fiber = fiber;
-	swapcontext(current_context, &fiber->context);
-}*/
+	if (fiber != current_fiber) {
+		ucontext = &current_fiber->context;
+		current_fiber = fiber;
+		swapcontext(ucontext, &fiber->context);
+	}
+}
+
+int osi_yield(void)
+{
+	osi_fiber_t *fiber;
+
+	if (osi_fibers_len(&pending)) {
+		fiber = osi_fibers_peek(&pending);
+		osi_fibers_pop(&pending, 1);
+	} else {
+
+	}
+	osi_sched_switch(fiber);
+}

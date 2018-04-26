@@ -16,39 +16,19 @@
  * limitations under the License.
  */
 
-/*!@file fiber/native/sched.h
+/*!@file fiber/native/fibers.h
  * @author uael
  *
- * @addtogroup osi.fiber.sched @{
+ * @addtogroup osi.fiber.native @{
  */
-#ifndef __OSI_FIBER_NATIVE_SCHED_H
-# define __OSI_FIBER_NATIVE_SCHED_H
+#ifndef __OSI_FIBER_NATIVE_FIBERS_H
+# define __OSI_FIBER_NATIVE_FIBERS_H
 
 #include <osi/fiber.h>
+#include <osi/conf.h>
+#include <osi/stack.h>
 
-/*!@private
- *
- * @brief
- *
- * @param fiber
- */
-__private__ void osi_sched_push(osi_fiber_t *fiber);
+OSI_STACK_DECLARE(__private__, osi_fibers, osi_fiber_t, uint16_t)
 
-/*!@private
- *
- * @brief
- *
- * @return
- */
-__private__ osi_fiber_t	*osi_sched_current(void);
-
-/*!@private
- *
- * @brief
- *
- * @param fiber
- */
-__private__ void osi_sched_switch(osi_fiber_t *fiber);
-
-#endif /* __OSI_FIBER_SCHED_H */
+#endif /* __OSI_FIBER_NATIVE_FIBERS_H */
 /*!@} */

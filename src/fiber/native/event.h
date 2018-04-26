@@ -24,14 +24,7 @@
 #ifndef __OSI_FIBER_NATIVE_EVENT_H
 # define __OSI_FIBER_NATIVE_EVENT_H
 
-# include <pp.h>
-
-/*!@private
- *
- * @brief
- * The opaque event structure.
- */
-typedef struct osi_event osi_event_t;
+# include "fibers.h"
 
 /*!@private
  *
@@ -42,6 +35,17 @@ typedef enum {
 	OSI_EVENT_MANUAL,
 	OSI_EVENT_AUTO,
 } osi_eventk_t;
+
+/*!@private
+ *
+ * @brief
+ * The opaque event structure.
+ */
+typedef struct osi_event {
+	osi_fibers_t pending;
+	osi_eventk_t kind;
+	int isset;
+} osi_event_t;
 
 /*!@private
  *

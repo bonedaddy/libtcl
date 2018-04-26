@@ -11,7 +11,8 @@ endif ()
 set(osi_SRCS ${osi_SRCS}
   ${CMAKE_CURRENT_LIST_DIR}/event.c
   ${CMAKE_CURRENT_LIST_DIR}/event.h
-  ${CMAKE_CURRENT_LIST_DIR}/fiber.c
+  ${CMAKE_CURRENT_LIST_DIR}/fibers.c
+  ${CMAKE_CURRENT_LIST_DIR}/fibers.h
   ${CMAKE_CURRENT_LIST_DIR}/internal.h
   ${CMAKE_CURRENT_LIST_DIR}/sched.h)
 set(osi_SRCS ${osi_SRCS} PARENT_SCOPE)

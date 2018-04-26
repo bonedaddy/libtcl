@@ -39,7 +39,7 @@ typedef struct osi_fiber osi_fiber_t;
  * Declaration of fiber function, which should be passed to the
  * `osi_fiber_ctor'.
  */
-typedef void (osi_fiber_fn_t)(osi_fiber_t *fiber, void *arg);
+typedef void (osi_fiber_fn_t)(void *arg);
 
 /*!@public
  *

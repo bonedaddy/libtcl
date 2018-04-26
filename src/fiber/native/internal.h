@@ -44,9 +44,18 @@
 
 #include "event.h"
 
+#define DEFAULT_FIBER_STACK_SIZE 0x10000
+
 struct osi_fiber
 {
-	osi_event_t *stop_ev;
+	/* context, which will be passed to the func */
+	void *ctx;
+
+	/* the function, which will be executed in the fiber */
+	osi_fiber_fn_t *fn;
+
+	/* the event, which is used by `osi_fiber_join' */
+	osi_event_t stop_ev;
 
 #ifdef HAS_UCONTEXT_H
 	void *stack;
@@ -55,8 +64,6 @@ struct osi_fiber
 	LPVOID handle;
 #endif
 };
-
-OSI_STACK_DECLARE(__api__, osi_fibers, osi_fiber_t, uint16_t)
 
 #endif /* __OSI_FIBER_NATIVE_INTERNAL_H */
 /*!@} */
