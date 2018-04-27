@@ -16,25 +16,29 @@
  * limitations under the License.
  */
 
+/*!@file osi/sched.h
+ * @author uael
+ *
+ * @addtogroup osi.sched @{
+ */
+#ifndef __OSI_SCHED_H
+# define __OSI_SCHED_H
+
 #include <osi/fiber.h>
-#include <osi/sched.h>
-#include <stdio.h>
-#include <string.h>
-#include <strings.h>
 
-static void fiber_func(void *ctx)
-{
-	for (int i = 0; i < 10; ++i) {
-		printf("%d [%d/%d]\n", *(int *)ctx, i + 1, 10);
-		osi_yield();
-	}
-}
+/*!@public
+ *
+ * @brief
+ * TODO
+ */
+__api__ void osi_schedule(void);
 
-int main(void) {
-	int names[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+/*!@public
+ *
+ * @brief
+ * TODO
+ */
+__api__ void osi_yield(void);
 
-	for (int i = 0; i < 10; i++)
-		osi_fib_create(fiber_func, names + i, 1024, 1);
-	osi_schedule();
-	return 0;
-}
+#endif /* __OSI_FIBER_H */
+/*!@} */

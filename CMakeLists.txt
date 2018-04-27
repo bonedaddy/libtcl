@@ -13,10 +13,15 @@ set(osi_TEST_DIR ${CMAKE_CURRENT_LIST_DIR}/test)
 # TODO: Here we check for every libc header we use
 include(CheckIncludeFile)
 check_include_file(ucontext.h HAS_UCONTEXT_H)
+check_include_file(setjmp.h HAS_SETJMP_H)
 
 # TODO: Here we check for every libc function we use
 include(CheckFunctionExists)
 check_function_exists(bzero HAS_BZERO)
+
+# TODO: Here we check for every libc symbol we use
+include(CheckSymbolExists)
+check_symbol_exists(sigaltstack "signal.h" HAS_SIGALTSTACK)
 
 configure_file(${osi_INC_DIR}/osi/conf.h.in
   ${osi_INC_DIR}/osi/conf.h)

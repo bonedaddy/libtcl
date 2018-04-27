@@ -25,8 +25,10 @@
 #cmakedefine OS_PROVENCORE
 
 #cmakedefine HAS_UCONTEXT_H
+#cmakedefine HAS_SETJMP_H
 
 #cmakedefine HAS_BZERO
+#cmakedefine HAS_SIGALTSTACK
 
 #endif /* __OSI_CONF_H */
 

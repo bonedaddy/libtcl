@@ -16,6 +16,46 @@
  * limitations under the License.
  */
 
-#include <osi/fiber.h>
+#include "fiber.h"
+#include "sched.h"
 
+static void __fibfn(osi_fib_t *fib)
+{
+	fib->fn(fib->arg);
+	__scheduler->running->status = OSI_FIB_EXITING;
+	osi_sched_switch();
+}
 
+static void __fiber_ready(osi_fib_t *fiber)
+{
+	if (fiber->status != OSI_FIB_EXITING) {
+		fiber->status = OSI_FIB_READY;
+		osi_ring_prepend(&__scheduler->ready, &fiber->hold);
+	}
+}
+
+osi_fib_t *osi_fib_create(osi_fibfn_t *fn, void *arg, uint16_t ss, uint8_t prio)
+{
+	osi_fib_t *fib;
+	osi_ring_t *head;
+
+	(void)ss; //TODO
+	if ((head = osi_ring_pop(&__scheduler->dead)))
+		fib = RING_ENTRY(head, osi_fib_t, hold);
+	else {
+		if (__scheduler->slot >= __scheduler->size) {
+			__scheduler->size += 128;
+			__scheduler->fibers = realloc(__scheduler->fibers,
+				__scheduler->size * sizeof(osi_fib_t));
+		}
+		fib = __scheduler->fibers + __scheduler->slot++;
+	}
+	bzero(fib, sizeof(osi_fib_t));
+	osi_ring_init(&fib->hold);
+	fib->fn = fn;
+	fib->arg = arg;
+	fib->priotity = prio;
+	coro_create(&fib->context, (coro_func)__fibfn, fib, ss);
+	__fiber_ready(fib);
+	return fib;
+}

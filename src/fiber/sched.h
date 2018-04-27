@@ -16,25 +16,33 @@
  * limitations under the License.
  */
 
-#include <osi/fiber.h>
+/*!@file fiber/sched.h
+ * @author uael
+ */
+#ifndef __OSI_FIBER_SCHED_H
+# define __OSI_FIBER_SCHED_H
+
 #include <osi/sched.h>
-#include <stdio.h>
-#include <string.h>
-#include <strings.h>
 
-static void fiber_func(void *ctx)
-{
-	for (int i = 0; i < 10; ++i) {
-		printf("%d [%d/%d]\n", *(int *)ctx, i + 1, 10);
-		osi_yield();
-	}
-}
+#include "fiber.h"
 
-int main(void) {
-	int names[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+typedef struct osi_sched osi_sched_t;
 
-	for (int i = 0; i < 10; i++)
-		osi_fib_create(fiber_func, names + i, 1024, 1);
-	osi_schedule();
-	return 0;
-}
+struct osi_sched {
+	osi_fib_t *fibers;
+	size_t size;
+	size_t slot;
+
+	osi_ring_t ready;
+	osi_ring_t dead;
+
+	osi_fib_t *running;
+	osi_fib_t *root;
+};
+
+extern osi_sched_t *__scheduler;
+extern int __scheduled;
+
+__private__ void osi_sched_switch(void);
+
+#endif /* __OSI_FIBER_SCHED_H */
