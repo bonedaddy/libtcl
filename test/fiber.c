@@ -16,19 +16,25 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
+#include <osi/fiber.h>
+#include <stdio.h>
+#include <string.h>
+#include <strings.h>
 
-#include "tempow/bt/hci.h"
-
-int add(int a, int b) {
-	return a + b;
+static void fiber_func(void *ctx)
+{
+	for (int i = 0; i < 10; ++i) {
+		printf("%d [%d/%d]\n", *(int *)ctx, i + 1, 10);
+		osi_yield();
+	}
 }
 
-TEST(test1, c1) {
-	EXPECT_EQ(3, add(1, 2));
-}
+int main(void) {
+	osi_fib_t fibers[10];
+	int names[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
-GTEST_API_ int main(int argc, char **argv) {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+	for (int i = 0; i < 10; i++)
+		osi_fibctor(fibers + i, fiber_func, names + i, 1024, 1);
+	osi_sched();
+	return 0;
 }

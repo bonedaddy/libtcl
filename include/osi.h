@@ -23,6 +23,5 @@
 # define __OSI_H
 
 #include "osi/fiber.h"
-#include "osi/stack.h"
 
 #endif /* __OSI_H */

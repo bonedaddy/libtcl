@@ -18,11 +18,15 @@
 
 #include <osi/conf.h>
 
-#include <string.h>
-#ifdef OS_PROVENCORE
-# include <sizes.h>
-#endif
+#ifndef HAS_BZERO
+
+# include <string.h>
+# ifdef OS_PROVENCORE
+#   include <sizes.h>
+# endif
 
 void bzero(void *ptr, size_t n) {
 	memset(ptr, 0, n);
 }
+
+#endif /* HAS_BZERO */

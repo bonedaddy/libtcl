@@ -24,72 +24,147 @@
 #ifndef __OSI_FIBER_H
 # define __OSI_FIBER_H
 
+#include <osi/conf.h>
 #include <pp.h>
+
+#ifdef HAS_UCONTEXT_H
+# include <ucontext.h>
+#elif defined(OS_PROVENCORE)
+# include <threads/threads.h>
+#endif
 
 /*!@public
  *
  * @brief
- * The opaque fiber structure.
+ * The fiber structure.
  */
-typedef struct osi_fiber osi_fiber_t;
+typedef struct osi_fib osi_fib_t;
 
 /*!@public
  *
  * @brief
  * Declaration of fiber function, which should be passed to the
- * `osi_fiber_ctor'.
+ * `osi_fibctor'.
  */
-typedef void (osi_fiber_fn_t)(void *arg);
+typedef void (osi_fibfn_t)(void *arg);
 
 /*!@public
  *
  * @brief
- * Creates the new fiber, which will execute the given fiber_func after
- * calling the `osi_fiber_start'.
+ * Fiber status.
+ */
+typedef enum osi_fibst osi_fibst_t;
+
+/*!@public
+ *
+ * @brief
+ * The fiber structure definition
+ */
+struct osi_fib {
+
+	/*! The fiber status */
+	osi_fibst_t status;
+
+	/*! Scheduling priority */
+	uint8_t priotity;
+
+	/*! The fiber core function */
+	osi_fibfn_t *fn;
+
+	/*! The fiber core function */
+	void *arg;
+
+#ifdef HAS_UCONTEXT_H
+
+	/*! Fiber context */
+	ucontext_t context;
+
+	/*! Fiber stack */
+	void *stack;
+#elif defined(OS_PROVENCORE)
+
+	/*! Fiber PNC context */
+	struct context *context;
+#endif
+
+	/*! The fiber successor */
+	osi_fib_t *successor;
+
+	/*! The fiber predecessor */
+	osi_fib_t *predecessor;
+
+	/*! The header of all the fibers */
+	osi_fib_t *parent;
+};
+
+/*!@public
+ *
+ * @brief
+ * The fiber status definition
+ */
+enum osi_fibst {
+
+	/*! The fiber was just created so ready */
+	OSI_FIB_READY,
+
+	/*! The fiber is running is it's own context until it finish or yield */
+	OSI_FIB_RUNNING,
+
+	/*! The fiber is terminated but still exists */
+	OSI_FIB_EXITING,
+};
+
+/*!@public
+ *
+ * @brief
+ * Creates the new fiber, which will execute the given fn after
+ * calling the `osi_sched'.
  * ss (stack size) is the size of the stack for the given fiber.
  * If it is set to 0, then the stack size will be set automatically.
  *
- * @param fiber The fiber to construct.
- * @param fn    The fiber function.
- * @param ss    The stack size of the new fiber.
- * @return      0 on success 1 otherwise
+ * @param fib  The fiber to construct.
+ * @param fn   The fiber function.
+ * @param arg  The fiber function argument.
+ * @param ss   The stack size of the new fiber.
+ * @param prio The priority of the new fiber.
+ * @return     0 on success 1 otherwise.
  */
-__api__ int osi_fiber_ctor(osi_fiber_t *fiber, osi_fiber_fn_t *fn, uint16_t ss);
+__api__ int osi_fibctor(osi_fib_t *, osi_fibfn_t *, void *, uint16_t, uint8_t);
 
 /*!@public
  *
  * @brief
  * Deletes the given fiber.
  *
- * @param fiber The fiber to deconstruct.
- * @return      0 on success 1 otherwise
+ * @param fib The fiber to deconstruct.
+ * @return    0 on success 1 otherwise
  */
-__api__ int osi_fiber_dtor(osi_fiber_t *fiber);
+__api__ void osi_fibdtor(osi_fib_t *);
 
 /*!@public
  *
  * @brief
- * Schedules the given fiber for execution and passes the ctx to the fiber func,
- * which has been set in the `osi_fiber_ctor'.
  *
- * @param fiber The fiber to start.
- * @return      0 on success 1 otherwise
+ * @param fib
+ * @return
  */
-__api__ int	osi_fiber_start(osi_fiber_t *fiber, void *arg);
+__api__ void osi_fibjoin(osi_fib_t *);
 
 /*!@public
  *
- * @param fiber
+ * @brief
+ *
  * @return
  */
-__api__ int	osi_fiber_join(osi_fiber_t *fiber);
+__api__ void osi_sched(void);
 
 /*!@public
  *
- * @param fiber
+ * @brief
+ *
  * @return
  */
-__api__ int osi_yield(void);
+__api__ void osi_yield(void);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */

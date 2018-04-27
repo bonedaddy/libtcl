@@ -16,6 +16,6 @@
  * limitations under the License.
  */
 
-#include "internal.h"
+#include <osi/fiber.h>
 
-OSI_STACK_IMPL(, osi_fibers, osi_fiber_t, uint16_t)
+

@@ -1,5 +1,5 @@
-add_executable(osi_fiber_test fiber.cc)
-target_link_libraries(osi_fiber_test GTest::GTest GTest::Main tempow)
-set_target_properties(osi_fiber_test PROPERTIES LINKER_LANGUAGE CXX)
+add_executable(osi_fiber_test fiber.c)
+target_link_libraries(osi_fiber_test osi)
 add_test(osi_fiber_test osi_fiber_test)
 add_dependencies(check osi_fiber_test)
+add_dependencies(osi_fiber_test osi)

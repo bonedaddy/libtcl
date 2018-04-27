@@ -10,13 +10,19 @@ set(osi_INC_DIR ${CMAKE_CURRENT_LIST_DIR}/include)
 set(osi_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 set(osi_TEST_DIR ${CMAKE_CURRENT_LIST_DIR}/test)
 
+# TODO: Here we check for every libc header we use
 include(CheckIncludeFile)
+check_include_file(ucontext.h HAS_UCONTEXT_H)
+
+# TODO: Here we check for every libc function we use
 include(CheckFunctionExists)
-add_subdirectory(src)
+check_function_exists(bzero HAS_BZERO)
 
 configure_file(${osi_INC_DIR}/osi/conf.h.in
   ${osi_INC_DIR}/osi/conf.h)
 
+file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.c)
+file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.h)
 file(GLOB_RECURSE osi_HDRS ${osi_HDRS} ${osi_INC_DIR}/osi/*.h)
 set(osi_HDR ${osi_INC_DIR}/osi.h)
 
@@ -34,6 +40,7 @@ else ()
   target_compile_options(osi
     PUBLIC -Wall -Werror -Wextra -fomit-frame-pointer -ansi
     PUBLIC -Wno-missing-field-initializers
+    PUBLIC -Wno-unused-function
     PUBLIC -O$<$<CONFIG:Debug>:0 -g3>$<$<CONFIG:Release>:3>)
 endif ()
 
