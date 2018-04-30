@@ -22,6 +22,9 @@
 #ifndef __OSI_H
 # define __OSI_H
 
+#include "osi/conf.h"
 #include "osi/fiber.h"
+#include "osi/list.h"
+#include "osi/sched.h"
 
 #endif /* __OSI_H */
