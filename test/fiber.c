@@ -42,7 +42,7 @@ static void fiber_func_1(void *ctx)
 	}
 }
 
-int test_0(void)
+static int test_0(void)
 {
 	int names[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
@@ -52,7 +52,7 @@ int test_0(void)
 	return 0;
 }
 
-int test_1(void)
+static int test_1(void)
 {
 	int names[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
