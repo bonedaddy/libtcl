@@ -52,6 +52,9 @@ static void test_0(void)
 	assert(counter == 0);
 	osi_schedule();
 	assert(counter == 10);
+	counter = 0;
+	osi_schedule();
+	assert(counter == 0);
 }
 
 static void test_1(void)
@@ -64,6 +67,9 @@ static void test_1(void)
 	assert(counter == 0);
 	osi_schedule();
 	assert(counter == 10);
+	counter = 0;
+	osi_schedule();
+	assert(counter == 0);
 }
 
 int main(void)
