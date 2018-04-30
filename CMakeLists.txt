@@ -10,20 +10,11 @@ set(osi_INC_DIR ${CMAKE_CURRENT_LIST_DIR}/include)
 set(osi_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 set(osi_TEST_DIR ${CMAKE_CURRENT_LIST_DIR}/test)
 
-# TODO: Here we check for every libc header we use
-include(CheckIncludeFile)
-check_include_file(ucontext.h HAS_UCONTEXT_H)
-check_include_file(setjmp.h HAS_SETJMP_H)
-
 # TODO: Here we check for every libc function we use
 include(CheckFunctionExists)
 check_function_exists(bzero HAS_BZERO)
 check_function_exists(free HAS_FREE)
 check_function_exists(realloc HAS_REALLOC)
-
-# TODO: Here we check for every libc symbol we use
-include(CheckSymbolExists)
-check_symbol_exists(sigaltstack "signal.h" HAS_SIGALTSTACK)
 
 configure_file(${osi_INC_DIR}/osi/conf.h.in
   ${osi_INC_DIR}/osi/conf.h)
@@ -37,6 +28,11 @@ add_library(osi ${osi_SRCS} ${osi_HDRS} ${osi_HDR})
 target_include_directories(osi PUBLIC ${osi_INC_DIR} PRIVATE ${osi_SRC_DIR})
 target_link_libraries(osi PUBLIC pp)
 add_dependencies(osi pp)
+
+if (NOT OS_PROVENCORE)
+  target_link_libraries(osi PUBLIC coro)
+  add_dependencies(osi coro)
+endif ()
 
 if (MSVC)
   target_compile_options(osi

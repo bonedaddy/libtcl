@@ -78,8 +78,11 @@ void osi_schedule(void)
 	if (__scheduled)
 		return;
 	__scheduled = 1;
+
+#ifndef OS_PROVENCORE
 	if (!__scheduler->root)
 		__scheduler->root = osi_fib_create(NULL, NULL, 16, 0);
+#endif
 
 	/* Schedule ready fibers */
 	while (1) {
@@ -98,7 +101,10 @@ void osi_schedule(void)
 	}
 
 	/* Release dead fibers */
+#ifndef OS_PROVENCORE
 	osi_fiber_delete(__scheduler->root);
+#endif
+
 	while ((head = osi_list_shift(&__scheduler->dead)) != NULL) {
 		fib = LIST_ENTRY(head, osi_fib_t, hold);
 		osi_fiber_delete(fib);
@@ -117,5 +123,9 @@ void osi_schedule(void)
 
 void osi_yield(void)
 {
+#ifdef OS_PROVENCORE
+	yield();
+#else
 	osi_fiber_swap(__scheduler->running, __scheduler->root);
+#endif
 }

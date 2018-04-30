@@ -16,18 +16,19 @@
  * limitations under the License.
  */
 
-/*!@file osi/conf.h
+/*!@file osi/string.h
  * @author uael
+ *
+ * @addtogroup osi.string @{
  */
-#ifndef __OSI_CONF_H
-# define __OSI_CONF_H
+#ifndef __OSI_STRING_H
+# define __OSI_STRING_H
 
-#cmakedefine OS_PROVENCORE
+#include <osi/conf.h>
 
-#cmakedefine HAS_BZERO
-#cmakedefine HAS_FREE
-#cmakedefine HAS_REALLOC
-#cmakedefine HAS_SIGALTSTACK
+#ifdef OS_PROVENCORE
+# include <strings.h>
+#endif
 
-#endif /* __OSI_CONF_H */
-
+#endif /* __OSI_FIBER_H */
+/*!@} */

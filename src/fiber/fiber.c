@@ -19,6 +19,8 @@
 #include "fiber.h"
 #include "sched.h"
 
+#include <osi/string.h>
+
 static void __fibfn(osi_fib_t *fib)
 {
 	fib->fn(fib->arg);
@@ -36,18 +38,38 @@ osi_fib_t *osi_fib_create(osi_fibfn_t *fn, void *arg, uint16_t ss, uint8_t prio)
 	fib->fn = fn;
 	fib->arg = arg;
 	fib->priotity = prio;
-	coro_create(&fib->context, (coro_func)__fibfn, fib, ss);
+#ifdef OS_PROVENCORE
+	fib->context = create_context(ss, 0, 0, 0, (int (*)(void *))__fibfn, fib);
+#else
+	coro_stack_alloc(&fib->stack, ss);
+	coro_create(&fib->context, (coro_func)__fibfn, fib, fib->stack.sptr,
+		fib->stack.ssze);
+#endif
 	if (fn) osi_sched_ready(fib);
 	return fib;
 }
 
 void osi_fiber_swap(osi_fib_t *from, osi_fib_t *to)
 {
+#ifdef OS_PROVENCORE
+	int dummy;
+
+	(void)from;
+	if (resume(to->context, &dummy))
+		to->status = OSI_FIB_EXITING;
+#else
 	if (from && to && from != to)
 		coro_transfer(&from->context, &to->context);
+#endif
 }
 
 void osi_fiber_delete(osi_fib_t *fib)
 {
-	coro_destroy(&fib->context);
+#ifdef OS_PROVENCORE
+	fib->context = NULL;
+#else
+	(void)coro_destroy(&fib->context);
+	coro_stack_free(&fib->stack);
+#endif
+
 }

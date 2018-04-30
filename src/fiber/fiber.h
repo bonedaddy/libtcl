@@ -25,10 +25,11 @@
 #include <osi/fiber.h>
 #include <osi/list.h>
 
-/*
- * TODO: PNC compat
- */
-#include "coro.h"
+#ifdef OS_PROVENCORE
+# include <threads/threads.h>
+#else
+# include <coro.h>
+#endif
 
 /*!@private
  *
@@ -76,8 +77,15 @@ struct osi_fib {
 	/*! Fiber list hold */
 	osi_node_t hold;
 
+#ifdef OS_PROVENCORE
+	struct context *context;
+#else
 	/** Coroutine context */
 	coro_context context;
+
+	/** Coroutine stack */
+	struct coro_stack stack;
+#endif
 };
 
 /*!@private
