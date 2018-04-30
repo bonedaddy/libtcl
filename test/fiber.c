@@ -42,29 +42,33 @@ static void fiber_func_1(void *ctx)
 	}
 }
 
-static int test_0(void)
+static void test_0(void)
 {
 	int names[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
+	counter = 0;
 	for (int i = 0; i < 10; i++)
 		osi_fib_create(fiber_func_0, names + i, 1024, 1);
+	assert(counter == 0);
 	osi_schedule();
-	return 0;
+	assert(counter == 10);
 }
 
-static int test_1(void)
+static void test_1(void)
 {
 	int names[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
+	counter = 0;
 	for (int i = 0; i < 10; i++)
 		osi_fib_create(fiber_func_1, names + i, 1024, 1);
+	assert(counter == 0);
 	osi_schedule();
-	return 0;
+	assert(counter == 10);
 }
 
 int main(void)
 {
-	if (test_0()) return 1;
-	if (test_1()) return 1;
+	test_0();
+	test_1();
 	return 0;
 }
