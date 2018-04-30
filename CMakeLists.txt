@@ -18,6 +18,8 @@ check_include_file(setjmp.h HAS_SETJMP_H)
 # TODO: Here we check for every libc function we use
 include(CheckFunctionExists)
 check_function_exists(bzero HAS_BZERO)
+check_function_exists(free HAS_FREE)
+check_function_exists(realloc HAS_REALLOC)
 
 # TODO: Here we check for every libc symbol we use
 include(CheckSymbolExists)

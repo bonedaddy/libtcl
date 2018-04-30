@@ -28,6 +28,8 @@
 #cmakedefine HAS_SETJMP_H
 
 #cmakedefine HAS_BZERO
+#cmakedefine HAS_FREE
+#cmakedefine HAS_REALLOC
 #cmakedefine HAS_SIGALTSTACK
 
 #endif /* __OSI_CONF_H */
