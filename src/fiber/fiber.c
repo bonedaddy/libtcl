@@ -32,7 +32,7 @@ osi_fib_t *osi_fib_create(osi_fibfn_t *fn, void *arg, uint16_t ss, uint8_t prio)
 
 	fib = osi_sched_entry();
 	bzero(fib, sizeof(osi_fib_t));
-	osi_list_init((osi_list_t *) &fib->hold);
+	osi_node_init(&fib->hold);
 	fib->fn = fn;
 	fib->arg = arg;
 	fib->priotity = prio;

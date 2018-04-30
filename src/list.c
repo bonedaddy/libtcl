@@ -20,6 +20,11 @@
 
 #include <stddef.h>
 
+void osi_node_init(osi_node_t *node)
+{
+	node->pred = node->succ = (osi_node_t *) node;
+}
+
 void osi_list_init(osi_list_t *list)
 {
 	list->pred = list->succ = (osi_node_t *) list;
