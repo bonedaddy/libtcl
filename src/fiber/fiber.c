@@ -49,5 +49,5 @@ void osi_fiber_swap(osi_fib_t *from, osi_fib_t *to)
 
 void osi_fiber_delete(osi_fib_t *fib)
 {
-	(void)coro_destroy(&fib->context);
+	coro_destroy(&fib->context);
 }

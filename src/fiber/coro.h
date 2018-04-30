@@ -320,7 +320,7 @@ struct coro_context
 };
 
 # define coro_transfer(p,n) swapcontext (&((p)->uc), &((n)->uc))
-# define coro_destroy(ctx) (void *)(ctx)
+# define coro_destroy(ctx) (void)(void *)(ctx)
 
 #elif CORO_SJLJ || CORO_LOSER || CORO_LINUX || CORO_IRIX
 
