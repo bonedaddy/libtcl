@@ -61,6 +61,9 @@ osi_fib_t *osi_sched_entry(void)
 	return (fib);
 }
 
+/*
+ * TODO: Insert by priority
+ */
 void osi_sched_ready(osi_fib_t *fib)
 {
 	fib->status = OSI_FIB_READY;
