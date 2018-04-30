@@ -25,6 +25,7 @@ static int counter = 0;
 
 static void fiber_func_0(void *ctx)
 {
+	(void)ctx;
 	for (int i = 0; i < 10; ++i) {
 		if (++counter > 10)
 			counter = 1;
@@ -35,6 +36,7 @@ static void fiber_func_0(void *ctx)
 
 static void fiber_func_1(void *ctx)
 {
+	(void)ctx;
 	if (++counter > 10)
 		counter = 1;
 	for (int i = 0; i < 10; ++i) {
