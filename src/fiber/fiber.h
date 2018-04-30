@@ -25,6 +25,9 @@
 #include <osi/fiber.h>
 #include <osi/list.h>
 
+/*
+ * TODO: PNC compat
+ */
 #include "coro.h"
 
 /*!@private

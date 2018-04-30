@@ -26,7 +26,7 @@
 
 #include "fiber.h"
 
-/*!!@public
+/*!@public
  *
  * @brief
  * TODO
@@ -35,7 +35,7 @@
  */
 __private__ osi_fib_t *osi_sched_entry(void);
 
-/*!!@public
+/*!@public
  *
  * @brief
  * TODO

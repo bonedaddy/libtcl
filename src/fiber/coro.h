@@ -304,8 +304,6 @@ void coro_stack_free(struct coro_stack *stack);
 # define CORO_ASM 1
 #elif defined HAS_SETJMP_H && defined HAS_SIGALTSTACK
 # define CORO_SJLJ 1
-#elif defined OS_PROVENCORE
-# define CORO_PNC 1
 #else
 error unknown or unsupported architecture
 #endif
