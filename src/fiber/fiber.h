@@ -23,7 +23,7 @@
 # define __OSI_FIBER_FIBER_H
 
 #include <osi/fiber.h>
-#include <osi/ring.h>
+#include <osi/list.h>
 
 #include "coro.h"
 
@@ -70,11 +70,30 @@ struct osi_fib {
 	/*! The fiber core function */
 	void *arg;
 
-	/*! Fiber hold ring */
-	osi_ring_t hold;
+	/*! Fiber list hold */
+	osi_node_t hold;
 
 	/** Coroutine context */
 	coro_context context;
 };
+
+/*!@private
+ *
+ * @brief
+ * TODO
+ *
+ * @param from
+ * @param to
+ */
+__private__ void osi_fiber_swap(osi_fib_t *from, osi_fib_t *to);
+
+/*!@private
+ *
+ * @brief
+ * TODO
+ *
+ * @param fib
+ */
+__private__ void osi_fiber_delete(osi_fib_t *fib);
 
 #endif /* __OSI_FIBER_FIBER_H */

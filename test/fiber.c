@@ -28,6 +28,7 @@ static void fiber_func(void *ctx)
 		printf("%d [%d/%d]\n", *(int *)ctx, i + 1, 10);
 		osi_yield();
 	}
+	printf("%d done\n", *(int *)ctx);
 }
 
 int main(void) {

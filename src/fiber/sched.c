@@ -18,72 +18,101 @@
 
 #include "sched.h"
 
+typedef struct osi_sched osi_sched_t;
+
+struct osi_sched {
+	osi_fib_t *fibers;
+	size_t size;
+	size_t slot;
+
+	osi_list_t ready;
+	osi_list_t dead;
+
+	osi_fib_t *running;
+	osi_fib_t *root;
+};
+
 static osi_sched_t __s_scheduler = {
 	.fibers = NULL, .size = 0, .slot = 0,
-	.ready = RING_INITIALIZER(__s_scheduler.ready),
-	.dead = RING_INITIALIZER(__s_scheduler.dead),
+	.ready = LIST_INITIALIZER(__s_scheduler.ready),
+	.dead = LIST_INITIALIZER(__s_scheduler.dead),
 	.running = NULL,
 	.root = NULL,
 };
 
-osi_sched_t *__scheduler = &__s_scheduler;
-int __scheduled = 0;
+static osi_sched_t *__scheduler = &__s_scheduler;
+static int __scheduled = 0;
 
-static void __fibswap(osi_fib_t *from, osi_fib_t *to)
+osi_fib_t *osi_sched_entry(void)
 {
-	if (from->status == OSI_FIB_EXITING)
-		osi_ring_prepend(&__scheduler->dead, &from->hold);
-	coro_transfer(&from->context, &to->context);
+	osi_fib_t *fib;
+	osi_node_t *head;
+
+	if ((head = osi_list_pop(&__scheduler->dead)))
+		fib = LIST_ENTRY(head, osi_fib_t, hold);
+	else {
+		if (__scheduler->slot >= __scheduler->size) {
+			__scheduler->size += 128;
+			__scheduler->fibers = realloc(__scheduler->fibers,
+				__scheduler->size * sizeof(osi_fib_t));
+		}
+		fib = __scheduler->fibers + __scheduler->slot++;
+	}
+	return (fib);
 }
 
-void osi_sched_switch(void)
+void osi_sched_ready(osi_fib_t *fib)
 {
-	osi_fib_t *fib, *cur;
-	osi_ring_t *head;
-
-	cur = __scheduler->running;
-
-	if (!(head = osi_ring_shift(&__scheduler->ready)))
-		__fibswap(cur, __scheduler->root);
-	else {
-		fib = RING_ENTRY(head, osi_fib_t, hold);
-		__scheduler->running = fib;
-		__fibswap(cur, fib);
-		__scheduler->running = NULL;
-	}
+	fib->status = OSI_FIB_READY;
+	osi_list_unshift(&__scheduler->ready, &fib->hold);
 }
 
 void osi_schedule(void)
 {
 	osi_fib_t *fib;
-	osi_ring_t *head;
+	osi_node_t *head;
 
 	if (__scheduled)
 		return;
 	__scheduled = 1;
 	if (!__scheduler->root)
 		__scheduler->root = osi_fib_create(NULL, NULL, 16, 0);
+
+	/* Schedule ready fibers */
 	while (1) {
-		if (!(head = osi_ring_shift(&__scheduler->ready)))
+		if (!(head = osi_list_shift(&__scheduler->ready)))
 			break;
-		fib = RING_ENTRY(head, osi_fib_t, hold);
+		fib = LIST_ENTRY(head, osi_fib_t, hold);
 		fib->status = OSI_FIB_RUNNING;
 
 		__scheduler->running = fib;
-		__fibswap(__scheduler->root, fib);
+		osi_fiber_swap(__scheduler->root, fib);
+		if (fib->status == OSI_FIB_EXITING)
+			osi_list_unshift(&__scheduler->dead, &fib->hold);
+		else
+			osi_sched_ready(fib);
 		__scheduler->running = NULL;
 	}
+
+	/* Release dead fibers */
+	osi_fiber_delete(__scheduler->root);
+	while ((head = osi_list_shift(&__scheduler->dead)) != NULL) {
+		fib = LIST_ENTRY(head, osi_fib_t, hold);
+		osi_fiber_delete(fib);
+	}
+
+	/* Release scheduler memory */
+	free(__scheduler->fibers);
+	__scheduler->root = NULL;
+	__scheduler->fibers = NULL;
+	__scheduler->size = 0;
+	__scheduler->slot = 0;
+	osi_list_init(&__scheduler->ready);
+	osi_list_init(&__scheduler->dead);
 	__scheduled = 0;
 }
 
 void osi_yield(void)
 {
-	if (!__scheduler->running)
-		return;
-	if (__scheduler->running->status != OSI_FIB_EXITING)
-	{
-		__scheduler->running->status = OSI_FIB_READY;
-		osi_ring_prepend(&__scheduler->ready, &__scheduler->running->hold);
-	}
-	osi_sched_switch();
+	osi_fiber_swap(__scheduler->running, __scheduler->root);
 }

@@ -26,23 +26,22 @@
 
 #include "fiber.h"
 
-typedef struct osi_sched osi_sched_t;
+/*!!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @return
+ */
+__private__ osi_fib_t *osi_sched_entry(void);
 
-struct osi_sched {
-	osi_fib_t *fibers;
-	size_t size;
-	size_t slot;
-
-	osi_ring_t ready;
-	osi_ring_t dead;
-
-	osi_fib_t *running;
-	osi_fib_t *root;
-};
-
-extern osi_sched_t *__scheduler;
-extern int __scheduled;
-
-__private__ void osi_sched_switch(void);
+/*!!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param fib
+ */
+__private__ void osi_sched_ready(osi_fib_t *fib);
 
 #endif /* __OSI_FIBER_SCHED_H */

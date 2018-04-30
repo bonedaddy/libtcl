@@ -22,40 +22,32 @@
 static void __fibfn(osi_fib_t *fib)
 {
 	fib->fn(fib->arg);
-	__scheduler->running->status = OSI_FIB_EXITING;
-	osi_sched_switch();
-}
-
-static void __fiber_ready(osi_fib_t *fiber)
-{
-	if (fiber->status != OSI_FIB_EXITING) {
-		fiber->status = OSI_FIB_READY;
-		osi_ring_prepend(&__scheduler->ready, &fiber->hold);
-	}
+	fib->status = OSI_FIB_EXITING;
+	osi_yield();
 }
 
 osi_fib_t *osi_fib_create(osi_fibfn_t *fn, void *arg, uint16_t ss, uint8_t prio)
 {
 	osi_fib_t *fib;
-	osi_ring_t *head;
 
-	(void)ss; //TODO
-	if ((head = osi_ring_pop(&__scheduler->dead)))
-		fib = RING_ENTRY(head, osi_fib_t, hold);
-	else {
-		if (__scheduler->slot >= __scheduler->size) {
-			__scheduler->size += 128;
-			__scheduler->fibers = realloc(__scheduler->fibers,
-				__scheduler->size * sizeof(osi_fib_t));
-		}
-		fib = __scheduler->fibers + __scheduler->slot++;
-	}
+	fib = osi_sched_entry();
 	bzero(fib, sizeof(osi_fib_t));
-	osi_ring_init(&fib->hold);
+	osi_list_init((osi_list_t *) &fib->hold);
 	fib->fn = fn;
 	fib->arg = arg;
 	fib->priotity = prio;
 	coro_create(&fib->context, (coro_func)__fibfn, fib, ss);
-	__fiber_ready(fib);
+	if (fn) osi_sched_ready(fib);
 	return fib;
+}
+
+void osi_fiber_swap(osi_fib_t *from, osi_fib_t *to)
+{
+	if (from && to && from != to)
+		coro_transfer(&from->context, &to->context);
+}
+
+void osi_fiber_delete(osi_fib_t *fib)
+{
+	(void)coro_destroy(&fib->context);
 }

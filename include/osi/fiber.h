@@ -46,7 +46,7 @@ typedef void (osi_fibfn_t)(void *arg);
  *
  * @brief
  * Creates the new fiber, which will execute the given fn after
- * calling the `osi_sched'.
+ * calling the `osi_schedule'.
  * ss (stack size) is the size of the stack for the given fiber.
  * If it is set to 0, then the stack size will be set automatically.
  *
