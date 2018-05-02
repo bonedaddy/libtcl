@@ -21,16 +21,11 @@
 
 #include <osi/string.h>
 
-static struct {
-	size_t slot;
-	size_t size;
-	osi_fib_t *buf;
-} __fibers = { 0, 0, NULL, };
 #ifdef OS_PROVENCORE
-static osi_fib_t *__fiber = NULL;
+osi_fib_t *__fiber = NULL;
 #else
 static osi_fib_t __s_fiber = { };
-static osi_fib_t *__fiber = &__s_fiber;
+osi_fib_t *__fiber = &__s_fiber;
 #endif
 
 static void __fibfn(osi_fib_t *fib)
@@ -40,25 +35,22 @@ static void __fibfn(osi_fib_t *fib)
 	osi_fib_yield(fib->result);
 }
 
-static osi_fib_t *__fib_allocate(void)
-{
-	if (__fibers.slot >= __fibers.size) {
-		__fibers.size += 128;
-		__fibers.buf = realloc(__fibers.buf,
-			__fibers.size * sizeof(osi_fib_t));
-	}
-	return __fibers.buf + __fibers.slot++;
-}
-
 osi_fib_t *osi_fib_new(osi_fibfn_t *fn, uint16_t ss)
 {
+#ifdef OS_PROVENCORE
+	static int init = 0;
+#endif
 	osi_fib_t *fib;
 
-	fib = __fib_allocate();
+	fib = malloc(sizeof(osi_fib_t));
 	bzero(fib, sizeof(osi_fib_t));
 	osi_node_init(&fib->hold);
 	fib->fn = fn;
 #ifdef OS_PROVENCORE
+	if (!init) {
+		init = 1;
+		if (init_threads()) return NULL;
+	}
 	fib->context = create_context(ss, 0, 0, 0, (int (*)(void *))__fibfn, fib);
 #else
 	coro_stack_alloc(&fib->stack, ss);
@@ -82,7 +74,7 @@ void osi_fiber_swap(osi_fib_t *from, osi_fib_t *to)
 #endif
 }
 
-void osi_fiber_delete(osi_fib_t *fib)
+void osi_fib_delete(osi_fib_t *fib)
 {
 #ifdef OS_PROVENCORE
 	fib->context = NULL;
@@ -90,12 +82,14 @@ void osi_fiber_delete(osi_fib_t *fib)
 	(void)coro_destroy(&fib->context);
 	coro_stack_free(&fib->stack);
 #endif
+	free(fib);
 }
 
 void *osi_fib_call(osi_fib_t *fib, void *ctx)
 {
 	fib->caller = __fiber;
 	fib->arg = ctx;
+	fib->status = OSI_FIB_RUNNING;
 	__fiber = fib;
 #ifdef OS_PROVENCORE
 	int dummy;

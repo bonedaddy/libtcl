@@ -37,5 +37,6 @@ int main(void)
 	fiber = osi_fib_new(call_return_value, 32);
 	(void)(result = osi_fib_call(fiber, NULL));
 	assert(!strcmp("result", result));
+	osi_fib_delete(fiber);
 	return 0;
 }

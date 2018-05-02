@@ -21,16 +21,16 @@
 
 #include <assert.h>
 
-static int __counter = 0;
+static int counter = 0;
 
 void *call(void *arg)
 {
 	(void)arg;
-	++__counter;
-	assert(__counter == 2);
+	++counter;
+	assert(counter == 2);
 	osi_fib_yield(NULL);
-	++__counter;
-	assert(__counter == 4);
+	++counter;
+	assert(counter == 4);
 	return NULL;
 }
 
@@ -42,22 +42,23 @@ int main(void)
 
 	assert(!osi_fib_done(fiber));
 
-	++__counter;
-	assert(__counter == 1);
+	++counter;
+	assert(counter == 1);
 
 	osi_fib_call(fiber, NULL);
 
-	++__counter;
-	assert(__counter == 3);
+	++counter;
+	assert(counter == 3);
 
 	assert(!osi_fib_done(fiber));
 
 	osi_fib_call(fiber, NULL);
 
-	++__counter;
-	assert(__counter == 5);
+	++counter;
+	assert(counter == 5);
 
 	assert(osi_fib_done(fiber));
+	osi_fib_delete(fiber);
 
 	return 0;
 }

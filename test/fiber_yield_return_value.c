@@ -35,8 +35,10 @@ int main(void)
 	osi_fib_t *fiber;
 
 	fiber = osi_fib_new(yield_return_value, 32);
-	
+
 	printf(osi_fib_call(fiber, result[0]));
 	printf(osi_fib_call(fiber, result[2]));
+
+	osi_fib_delete(fiber);
 	return 0;
 }

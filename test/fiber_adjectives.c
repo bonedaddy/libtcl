@@ -41,5 +41,6 @@ int main(void)
 	fiber = osi_fib_new(call_fiber, 32);
 	while (!osi_fib_done(fiber))
 		printf("%s\n", (char *) osi_fib_call(fiber, NULL));
+	osi_fib_delete(fiber);
 	return 0;
 }

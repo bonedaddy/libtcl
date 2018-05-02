@@ -25,20 +25,60 @@
 # define __OSI_SCHED_H
 
 #include <osi/fiber.h>
+#include <osi/list.h>
+
+/*!@public
+ *
+ * @brief
+ * The scheduler structure.
+ */
+typedef struct osi_sched osi_sched_t;
+
+/*!@public
+ *
+ * @brief
+ * The scheduler structure implementation.
+ */
+struct osi_sched {
+
+	/*! The ready fiber stack, ordered by priority */
+	osi_list_t ready;
+
+	/*! The dead stack */
+	osi_list_t dead;
+
+	/*! If the scheduler is running or not */
+	bool scheduled;
+};
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param sched
+ */
+__api__ void osi_sched_init(osi_sched_t *sched);
 
 /*!@public
  *
  * @brief
  * TODO
  */
-__api__ void osi_schedule(void);
+__api__ void osi_sched_start(osi_sched_t *sched);
 
 /*!@public
  *
  * @brief
  * TODO
+ *
+ * @param sched
+ * @param fib
+ * @param arg
+ * @param prio
  */
-__api__ void osi_yield(void);
+__api__ void osi_sched_ready(osi_sched_t *sched, osi_fib_t *fib, void *arg,
+	int prio);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */

@@ -47,5 +47,7 @@ int main(void)
 	printf("begin main\n");
 	osi_fib_call(a, NULL);
 	printf("end main\n");
+	osi_fib_delete(a);
+	osi_fib_delete(b);
 	return 0;
 }

@@ -59,6 +59,15 @@ __api__ osi_fib_t *osi_fib_new(osi_fibfn_t *fib, uint16_t ss);
 /*!@public
  *
  * @brief
+ * Delete the fiber `fib' and its context.
+ *
+ * @param fib The fiber to delete.
+ */
+__api__ void osi_fib_delete(osi_fib_t *fib);
+
+/*!@public
+ *
+ * @brief
  * This suspends the current fiber and executes the called one until it reaches
  * the end of its body or until it passes control to yet another fiber.
  * If it reaches the end of its body, it is considered done.

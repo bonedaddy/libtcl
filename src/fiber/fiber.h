@@ -68,15 +68,20 @@ struct osi_fib {
 	/*! The fiber core function */
 	osi_fibfn_t *fn;
 
-	/*! The fiber core function */
+	/*! The fiber core function argument */
 	void *arg;
 
+	/*! The fiber result */
 	void *result;
 
+	/*! The fiber caller */
 	osi_fib_t *caller;
 
 	/*! Fiber list hold */
 	osi_node_t hold;
+
+	/*! The priority used by scheduler */
+	int priority;
 
 #ifdef OS_PROVENCORE
 	struct context *context;
@@ -89,23 +94,6 @@ struct osi_fib {
 #endif
 };
 
-/*!@private
- *
- * @brief
- * TODO
- *
- * @param from
- * @param to
- */
-__private__ void osi_fiber_swap(osi_fib_t *from, osi_fib_t *to);
-
-/*!@private
- *
- * @brief
- * TODO
- *
- * @param fib
- */
-__private__ void osi_fiber_delete(osi_fib_t *fib);
+extern osi_fib_t *__fiber;
 
 #endif /* __OSI_FIBER_FIBER_H */
