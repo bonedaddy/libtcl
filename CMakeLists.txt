@@ -30,14 +30,17 @@ set(osi_INC_DIR ${CMAKE_CURRENT_LIST_DIR}/include)
 set(osi_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 set(osi_TEST_DIR ${CMAKE_CURRENT_LIST_DIR}/test)
 
-# TODO: Here we check for every libc function we use
 include(CheckFunctionExists)
 check_function_exists(bzero HAS_BZERO)
 check_function_exists(free HAS_FREE)
 check_function_exists(realloc HAS_REALLOC)
 
-configure_file(${osi_INC_DIR}/osi/conf.h.in
-  ${osi_INC_DIR}/osi/conf.h)
+include(CheckIncludeFile)
+check_include_file(semaphore.h HAS_SEMAPHORE_H)
+check_include_file(sys/eventfd.h HAS_SYS_EVENTFD_H)
+check_include_file(sys/time.h HAS_SYS_TIME_H)
+
+configure_file(${osi_INC_DIR}/osi/conf.h.in ${osi_INC_DIR}/osi/conf.h)
 
 file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.c)
 file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.h)
@@ -66,7 +69,8 @@ else ()
     PUBLIC -Wno-unused-function
     PUBLIC -O$<$<CONFIG:Debug>:0 -g3>$<$<CONFIG:Release>:2>)
   if(CMAKE_C_FLAGS_RELEASE MATCHES "-O3")
-    string(REPLACE "-O3" "-O2" CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+    string(REPLACE "-O3" "-O2" CMAKE_C_FLAGS_RELEASE
+      "${CMAKE_C_FLAGS_RELEASE}")
   endif()
   if (CMAKE_BUILD_TYPE MATCHES San)
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address")

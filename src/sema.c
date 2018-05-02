@@ -18,4 +18,99 @@
 
 #include <osi/sema.h>
 
+#ifdef HAS_SEMAPHORE_H
+# include <semaphore.h>
+# define SEMA_SEM
+#elif defined(HAS_SYS_EVENTFD_H)
+# include <sys/eventfd.h>
+# include <sys/fcntl.h>
+# define SEMA_EVENTFD
+#endif
 
+struct sema {
+#if defined(SEMA_SEM)
+	sem_t handle;
+#else
+	int handle;
+#endif
+};
+
+sema_t *sema_new(unsigned value)
+{
+	sema_t *sema;
+
+	sema = malloc(sizeof(sema_t));
+#if defined(SEMA_SEM)
+	sem_init(&sema->handle, 0, value);
+#elif defined(SEMA_EVENTFD)
+	sema->handle = eventfd(value, EFD_SEMAPHORE);
+	if (sema->handle == INVALID_FD) {
+		free(sema);
+		sema = NULL;
+	}
+#else
+	sema->handle = 0;
+#endif
+	return sema;
+}
+
+void sema_del(sema_t *sema)
+{
+#if defined(SEMA_SEM)
+	sem_destroy(&sema->handle);
+#elif defined(SEMA_EVENTFD)
+	if (sema->handle != INVALID_FD)
+    	close(sema->handle);
+#else
+	sema->handle = 0;
+#endif
+	free(sema);
+}
+
+void sema_wait(sema_t *sema)
+{
+#if defined(SEMA_SEM)
+	sem_wait(&sema->handle);
+#elif defined(SEMA_EVENTFD)
+	eventfd_t value;
+
+	eventfd_read(sema->handle, &value);
+#else
+	--sema->handle;
+#endif
+}
+
+bool sema_trywait(sema_t *sema)
+{
+#if defined(SEMA_SEM)
+	return sem_trywait(&sema->handle) == 0;
+#elif defined(SEMA_EVENTFD)
+	int flags;
+	bool rc;
+	eventfd_t value;
+
+	if ((flags = fcntl(sema->handle, F_GETFL)) < 0)
+		return false;
+	if (fcntl(sema->handle, F_SETFL, flags | O_NONBLOCK) < 0)
+		return false;
+	rc = true;
+	if (eventfd_read(sema->handle, &value))
+    	rc = false;
+	fcntl(sema->handle, F_SETFL, flags);
+
+	return rc;
+#else
+	return --sema->handle == 0;
+#endif
+}
+
+void sema_post(sema_t *sema)
+{
+#if defined(SEMA_SEM)
+	sem_post(&sema->handle);
+#elif defined(SEMA_EVENTFD)
+	eventfd_write(sema->handle, 1ULL);
+#else
+	++sema->handle;
+#endif
+}

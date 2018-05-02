@@ -26,25 +26,62 @@
 #ifndef __OSI_SEMA_H
 # define __OSI_SEMA_H
 
-#include <osi/fiber.h>
-#include <osi/list.h>
+#include <osi/conf.h>
+#include <pp.h>
 
 /*!@public
  *
  * @brief
- * The semaphore structure.
+ * The semaphore opaque structure.
  */
 typedef struct sema sema_t;
 
 /*!@public
  *
  * @brief
- * The semaphore structure implementation.
+ * TODO
+ *
+ * @param value
+ * @return
  */
-struct sema {
+sema_t *sema_new(unsigned value);
 
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param sema
+ */
+void sema_del(sema_t *sema);
 
-};
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param sema
+ */
+void sema_wait(sema_t *sema);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param sema
+ * @return
+ */
+bool sema_trywait(sema_t *sema);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param sema
+ */
+void sema_post(sema_t *sema);
 
 #endif /* __OSI_SEMA_H */
 /*!@} */

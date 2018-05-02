@@ -21,12 +21,12 @@
 
 #include <assert.h>
 
-static char *result[] = { "a\n", "b\n", "c\n", "d\n" };
+static char *result[] = { "a", "b", "c", "d" };
 
 void *yield_return_value(void *arg)
 {
-	printf(arg);
-	printf(fiber_yield(result[1]));
+	printf("%s\n", (char *) arg);
+	printf("%s\n", (char *) fiber_yield(result[1]));
 	return result[3];
 }
 
@@ -36,8 +36,8 @@ int main(void)
 
 	fiber = fiber_new(yield_return_value, 32);
 
-	printf(fiber_call(fiber, result[0]));
-	printf(fiber_call(fiber, result[2]));
+	printf("%s\n", (char *) fiber_call(fiber, result[0]));
+	printf("%s\n", (char *) fiber_call(fiber, result[2]));
 
 	fiber_del(fiber);
 	return 0;
