@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 
+#pragma once
+
 /*!@file osi/fiber.h
  * @author uael
  *
