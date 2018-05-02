@@ -54,16 +54,16 @@ typedef void *(fiber_fn_t)(void *arg);
  * @param ss The stack size of the new fiber.
  * @return   The new fiber.
  */
-__api__ fiber_t *fiber_new(fiber_fn_t *fib, uint16_t ss);
+__api__ fiber_t *fiber_new(fiber_fn_t *fn, uint16_t ss);
 
 /*!@public
  *
  * @brief
- * Delete the fiber `fib' and its context.
+ * Delete the fiber `fiber' and its context.
  *
- * @param fib The fiber to delete.
+ * @param fiber The fiber to delete.
  */
-__api__ void fiber_del(fiber_t *fib);
+__api__ void fiber_del(fiber_t *fiber);
 
 /*!@public
  *
@@ -72,23 +72,23 @@ __api__ void fiber_del(fiber_t *fib);
  * the end of its body or until it passes control to yet another fiber.
  * If it reaches the end of its body, it is considered done.
  * `arg' is the callback argument on the first fiber call, then it come the
- * result of `fiber_yiled'.
+ * result of `fiber_yield'.
  *
- * @param fib The fiber to resume.
- * @param arg The argument to send to `fib'.
- * @return    The yielded argument of the final result of the fiber callback.
+ * @param fiber The fiber to resume.
+ * @param arg   The argument to send to `fiber'.
+ * @return      The yielded argument of the final result of the fiber callback.
  */
-__api__ void *fiber_call(fiber_t *fib, void *arg);
+__api__ void *fiber_call(fiber_t *fiber, void *arg);
 
 /*!@public
  *
  * @brief
- * Tell if `fib' reaches the end of its body.
+ * Tell if `fiber' reaches the end of its body.
  *
- * @param fib The fiber to check for done.
- * @return    If the fiber is done.
+ * @param fiber The fiber to check for done.
+ * @return      If the fiber is done.
  */
-__api__ bool fiber_isdone(fiber_t *fib);
+__api__ bool fiber_isdone(fiber_t *fiber);
 
 /*!@public
  *

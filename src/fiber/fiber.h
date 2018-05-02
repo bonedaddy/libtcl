@@ -36,14 +36,14 @@
  * @brief
  * Fiber status.
  */
-typedef enum osi_fibst osi_fibst_t;
+typedef enum fiber_st fiber_st_t;
 
 /*!@private
  *
  * @brief
  * The fiber status definition
  */
-enum osi_fibst {
+enum fiber_st {
 
 	/*! The fiber was just created so ready */
 	OSI_FIB_READY,
@@ -63,7 +63,7 @@ enum osi_fibst {
 struct fiber {
 
 	/*! The fiber status */
-	osi_fibst_t status;
+	fiber_st_t status;
 
 	/*! The fiber core function */
 	fiber_fn_t *fn;

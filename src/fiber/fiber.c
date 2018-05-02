@@ -60,37 +60,37 @@ fiber_t *fiber_new(fiber_fn_t *fn, uint16_t ss)
 	return fib;
 }
 
-void fiber_del(fiber_t *fib)
+void fiber_del(fiber_t *fiber)
 {
 #ifndef OS_PROVENCORE
-	(void)coro_destroy(&fib->context);
-	coro_stack_free(&fib->stack);
+	(void)coro_destroy(&fiber->context);
+	coro_stack_free(&fiber->stack);
 #endif
-	free(fib);
+	free(fiber);
 }
 
-void *fiber_call(fiber_t *fib, void *ctx)
+void *fiber_call(fiber_t *fiber, void *ctx)
 {
-	fib->caller = __fiber;
-	fib->arg = ctx;
-	fib->status = OSI_FIB_RUNNING;
-	__fiber = fib;
+	fiber->caller = __fiber;
+	fiber->arg = ctx;
+	fiber->status = OSI_FIB_RUNNING;
+	__fiber = fiber;
 #ifdef OS_PROVENCORE
 	int dummy;
 
-	if (resume(fib->context, &dummy))
-		fib->status = OSI_FIB_EXITING;
+	if (resume(fiber->context, &dummy))
+		fiber->status = OSI_FIB_EXITING;
 #else
-	if (fib->caller != fib) {
-		coro_transfer(&fib->caller->context, &fib->context);
+	if (fiber->caller != fiber) {
+		coro_transfer(&fiber->caller->context, &fiber->context);
 	}
 #endif
-	return fib->result;
+	return fiber->result;
 }
 
-bool fiber_isdone(fiber_t *fib)
+bool fiber_isdone(fiber_t *fiber)
 {
-	return fib->status == OSI_FIB_EXITING;
+	return fiber->status == OSI_FIB_EXITING;
 }
 
 void *fiber_yield(void *arg)
@@ -100,26 +100,23 @@ void *fiber_yield(void *arg)
 
 	if (!(fib = __fiber))
 		return NULL;
+
 	fib->result = arg;
 	caller = fib->caller;
 	__fiber = caller;
 	fib->caller = NULL;
-	if (caller) {
+
 #ifdef OS_PROVENCORE
+	if (caller) {
 		int dummy;
 
 		if (resume(caller, &dummy))
 			caller->status = OSI_FIB_EXITING;
-#else
-		coro_transfer(&fib->context, &caller->context);
-#endif
 	} else {
-#ifdef OS_PROVENCORE
 		yield();
-#else
-		errno = EINVAL;
-		return NULL;
-#endif
 	}
+#else
+	coro_transfer(&fib->context, &caller->context);
+#endif
 	return fib->arg;
 }
