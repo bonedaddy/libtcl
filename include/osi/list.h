@@ -34,31 +34,31 @@
  * @brief
  * TODO
  */
-typedef struct osi_node osi_node_t;
+typedef struct node node_t;
 
 /*!@public
  *
  * @brief
  * TODO
  */
-typedef struct osi_list osi_list_t;
+typedef struct list list_t;
 
-struct osi_node {
+struct node {
 
 	/** Predecessor */
-	osi_node_t *pred;
+	node_t *pred;
 
 	/** Successor */
-	osi_node_t *succ;
+	node_t *succ;
 };
 
-struct osi_list {
+struct list {
 
 	/** Predecessor */
-	osi_node_t *pred;
+	node_t *pred;
 
 	/** Successor */
-	osi_node_t *succ;
+	node_t *succ;
 
 	/** The count in the list */
 	uint16_t len;
@@ -71,7 +71,7 @@ struct osi_list {
  *
  * @param node
  */
-__api__ void osi_node_init(osi_node_t *node);
+__api__ void node_init(node_t *node);
 
 /*!@public
  *
@@ -80,17 +80,7 @@ __api__ void osi_node_init(osi_node_t *node);
  *
  * @param list
  */
-__api__ void osi_list_init(osi_list_t *list);
-
-/*!@public
- *
- * @brief
- * TODO
- *
- * @param list
- * @param entry
- */
-__api__ void osi_list_unshift(osi_list_t *list, osi_node_t *entry);
+__api__ void list_init(list_t *list);
 
 /*!@public
  *
@@ -100,7 +90,7 @@ __api__ void osi_list_unshift(osi_list_t *list, osi_node_t *entry);
  * @param list
  * @param entry
  */
-__api__ void osi_list_push(osi_list_t *list, osi_node_t *entry);
+__api__ void list_unshift(list_t *list, node_t *entry);
 
 /*!@public
  *
@@ -110,7 +100,17 @@ __api__ void osi_list_push(osi_list_t *list, osi_node_t *entry);
  * @param list
  * @param entry
  */
-__api__ void osi_list_detach(osi_list_t *list, osi_node_t *entry);
+__api__ void list_push(list_t *list, node_t *entry);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param list
+ * @param entry
+ */
+__api__ void list_detach(list_t *list, node_t *entry);
 
 /*!@public
  *
@@ -120,7 +120,7 @@ __api__ void osi_list_detach(osi_list_t *list, osi_node_t *entry);
  * @param list
  * @return
  */
-__api__ osi_node_t *osi_list_shift(osi_list_t *list);
+__api__ node_t *list_shift(list_t *list);
 
 /*!@public
  *
@@ -130,7 +130,7 @@ __api__ osi_node_t *osi_list_shift(osi_list_t *list);
  * @param list
  * @return
  */
-__api__ osi_node_t *osi_list_pop(osi_list_t *list);
+__api__ node_t *list_pop(list_t *list);
 
 /*!@public
  *
@@ -141,7 +141,7 @@ __api__ osi_node_t *osi_list_pop(osi_list_t *list);
  * @return
  */
 #define LIST_INITIALIZER(list) \
-	{ (osi_node_t *) &(list), (osi_node_t *) &(list), 0 }
+	{ (node_t *) &(list), (node_t *) &(list), 0 }
 
 /*!@public
  *
@@ -154,7 +154,7 @@ __api__ osi_node_t *osi_list_pop(osi_list_t *list);
  * @return
  */
 #define LIST_ENTRY(list_ptr, app_type, list_member) \
-    ((app_type *) (((char *) (list_ptr)) - offsetof(app_type,list_member)))
+    ((app_type *) (((char *) (list_ptr)) - offsetof(app_type, list_member)))
 
 #endif /* __OSI_LIST_H */
 /*!@} */

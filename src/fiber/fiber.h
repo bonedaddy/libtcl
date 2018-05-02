@@ -60,13 +60,13 @@ enum osi_fibst {
  * @brief
  * The fiber structure definition
  */
-struct osi_fib {
+struct fiber {
 
 	/*! The fiber status */
 	osi_fibst_t status;
 
 	/*! The fiber core function */
-	osi_fibfn_t *fn;
+	fiber_fn_t *fn;
 
 	/*! The fiber core function argument */
 	void *arg;
@@ -75,10 +75,10 @@ struct osi_fib {
 	void *result;
 
 	/*! The fiber caller */
-	osi_fib_t *caller;
+	fiber_t *caller;
 
 	/*! Fiber list hold */
-	osi_node_t hold;
+	node_t hold;
 
 	/*! The priority used by scheduler */
 	int priority;
@@ -94,6 +94,6 @@ struct osi_fib {
 #endif
 };
 
-extern osi_fib_t *__fiber;
+extern fiber_t *__fiber;
 
 #endif /* __OSI_FIBER_FIBER_H */

@@ -32,20 +32,20 @@
  * @brief
  * The scheduler structure.
  */
-typedef struct osi_sched osi_sched_t;
+typedef struct sched sched_t;
 
 /*!@public
  *
  * @brief
  * The scheduler structure implementation.
  */
-struct osi_sched {
+struct sched {
 
 	/*! The ready fiber stack, ordered by priority */
-	osi_list_t ready;
+	list_t ready;
 
 	/*! The dead stack */
-	osi_list_t dead;
+	list_t dead;
 
 	/*! If the scheduler is running or not */
 	bool scheduled;
@@ -58,14 +58,14 @@ struct osi_sched {
  *
  * @param sched
  */
-__api__ void osi_sched_init(osi_sched_t *sched);
+__api__ void sched_init(sched_t *sched);
 
 /*!@public
  *
  * @brief
  * TODO
  */
-__api__ void osi_sched_start(osi_sched_t *sched);
+__api__ void sched_start(sched_t *sched);
 
 /*!@public
  *
@@ -73,12 +73,11 @@ __api__ void osi_sched_start(osi_sched_t *sched);
  * TODO
  *
  * @param sched
- * @param fib
+ * @param fiber
  * @param arg
  * @param prio
  */
-__api__ void osi_sched_ready(osi_sched_t *sched, osi_fib_t *fib, void *arg,
-	int prio);
+__api__ void sched_spawn(sched_t *sched, fiber_t *fiber, void *arg, int prio);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */

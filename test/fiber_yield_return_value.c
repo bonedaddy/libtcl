@@ -26,19 +26,19 @@ static char *result[] = { "a\n", "b\n", "c\n", "d\n" };
 void *yield_return_value(void *arg)
 {
 	printf(arg);
-	printf(osi_fib_yield(result[1]));
+	printf(fiber_yield(result[1]));
 	return result[3];
 }
 
 int main(void)
 {
-	osi_fib_t *fiber;
+	fiber_t *fiber;
 
-	fiber = osi_fib_new(yield_return_value, 32);
+	fiber = fiber_new(yield_return_value, 32);
 
-	printf(osi_fib_call(fiber, result[0]));
-	printf(osi_fib_call(fiber, result[2]));
+	printf(fiber_call(fiber, result[0]));
+	printf(fiber_call(fiber, result[2]));
 
-	osi_fib_delete(fiber);
+	fiber_del(fiber);
 	return 0;
 }

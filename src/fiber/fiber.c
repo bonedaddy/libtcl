@@ -22,29 +22,29 @@
 #include <osi/string.h>
 
 #ifdef OS_PROVENCORE
-osi_fib_t *__fiber = NULL;
+fiber_t *__fiber = NULL;
 #else
-static osi_fib_t __s_fiber = { };
-osi_fib_t *__fiber = &__s_fiber;
+static fiber_t __s_fiber = { };
+fiber_t *__fiber = &__s_fiber;
 #endif
 
-static void __fibfn(osi_fib_t *fib)
+static void __fibfn(fiber_t *fib)
 {
 	fib->result = fib->fn(fib->arg);
 	fib->status = OSI_FIB_EXITING;
-	osi_fib_yield(fib->result);
+	fiber_yield(fib->result);
 }
 
-osi_fib_t *osi_fib_new(osi_fibfn_t *fn, uint16_t ss)
+fiber_t *fiber_new(fiber_fn_t *fn, uint16_t ss)
 {
 #ifdef OS_PROVENCORE
 	static int init = 0;
 #endif
-	osi_fib_t *fib;
+	fiber_t *fib;
 
-	fib = malloc(sizeof(osi_fib_t));
-	bzero(fib, sizeof(osi_fib_t));
-	osi_node_init(&fib->hold);
+	fib = malloc(sizeof(fiber_t));
+	bzero(fib, sizeof(fiber_t));
+	node_init(&fib->hold);
 	fib->fn = fn;
 #ifdef OS_PROVENCORE
 	if (!init) {
@@ -60,32 +60,16 @@ osi_fib_t *osi_fib_new(osi_fibfn_t *fn, uint16_t ss)
 	return fib;
 }
 
-void osi_fiber_swap(osi_fib_t *from, osi_fib_t *to)
+void fiber_del(fiber_t *fib)
 {
-#ifdef OS_PROVENCORE
-	int dummy;
-
-	(void)from;
-	if (resume(to->context, &dummy))
-		to->status = OSI_FIB_EXITING;
-#else
-	if (from && to && from != to)
-		coro_transfer(&from->context, &to->context);
-#endif
-}
-
-void osi_fib_delete(osi_fib_t *fib)
-{
-#ifdef OS_PROVENCORE
-	fib->context = NULL;
-#else
+#ifndef OS_PROVENCORE
 	(void)coro_destroy(&fib->context);
 	coro_stack_free(&fib->stack);
 #endif
 	free(fib);
 }
 
-void *osi_fib_call(osi_fib_t *fib, void *ctx)
+void *fiber_call(fiber_t *fib, void *ctx)
 {
 	fib->caller = __fiber;
 	fib->arg = ctx;
@@ -104,15 +88,15 @@ void *osi_fib_call(osi_fib_t *fib, void *ctx)
 	return fib->result;
 }
 
-bool osi_fib_done(osi_fib_t *fib)
+bool fiber_isdone(fiber_t *fib)
 {
 	return fib->status == OSI_FIB_EXITING;
 }
 
-void *osi_fib_yield(void *arg)
+void *fiber_yield(void *arg)
 {
-	osi_fib_t *caller;
-	osi_fib_t *fib;
+	fiber_t *caller;
+	fiber_t *fib;
 
 	if (!(fib = __fiber))
 		return NULL;

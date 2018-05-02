@@ -28,7 +28,7 @@ void *call(void *arg)
 	(void)arg;
 	++counter;
 	assert(counter == 2);
-	osi_fib_yield(NULL);
+	fiber_yield(NULL);
 	++counter;
 	assert(counter == 4);
 	return NULL;
@@ -36,29 +36,29 @@ void *call(void *arg)
 
 int main(void)
 {
-	osi_fib_t *fiber;
+	fiber_t *fiber;
 
-	fiber = osi_fib_new(call, 32);
+	fiber = fiber_new(call, 32);
 
-	assert(!osi_fib_done(fiber));
+	assert(!fiber_isdone(fiber));
 
 	++counter;
 	assert(counter == 1);
 
-	osi_fib_call(fiber, NULL);
+	fiber_call(fiber, NULL);
 
 	++counter;
 	assert(counter == 3);
 
-	assert(!osi_fib_done(fiber));
+	assert(!fiber_isdone(fiber));
 
-	osi_fib_call(fiber, NULL);
+	fiber_call(fiber, NULL);
 
 	++counter;
 	assert(counter == 5);
 
-	assert(osi_fib_done(fiber));
-	osi_fib_delete(fiber);
+	assert(fiber_isdone(fiber));
+	fiber_del(fiber);
 
 	return 0;
 }

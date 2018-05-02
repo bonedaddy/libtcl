@@ -20,28 +20,28 @@
 
 #include "fiber.h"
 
-void osi_sched_init(osi_sched_t *sched)
+void sched_init(sched_t *sched)
 {
-	bzero(sched, sizeof(osi_sched_t));
-	osi_list_init(&sched->ready);
-	osi_list_init(&sched->dead);
+	bzero(sched, sizeof(sched_t));
+	list_init(&sched->ready);
+	list_init(&sched->dead);
 }
 
 /*
  * TODO: Insert by priority
  */
-void osi_sched_ready(osi_sched_t *sched, osi_fib_t *fib, void *arg, int prio)
+void sched_spawn(sched_t *sched, fiber_t *fib, void *arg, int prio)
 {
 	(void)prio;
 	fib->status = OSI_FIB_READY;
 	fib->arg = arg;
-	osi_list_unshift(&sched->ready, &fib->hold);
+	list_unshift(&sched->ready, &fib->hold);
 }
 
-void osi_sched_start(osi_sched_t *sched)
+void sched_start(sched_t *sched)
 {
-	osi_fib_t *fib;
-	osi_node_t *head;
+	fiber_t *fib;
+	node_t *head;
 
 	if (sched->scheduled) {
 		errno = EINVAL;
@@ -51,28 +51,28 @@ void osi_sched_start(osi_sched_t *sched)
 
 	/* Schedule ready fibers */
 	while (1) {
-		if (!(head = osi_list_shift(&sched->ready)))
+		if (!(head = list_shift(&sched->ready)))
 			break;
-		fib = LIST_ENTRY(head, osi_fib_t, hold);
+		fib = LIST_ENTRY(head, fiber_t, hold);
 		fib->status = OSI_FIB_RUNNING;
 
-		osi_fib_call(fib, fib->arg);
+		fiber_call(fib, fib->arg);
 		if (fib->status == OSI_FIB_EXITING)
-			osi_list_unshift(&sched->dead, &fib->hold);
+			list_unshift(&sched->dead, &fib->hold);
 		else {
 			fib->status = OSI_FIB_READY;
-			osi_list_unshift(&sched->ready, &fib->hold);
+			list_unshift(&sched->ready, &fib->hold);
 		}
 	}
 
 	/* Release dead fibers */
-	while ((head = osi_list_shift(&sched->dead)) != NULL) {
-		fib = LIST_ENTRY(head, osi_fib_t, hold);
-		osi_fib_delete(fib);
+	while ((head = list_shift(&sched->dead)) != NULL) {
+		fib = LIST_ENTRY(head, fiber_t, hold);
+		fiber_del(fib);
 	}
 
-	/* Release scheduler memory */
-	osi_list_init(&sched->ready);
-	osi_list_init(&sched->dead);
+	/* Release scheduler stacks */
+	list_init(&sched->ready);
+	list_init(&sched->dead);
 	sched->scheduled = 0;
 }

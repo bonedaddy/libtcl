@@ -31,12 +31,12 @@ void *call_return_value(void *arg)
 
 int main(void)
 {
-	osi_fib_t *fiber;
+	fiber_t *fiber;
 	char *result;
 
-	fiber = osi_fib_new(call_return_value, 32);
-	(void)(result = osi_fib_call(fiber, NULL));
+	fiber = fiber_new(call_return_value, 32);
+	(void)(result = fiber_call(fiber, NULL));
 	assert(!strcmp("result", result));
-	osi_fib_delete(fiber);
+	fiber_del(fiber);
 	return 0;
 }

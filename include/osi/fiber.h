@@ -32,21 +32,21 @@
  * @brief
  * The fiber opaque structure.
  */
-typedef struct osi_fib osi_fib_t;
+typedef struct fiber fiber_t;
 
 /*!@public
  *
  * @brief
  * Declaration of fiber function, which should be passed to the
- * `osi_fib_new'.
+ * `fiber_new'.
  */
-typedef void *(osi_fibfn_t)(void *arg);
+typedef void *(fiber_fn_t)(void *arg);
 
 /*!@public
  *
  * @brief
  * Creates the new fiber, which will execute the given fn after
- * calling the `osi_schedule'.
+ * calling the `sched_start'.
  * ss (stack size) is the size of the stack for the given fiber.
  * If it is set to 0, then the stack size will be set automatically.
  *
@@ -54,7 +54,7 @@ typedef void *(osi_fibfn_t)(void *arg);
  * @param ss The stack size of the new fiber.
  * @return   The new fiber.
  */
-__api__ osi_fib_t *osi_fib_new(osi_fibfn_t *fib, uint16_t ss);
+__api__ fiber_t *fiber_new(fiber_fn_t *fib, uint16_t ss);
 
 /*!@public
  *
@@ -63,7 +63,7 @@ __api__ osi_fib_t *osi_fib_new(osi_fibfn_t *fib, uint16_t ss);
  *
  * @param fib The fiber to delete.
  */
-__api__ void osi_fib_delete(osi_fib_t *fib);
+__api__ void fiber_del(fiber_t *fib);
 
 /*!@public
  *
@@ -72,13 +72,13 @@ __api__ void osi_fib_delete(osi_fib_t *fib);
  * the end of its body or until it passes control to yet another fiber.
  * If it reaches the end of its body, it is considered done.
  * `arg' is the callback argument on the first fiber call, then it come the
- * result of `osi_fib_yield'.
+ * result of `fiber_yiled'.
  *
  * @param fib The fiber to resume.
  * @param arg The argument to send to `fib'.
  * @return    The yielded argument of the final result of the fiber callback.
  */
-__api__ void *osi_fib_call(osi_fib_t *fib, void *arg);
+__api__ void *fiber_call(fiber_t *fib, void *arg);
 
 /*!@public
  *
@@ -88,7 +88,7 @@ __api__ void *osi_fib_call(osi_fib_t *fib, void *arg);
  * @param fib The fiber to check for done.
  * @return    If the fiber is done.
  */
-__api__ bool osi_fib_done(osi_fib_t *fib);
+__api__ bool fiber_isdone(fiber_t *fib);
 
 /*!@public
  *
@@ -102,10 +102,10 @@ __api__ bool osi_fib_done(osi_fib_t *fib);
  * back to the fiber that ran it, but remembers where it is. The next time the
  * fiber is called, it picks up right where it left off and keeps going.
  *
- * @param arg The argument which is the result of `osi_fib_call'.
- * @return    The argument of `osi_fib_call' after yielding.
+ * @param arg The argument which is the result of `fiber_call'.
+ * @return    The argument of `fiber_call' after yielding.
  */
-__api__ void *osi_fib_yield(void *arg);
+__api__ void *fiber_yield(void *arg);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */

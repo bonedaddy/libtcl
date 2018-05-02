@@ -21,7 +21,7 @@
 
 #include <assert.h>
 
-static osi_fib_t *fiber;
+static fiber_t *fiber;
 
 void *call_fiber(void *arg)
 {
@@ -30,7 +30,7 @@ void *call_fiber(void *arg)
 
 	(void)arg;
 	while (*adjective) {
-		osi_fib_yield(*adjective);
+		fiber_yield(*adjective);
 		++adjective;
 	}
 	return adjectives[3];
@@ -38,9 +38,9 @@ void *call_fiber(void *arg)
 
 int main(void)
 {
-	fiber = osi_fib_new(call_fiber, 32);
-	while (!osi_fib_done(fiber))
-		printf("%s\n", (char *) osi_fib_call(fiber, NULL));
-	osi_fib_delete(fiber);
+	fiber = fiber_new(call_fiber, 32);
+	while (!fiber_isdone(fiber))
+		printf("%s\n", (char *) fiber_call(fiber, NULL));
+	fiber_del(fiber);
 	return 0;
 }

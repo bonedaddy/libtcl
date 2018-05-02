@@ -20,43 +20,43 @@
 
 #include <stddef.h>
 
-void osi_node_init(osi_node_t *node)
+void node_init(node_t *node)
 {
-	node->pred = node->succ = (osi_node_t *) node;
+	node->pred = node->succ = (node_t *) node;
 }
 
-void osi_list_init(osi_list_t *list)
+void list_init(list_t *list)
 {
-	list->pred = list->succ = (osi_node_t *) list;
+	list->pred = list->succ = (node_t *) list;
 	list->len = 0;
 }
 
-void osi_list_push(osi_list_t *list, osi_node_t *entry)
+void list_push(list_t *list, node_t *entry)
 {
 	if (list == NULL || entry == NULL)
 		return;
 	entry->succ = list->succ;
-	entry->pred = (osi_node_t *) list;
+	entry->pred = (node_t *) list;
 	list->succ->pred = entry;
 	list->succ = entry;
 	list->len++;
 }
 
-void osi_list_unshift(osi_list_t *list, osi_node_t *entry)
+void list_unshift(list_t *list, node_t *entry)
 {
 	if (list == NULL || entry == NULL)
 		return;
 	entry->pred = list->pred;
-	entry->succ = (osi_node_t *) list;
+	entry->succ = (node_t *) list;
 	list->pred->succ = entry;
 	list->pred = entry;
 	list->len++;
 }
 
-void osi_list_detach(osi_list_t *list, osi_node_t *entry)
+void list_detach(list_t *list, node_t *entry)
 {
-	osi_node_t *succ;
-	osi_node_t *pred;
+	node_t *succ;
+	node_t *pred;
 
 	if (entry == NULL)
 		return;
@@ -70,28 +70,28 @@ void osi_list_detach(osi_list_t *list, osi_node_t *entry)
 	entry->succ = entry->pred = entry;
 }
 
-osi_node_t *osi_list_shift(osi_list_t *list)
+node_t *list_shift(list_t *list)
 {
-	osi_node_t *succ;
+	node_t *succ;
 
 	if (list == NULL)
 		return NULL;
 	succ = list->succ;
-	if (succ == (osi_node_t *) list)
+	if (succ == (node_t *) list)
 		return NULL;
-	osi_list_detach(list, succ);
+	list_detach(list, succ);
 	return succ;
 }
 
-osi_node_t *osi_list_pop(osi_list_t *list)
+node_t *list_pop(list_t *list)
 {
-	osi_node_t *pred;
+	node_t *pred;
 
 	if (list == NULL)
 		return NULL;
 	pred = list->pred;
-	if (pred == (osi_node_t *) list)
+	if (pred == (node_t *) list)
 		return NULL;
-	osi_list_detach(list, pred);
+	list_detach(list, pred);
 	return pred;
 }
