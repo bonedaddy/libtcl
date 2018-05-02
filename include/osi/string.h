@@ -29,6 +29,7 @@
 #include <osi/conf.h>
 
 #ifdef OS_PROVENCORE
+# include <string.h>
 # include <strings.h>
 #endif
 

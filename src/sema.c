@@ -49,6 +49,7 @@ sema_t *sema_new(unsigned value)
 		sema = NULL;
 	}
 #else
+	(void)value;
 	sema->handle = 0;
 #endif
 	return sema;

@@ -17,6 +17,9 @@
  */
 
 #include <osi/sched.h>
+#include <osi/string.h>
+
+#include <errno.h>
 
 #include "fiber.h"
 

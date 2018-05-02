@@ -18,6 +18,7 @@
 
 #include <osi/fiber.h>
 #include <osi/sched.h>
+#include <osi/string.h>
 
 #include <assert.h>
 

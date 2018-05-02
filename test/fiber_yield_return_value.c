@@ -20,6 +20,7 @@
 #include <osi/sched.h>
 
 #include <assert.h>
+#include <stdio.h>
 
 static char *result[] = { "a", "b", "c", "d" };
 

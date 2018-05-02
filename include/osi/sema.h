@@ -44,7 +44,7 @@ typedef struct sema sema_t;
  * @param value
  * @return
  */
-sema_t *sema_new(unsigned value);
+__api__ sema_t *sema_new(unsigned value);
 
 /*!@public
  *
@@ -53,7 +53,7 @@ sema_t *sema_new(unsigned value);
  *
  * @param sema
  */
-void sema_del(sema_t *sema);
+__api__ void sema_del(sema_t *sema);
 
 /*!@public
  *
@@ -62,7 +62,7 @@ void sema_del(sema_t *sema);
  *
  * @param sema
  */
-void sema_wait(sema_t *sema);
+__api__ void sema_wait(sema_t *sema);
 
 /*!@public
  *
@@ -72,7 +72,7 @@ void sema_wait(sema_t *sema);
  * @param sema
  * @return
  */
-bool sema_trywait(sema_t *sema);
+__api__ bool sema_trywait(sema_t *sema);
 
 /*!@public
  *
@@ -81,7 +81,7 @@ bool sema_trywait(sema_t *sema);
  *
  * @param sema
  */
-void sema_post(sema_t *sema);
+__api__ void sema_post(sema_t *sema);
 
 #endif /* __OSI_SEMA_H */
 /*!@} */

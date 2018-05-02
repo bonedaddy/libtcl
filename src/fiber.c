@@ -110,7 +110,7 @@ void *fiber_yield(void *arg)
 	if (caller) {
 		int dummy;
 
-		if (resume(caller, &dummy))
+		if (resume(caller->context, &dummy))
 			caller->status = OSI_FIB_EXITING;
 	} else {
 		yield();

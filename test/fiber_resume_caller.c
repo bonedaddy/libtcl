@@ -20,6 +20,7 @@
 #include <osi/sched.h>
 
 #include <assert.h>
+#include <stdio.h>
 
 static fiber_t *a;
 static fiber_t *b;
