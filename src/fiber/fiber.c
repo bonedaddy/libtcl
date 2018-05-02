@@ -21,23 +21,43 @@
 
 #include <osi/string.h>
 
+static struct {
+	size_t slot;
+	size_t size;
+	osi_fib_t *buf;
+} __fibers = { 0, 0, NULL, };
+#ifdef OS_PROVENCORE
+static osi_fib_t *__fiber = NULL;
+#else
+static osi_fib_t __s_fiber = { };
+static osi_fib_t *__fiber = &__s_fiber;
+#endif
+
 static void __fibfn(osi_fib_t *fib)
 {
-	fib->fn(fib->arg);
+	fib->result = fib->fn(fib->arg);
 	fib->status = OSI_FIB_EXITING;
-	osi_yield();
+	osi_fib_yield(fib->result);
 }
 
-osi_fib_t *osi_fib_create(osi_fibfn_t *fn, void *arg, uint16_t ss, uint8_t prio)
+static osi_fib_t *__fib_allocate(void)
+{
+	if (__fibers.slot >= __fibers.size) {
+		__fibers.size += 128;
+		__fibers.buf = realloc(__fibers.buf,
+			__fibers.size * sizeof(osi_fib_t));
+	}
+	return __fibers.buf + __fibers.slot++;
+}
+
+osi_fib_t *osi_fib_new(osi_fibfn_t *fn, uint16_t ss)
 {
 	osi_fib_t *fib;
 
-	fib = osi_sched_entry();
+	fib = __fib_allocate();
 	bzero(fib, sizeof(osi_fib_t));
 	osi_node_init(&fib->hold);
 	fib->fn = fn;
-	fib->arg = arg;
-	fib->priotity = prio;
 #ifdef OS_PROVENCORE
 	fib->context = create_context(ss, 0, 0, 0, (int (*)(void *))__fibfn, fib);
 #else
@@ -45,7 +65,6 @@ osi_fib_t *osi_fib_create(osi_fibfn_t *fn, void *arg, uint16_t ss, uint8_t prio)
 	coro_create(&fib->context, (coro_func)__fibfn, fib, fib->stack.sptr,
 		fib->stack.ssze);
 #endif
-	if (fn) osi_sched_ready(fib);
 	return fib;
 }
 
@@ -71,5 +90,58 @@ void osi_fiber_delete(osi_fib_t *fib)
 	(void)coro_destroy(&fib->context);
 	coro_stack_free(&fib->stack);
 #endif
+}
 
+void *osi_fib_call(osi_fib_t *fib, void *ctx)
+{
+	fib->caller = __fiber;
+	fib->arg = ctx;
+	__fiber = fib;
+#ifdef OS_PROVENCORE
+	int dummy;
+
+	if (resume(fib->context, &dummy))
+		fib->status = OSI_FIB_EXITING;
+#else
+	if (fib->caller != fib) {
+		coro_transfer(&fib->caller->context, &fib->context);
+	}
+#endif
+	return fib->result;
+}
+
+bool osi_fib_done(osi_fib_t *fib)
+{
+	return fib->status == OSI_FIB_EXITING;
+}
+
+void *osi_fib_yield(void *arg)
+{
+	osi_fib_t *caller;
+	osi_fib_t *fib;
+
+	if (!(fib = __fiber))
+		return NULL;
+	fib->result = arg;
+	caller = fib->caller;
+	__fiber = caller;
+	fib->caller = NULL;
+	if (caller) {
+#ifdef OS_PROVENCORE
+		int dummy;
+
+		if (resume(caller, &dummy))
+			caller->status = OSI_FIB_EXITING;
+#else
+		coro_transfer(&fib->context, &caller->context);
+#endif
+	} else {
+#ifdef OS_PROVENCORE
+		yield();
+#else
+		errno = EINVAL;
+		return NULL;
+#endif
+	}
+	return fib->arg;
 }

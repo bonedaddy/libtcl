@@ -81,7 +81,7 @@ void osi_schedule(void)
 
 #ifndef OS_PROVENCORE
 	if (!__scheduler->root)
-		__scheduler->root = osi_fib_create(NULL, NULL, 16, 0);
+		__scheduler->root = osi_fib_new(NULL, 16);
 #endif
 
 	/* Schedule ready fibers */

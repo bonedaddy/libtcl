@@ -65,14 +65,15 @@ struct osi_fib {
 	/*! The fiber status */
 	osi_fibst_t status;
 
-	/*! Scheduling priority */
-	uint8_t priotity;
-
 	/*! The fiber core function */
 	osi_fibfn_t *fn;
 
 	/*! The fiber core function */
 	void *arg;
+
+	void *result;
+
+	osi_fib_t *caller;
 
 	/*! Fiber list hold */
 	osi_node_t hold;

@@ -38,9 +38,9 @@ typedef struct osi_fib osi_fib_t;
  *
  * @brief
  * Declaration of fiber function, which should be passed to the
- * `osi_fibctor'.
+ * `osi_fib_new'.
  */
-typedef void (osi_fibfn_t)(void *arg);
+typedef void *(osi_fibfn_t)(void *arg);
 
 /*!@public
  *
@@ -51,12 +51,16 @@ typedef void (osi_fibfn_t)(void *arg);
  * If it is set to 0, then the stack size will be set automatically.
  *
  * @param fn   The fiber function.
- * @param arg  The fiber function argument.
  * @param ss   The stack size of the new fiber.
- * @param prio The priority of the new fiber.
  * @return     The new fiber.
  */
-__api__ osi_fib_t *osi_fib_create(osi_fibfn_t *, void *, uint16_t, uint8_t);
+__api__ osi_fib_t *osi_fib_new(osi_fibfn_t *fib, uint16_t ss);
+
+__api__ void *osi_fib_call(osi_fib_t *fib, void *ctx);
+
+__api__ bool osi_fib_done(osi_fib_t *fib);
+
+__api__ void *osi_fib_yield(void *arg);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */
