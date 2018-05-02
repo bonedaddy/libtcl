@@ -61,7 +61,7 @@ struct list {
 	node_t *succ;
 
 	/** The count in the list */
-	uint16_t len;
+	size_t len;
 };
 
 /*!@public
