@@ -21,64 +21,49 @@
 #include <assert.h>
 #include <stdio.h>
 
+static equeue_t queue;
+static int counter = 0;
+
 void *reader(equeue_t *equeue) {
 	event_t *ev;
 
 	while ((ev = equeue_pop(equeue)))
 		printf("READ: %s\n", ev->data);
+	++counter;
 	return (NULL);
 }
 
-equeue_t queue;
+void *writer(sched_t *sched) {
 
-void *writer1(sched_t *sched) {
+	printf("WRITE: %s\n", "Hello");
+	equeue_push(&queue, ({
+		event_t *ev;
 
-	(void)sched;
-	for (int i = 0; i < 3; ++i) {
-		printf("WRITE: %s\n", "Hello");
-		equeue_push(&queue, ({
-			event_t *ev;
+		ev = malloc(sizeof(event_t) + 6);
+		memcpy(ev->data, "Hello", 6);
+		ev;
+	}));
 
-			ev = malloc(sizeof(event_t) + 6);
-			memcpy(ev->data, "Hello", 6);
-			ev;
-		}));
-	}
+	printf("WRITE: %s\n", " Zob ");
+	equeue_push(&queue, ({
+		event_t *ev;
 
-	return (NULL);
-}
+		ev = malloc(sizeof(event_t) + 6);
+		memcpy(ev->data, " Zob ", 6);
+		ev;
+	}));
 
-void *writer2(sched_t *sched) {
+	printf("WRITE: %s\n", "World");
+	equeue_push(&queue, ({
+		event_t *ev;
 
-	(void)sched;
-	for (int i = 0; i < 3; ++i) {
-		printf("WRITE: %s\n", " Zob ");
-		equeue_push(&queue, ({
-			event_t *ev;
+		ev = malloc(sizeof(event_t) + 6);
+		memcpy(ev->data, "World", 6);
+		ev;
+	}));
 
-			ev = malloc(sizeof(event_t) + 6);
-			memcpy(ev->data, " Zob ", 6);
-			ev;
-		}));
-	}
-
-	return (NULL);
-}
-
-void *writer3(sched_t *sched) {
-
-	(void)sched;
-	for (int i = 0; i < 3; ++i) {
-		printf("WRITE: %s\n", "World");
-		equeue_push(&queue, ({
-			event_t *ev;
-
-			ev = malloc(sizeof(event_t) + 6);
-			memcpy(ev->data, "World", 6);
-			ev;
-		}));
-	}
-
+	if (counter >= 42)
+		sched_stop(sched);
 	return (NULL);
 }
 
@@ -90,10 +75,9 @@ int main(void)
 	equeue_listen(&queue, &sched, reader);
 
 	sched_init(&sched);
-	sched_spawn(&sched, (work_t *)writer1, 32, &sched, 1);
-	sched_spawn(&sched, (work_t *)writer2, 32, &sched, 1);
-	sched_spawn(&sched, (work_t *)writer3, 32, &sched, 1);
+	sched_loop(&sched, (work_t *)writer, 32, &sched, 1);
 	sched_start(&sched);
+	assert(counter == 42);
 
 	equeue_destroy(&queue);
 	return 0;

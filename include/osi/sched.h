@@ -26,8 +26,7 @@
 #ifndef __OSI_SCHED_H
 # define __OSI_SCHED_H
 
-#include <osi/fiber.h>
-#include <osi/list.h>
+#include <osi/fiber/pool.h>
 
 /*!@public
  *
@@ -43,11 +42,8 @@ typedef struct sched sched_t;
  */
 struct sched {
 
-	/*! The ready fiber stack, ordered by priority */
-	list_t ready;
-
-	/*! The dead stack */
-	list_t dead;
+	/*! Scheduler fiber pool */
+	fiber_pool_t pool;
 
 	/*! If the scheduler is running or not */
 	bool scheduled;
@@ -67,7 +63,7 @@ __api__ void sched_init(sched_t *sched);
  * @brief
  * TODO
  */
-__api__ void sched_start(sched_t *sched, bool loop);
+__api__ void sched_start(sched_t *sched);
 
 /*!@public
  *

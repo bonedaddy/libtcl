@@ -163,8 +163,3 @@ void *fiber_yield(void *arg)
 #endif
 	return fib->arg;
 }
-
-__api__ void fiber_kick(void)
-{
-	__fiber->status = OSI_FIB_EXITING;
-}

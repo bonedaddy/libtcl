@@ -18,3 +18,73 @@
 
 #include <osi/fiber/pool.h>
 
+void fiber_pool_init(fiber_pool_t *pool)
+{
+	bzero(pool, sizeof(fiber_pool_t));
+	list_init(&pool->ready);
+	list_init(&pool->dead);
+}
+
+void fiber_pool_destroy(fiber_pool_t *pool)
+{
+	node_t *head;
+	fiber_t *fib;
+
+	/* Release ready fibers */
+	while ((head = list_shift(&pool->ready)) != NULL) {
+		fib = LIST_ENTRY(head, fiber_t, hold);
+		fiber_destroy(fib);
+	}
+
+	/* Release dead fibers */
+	while ((head = list_shift(&pool->dead)) != NULL) {
+		fib = LIST_ENTRY(head, fiber_t, hold);
+		fiber_destroy(fib);
+	}
+
+	free(pool->fibers);
+}
+
+fiber_t *fiber_pool_new(fiber_pool_t *pool, int prio)
+{
+	node_t *head;
+	fiber_t *fiber;
+
+	if ((head = list_pop(&pool->dead)))
+		fiber = LIST_ENTRY(head, fiber_t, hold);
+	else {
+		size_t size;
+
+		if (pool->size < pool->slot + 1) {
+			size = pool->size ? pool->size * 2 : 32;
+			pool->fibers = realloc(pool->fibers, size * sizeof(fiber_t));
+			bzero(pool->fibers + (pool->size * sizeof(fiber_t)),
+				(size - pool->size) * sizeof(fiber_t));
+			pool->size = size;
+		}
+		fiber = pool->fibers + pool->slot++;
+	}
+	fiber->priority = prio;
+	return fiber;
+}
+
+void fiber_pool_ready(fiber_pool_t *pool, fiber_t *fiber)
+{
+	fiber->status = OSI_FIB_READY;
+	list_unshift(&pool->ready, &fiber->hold);
+}
+
+void fiber_pool_dead(fiber_pool_t *pool, fiber_t *fiber)
+{
+	fiber->status = OSI_FIB_EXITING;
+	list_unshift(&pool->dead, &fiber->hold);
+}
+
+fiber_t *fiber_pool_pop(fiber_pool_t *pool)
+{
+	node_t *head;
+
+	if ((head = list_shift(&pool->ready)))
+		return LIST_ENTRY(head, fiber_t, hold);
+	return NULL;
+}

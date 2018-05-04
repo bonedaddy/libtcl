@@ -205,7 +205,5 @@ __api__ bool fiber_isdone(fiber_t *fiber);
  */
 __api__ void *fiber_yield(void *arg);
 
-__api__ void fiber_kick(void);
-
 #endif /* __OSI_FIBER_H */
 /*!@} */

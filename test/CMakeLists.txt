@@ -19,3 +19,4 @@ osi_register_test(sched_yield_no_arg)
 osi_register_test(sched_loop)
 
 osi_register_test(event_post)
+osi_register_test(event_read_loop)

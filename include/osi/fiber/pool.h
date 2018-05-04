@@ -58,5 +58,39 @@ struct fiber_pool {
 	list_t dead;
 };
 
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param pool
+ */
+__api__ void fiber_pool_init(fiber_pool_t *pool);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param pool
+ */
+__api__ void fiber_pool_destroy(fiber_pool_t *pool);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param pool
+ * @return
+ */
+__api__ fiber_t *fiber_pool_new(fiber_pool_t *pool, int prio);
+
+__api__ void fiber_pool_ready(fiber_pool_t *pool, fiber_t *fiber);
+
+__api__ void fiber_pool_dead(fiber_pool_t *pool, fiber_t *fiber);
+
+__api__ fiber_t *fiber_pool_pop(fiber_pool_t *pool);
+
 #endif /* __OSI_FIBER_POOL_H */
 /*!@} */

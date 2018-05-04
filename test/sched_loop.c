@@ -53,6 +53,6 @@ int main(void)
 	sched_loop(&sched, loop1, 32, NULL, 1);
 	sched_loop(&sched, loop2, 32, NULL, 1);
 	sched_loop(&sched, stop, 32, NULL, 1);
-	sched_start(&sched, false);
+	sched_start(&sched);
 	return 0;
 }

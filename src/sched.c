@@ -23,45 +23,46 @@
 
 void sched_init(sched_t *sched)
 {
-	bzero(sched, sizeof(sched_t));
-	list_init(&sched->ready);
-	list_init(&sched->dead);
+	sched->scheduled = false;
+	fiber_pool_init(&sched->pool);
 }
 
-/*
- * TODO: Insert by priority
- */
+static void __spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
+	int prio, uint8_t flags)
+{
+	fiber_t *fib;
+
+	fib = fiber_pool_new(&sched->pool, prio);
+	if (!(fib->status == OSI_FIB_EXITING))
+		fiber_init(fib, work, ss, flags);
+	else {
+#ifndef OS_PROVENCORE
+		if (fib->stack.ssze < ss) {
+			coro_stack_free(&fib->stack);
+			coro_stack_alloc(&fib->stack, ss);
+		}
+#endif
+		fiber_reuse(fib, work, flags);
+	}
+	fib->arg = arg;
+	fiber_pool_ready(&sched->pool, fib);
+}
+
 void sched_spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
 	int prio)
 {
-	fiber_t *fib;
-
-	fiber_init(fib = malloc(sizeof(fiber_t)), work, ss, FIBER_NONE);
-	fib->status = OSI_FIB_READY;
-	fib->arg = arg;
-	fib->priority = prio;
-	list_unshift(&sched->ready, &fib->hold);
+	__spawn(sched, work, ss, arg, prio, FIBER_NONE);
 }
 
-/*
- * TODO: Insert by priority
- */
 void sched_loop(sched_t *sched, work_t *work, uint16_t ss, void *arg,
 	int prio)
 {
-	fiber_t *fib;
-
-	fiber_init(fib = malloc(sizeof(fiber_t)), work, ss, FIBER_LOOP);
-	fib->status = OSI_FIB_READY;
-	fib->arg = arg;
-	fib->priority = prio;
-	list_unshift(&sched->ready, &fib->hold);
+	__spawn(sched, work, ss, arg, prio, FIBER_LOOP);
 }
 
-void sched_start(sched_t *sched, bool loop)
+void sched_start(sched_t *sched)
 {
-	fiber_t *fib;
-	node_t *head;
+	fiber_t *fiber;
 
 	if (sched->scheduled) {
 		errno = EINVAL;
@@ -71,39 +72,17 @@ void sched_start(sched_t *sched, bool loop)
 
 	/* Schedule ready fibers */
 	while (sched->scheduled) {
-		if (!(head = list_shift(&sched->ready))) {
-			if (loop) continue;
+		if (!(fiber = fiber_pool_pop(&sched->pool)))
 			break;
-		}
-		fib = LIST_ENTRY(head, fiber_t, hold);
-		fib->status = OSI_FIB_RUNNING;
-
-		fiber_call(fib, fib->arg);
-		if (fib->status == OSI_FIB_EXITING)
-			list_unshift(&sched->dead, &fib->hold);
-		else {
-			fib->status = OSI_FIB_READY;
-			list_unshift(&sched->ready, &fib->hold);
-		}
+		fiber->status = OSI_FIB_RUNNING;
+		fiber_call(fiber, fiber->arg);
+		if (fiber->status == OSI_FIB_EXITING)
+			fiber_pool_dead(&sched->pool, fiber);
+		else
+			fiber_pool_ready(&sched->pool, fiber);
 	}
 
-	/* Release ready fibers */
-	while ((head = list_shift(&sched->ready)) != NULL) {
-		fib = LIST_ENTRY(head, fiber_t, hold);
-		fiber_destroy(fib);
-		free(fib);
-	}
-
-	/* Release dead fibers */
-	while ((head = list_shift(&sched->dead)) != NULL) {
-		fib = LIST_ENTRY(head, fiber_t, hold);
-		fiber_destroy(fib);
-		free(fib);
-	}
-
-	/* Release scheduler stacks */
-	list_init(&sched->ready);
-	list_init(&sched->dead);
+	fiber_pool_destroy(&sched->pool);
 	sched->scheduled = false;
 }
 
