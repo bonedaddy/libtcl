@@ -38,7 +38,7 @@ int main(void)
 {
 	fiber_t fiber;
 
-	fiber_init(&fiber, call, 32);
+	fiber_init(&fiber, call, 32, FIBER_NONE);
 	assert(!fiber_isdone(&fiber));
 	++counter;
 	assert(counter == 1);

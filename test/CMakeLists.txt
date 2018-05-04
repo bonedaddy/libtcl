@@ -13,7 +13,9 @@ osi_register_test(fiber_call_to_parameter)
 osi_register_test(fiber_is_done)
 osi_register_test(fiber_resume_caller)
 osi_register_test(fiber_yield_return_value)
+osi_register_test(fiber_recycle)
 
 osi_register_test(sched_yield_no_arg)
+osi_register_test(sched_loop)
 
 osi_register_test(event_post)

@@ -34,7 +34,7 @@ int main(void)
 	fiber_t fiber;
 	char *result;
 
-	fiber_init(&fiber, call_to_return_parameter, 32);
+	fiber_init(&fiber, call_to_return_parameter, 32, FIBER_NONE);
 	(void)(result = fiber_call(&fiber, "result"));
 	assert(!result);
 	fiber_destroy(&fiber);

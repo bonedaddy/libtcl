@@ -26,14 +26,45 @@ static fiber_t __s_fiber = { };
 static fiber_t *__fiber = &__s_fiber;
 #endif
 
-static void __fibfn(fiber_t *fib)
+#ifdef OS_PROVENCORE
+static int
+#else
+static void
+#endif
+__fn(fiber_t *fib)
 {
 	fib->result = fib->fn(fib->arg);
 	fib->status = OSI_FIB_EXITING;
 	fiber_yield(fib->result);
+#ifdef OS_PROVENCORE
+	return 0;
+#endif
 }
 
-void fiber_init(fiber_t *fib, work_t *fn, uint16_t ss)
+#ifdef OS_PROVENCORE
+static int
+#else
+static void
+#endif
+__fn_loop(fiber_t *fib)
+{
+	while (fib->status == OSI_FIB_RUNNING)
+		fiber_yield(fib->result = fib->fn(fib->arg));
+	fib->status = OSI_FIB_EXITING;
+	fiber_yield(fib->result);
+#ifdef OS_PROVENCORE
+	return 0;
+#endif
+}
+
+static void *__coro(uint8_t flags)
+{
+	if ((flags & FIBER_LOOP))
+		return __fn_loop;
+	return __fn;
+}
+
+void fiber_init(fiber_t *fib, work_t *fn, uint16_t ss, uint8_t flags)
 {
 #ifdef OS_PROVENCORE
 	static int init = 0;
@@ -47,12 +78,30 @@ void fiber_init(fiber_t *fib, work_t *fn, uint16_t ss)
 		init = 1;
 		if (init_threads()) return NULL;
 	}
-	fib->context = create_context(ss, 0, 0, 0, (int (*)(void *))__fibfn, fib);
+	fib->context = create_context(ss, 0, 0, 0, __coro(flags), fib);
 #else
 	coro_stack_alloc(&fib->stack, ss);
-	coro_create(&fib->context, (coro_func)__fibfn, fib, fib->stack.sptr,
+	coro_create(&fib->context, __coro(flags), fib, fib->stack.sptr,
 		fib->stack.ssze);
 #endif
+}
+
+int fiber_reuse(fiber_t *fib, work_t *fn, uint8_t flags)
+{
+	if (fib->status != OSI_FIB_EXITING) {
+		errno = EINVAL;
+		return -1;
+	}
+	if (fn) fib->fn = fn;
+#ifdef OS_PROVENCORE
+	fib->context = create_context(ss, 0, 0, 0, __coro(flags), fib);
+#else
+	(void)coro_destroy(&fib->context);
+	coro_create(&fib->context, __coro(flags), fib, fib->stack.sptr,
+		fib->stack.ssze);
+#endif
+	fib->status = OSI_FIB_READY;
+	return 0;
 }
 
 void fiber_destroy(fiber_t *fiber)
@@ -113,4 +162,9 @@ void *fiber_yield(void *arg)
 	coro_transfer(&fib->context, &caller->context);
 #endif
 	return fib->arg;
+}
+
+__api__ void fiber_kick(void)
+{
+	__fiber->status = OSI_FIB_EXITING;
 }

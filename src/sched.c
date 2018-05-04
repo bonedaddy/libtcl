@@ -36,10 +36,25 @@ void sched_spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
 {
 	fiber_t *fib;
 
-	(void)prio;
-	fiber_init(fib = malloc(sizeof(fiber_t)), work, ss);
+	fiber_init(fib = malloc(sizeof(fiber_t)), work, ss, FIBER_NONE);
 	fib->status = OSI_FIB_READY;
 	fib->arg = arg;
+	fib->priority = prio;
+	list_unshift(&sched->ready, &fib->hold);
+}
+
+/*
+ * TODO: Insert by priority
+ */
+void sched_loop(sched_t *sched, work_t *work, uint16_t ss, void *arg,
+	int prio)
+{
+	fiber_t *fib;
+
+	fiber_init(fib = malloc(sizeof(fiber_t)), work, ss, FIBER_LOOP);
+	fib->status = OSI_FIB_READY;
+	fib->arg = arg;
+	fib->priority = prio;
 	list_unshift(&sched->ready, &fib->hold);
 }
 
@@ -52,7 +67,7 @@ void sched_start(sched_t *sched, bool loop)
 		errno = EINVAL;
 		return;
 	}
-	sched->scheduled = 1;
+	sched->scheduled = true;
 
 	/* Schedule ready fibers */
 	while (sched->scheduled) {
@@ -89,10 +104,10 @@ void sched_start(sched_t *sched, bool loop)
 	/* Release scheduler stacks */
 	list_init(&sched->ready);
 	list_init(&sched->dead);
-	sched->scheduled = 0;
+	sched->scheduled = false;
 }
 
 void sched_stop(sched_t *sched)
 {
-	sched->scheduled = 0;
+	sched->scheduled = false;
 }

@@ -20,29 +20,24 @@
 #include <osi/sched.h>
 
 #include <assert.h>
+#include <stdio.h>
 
-static int counter = 0;
+static char *result[] = { "a", "b" };
 
 void *call(void *arg)
 {
-	(void)arg;
-	++counter;
-	assert(counter == 2);
-	return NULL;
+	printf("1: %s\n", (char *) arg);
+	return (NULL);
 }
 
 int main(void)
 {
 	fiber_t fiber;
-	char *result;
 
 	fiber_init(&fiber, call, 32, FIBER_NONE);
-	++counter;
-	assert(counter == 1);
-	(void)(result = fiber_call(&fiber, NULL));
-	++counter;
-	assert(counter == 3);
-	assert(!result);
+	fiber_call(&fiber, result[0]);
+	fiber_reuse(&fiber, NULL, FIBER_NONE);
+	fiber_call(&fiber, result[1]);
 	fiber_destroy(&fiber);
 	return 0;
 }

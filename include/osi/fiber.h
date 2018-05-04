@@ -76,6 +76,20 @@ enum fiber_st {
 /*!@public
  *
  * @brief
+ * Change the behavior of a fiber
+ */
+enum fiber_flags {
+
+	/*! Act normally */
+	FIBER_NONE = 1 << 0,
+
+	/*! Loop through the fiber work without ending context */
+	FIBER_LOOP = 1 << 1
+};
+
+/*!@public
+ *
+ * @brief
  * The fiber structure definition
  */
 struct fiber {
@@ -125,8 +139,9 @@ struct fiber {
  * @param fiber The fiber to initialize.
  * @param fn    The fiber function.
  * @param ss    The stack size of the new fiber.
+ * @param flags The flags which define this fiber.
  */
-__api__ void fiber_init(fiber_t *fiber, work_t *fn, uint16_t ss);
+__api__ void fiber_init(fiber_t *fiber, work_t *fn, uint16_t ss, uint8_t flags);
 
 /*!@public
  *
@@ -136,6 +151,17 @@ __api__ void fiber_init(fiber_t *fiber, work_t *fn, uint16_t ss);
  * @param fiber The fiber to delete.
  */
 __api__ void fiber_destroy(fiber_t *fiber);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param fib
+ * @param fn
+ * @return
+ */
+__api__ int fiber_reuse(fiber_t *fib, work_t *fn, uint8_t flags);
 
 /*!@public
  *
@@ -178,6 +204,8 @@ __api__ bool fiber_isdone(fiber_t *fiber);
  * @return    The argument of `fiber_call' after yielding.
  */
 __api__ void *fiber_yield(void *arg);
+
+__api__ void fiber_kick(void);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */

@@ -16,33 +16,38 @@
  * limitations under the License.
  */
 
-#include <osi/fiber.h>
-#include <osi/sched.h>
+#pragma once
 
-#include <assert.h>
+/*!@file osi/alarm.h
+ * @author uael
+ *
+ * @addtogroup osi.alarm @{
+ */
+#ifndef __OSI_ALARM_H
+# define __OSI_ALARM_H
 
-static int counter = 0;
+#include <osi/event.h>
 
-void *call(void *arg)
-{
-	(void)arg;
-	++counter;
-	assert(counter == 2);
-	return NULL;
-}
+/*!@public
+ *
+ * @brief
+ * The alarm structure declaration.
+ */
+typedef struct alarm alarm_t;
 
-int main(void)
-{
-	fiber_t fiber;
-	char *result;
+/*!@public
+ *
+ * @brief
+ * The alarm structure definition.
+ */
+struct alarm {
+	const char *name;
+	uint64_t last_exec;
+	uint64_t interval;
+	bool periodic;
+	void *data;
+	work_t *work;
+};
 
-	fiber_init(&fiber, call, 32, FIBER_NONE);
-	++counter;
-	assert(counter == 1);
-	(void)(result = fiber_call(&fiber, NULL));
-	++counter;
-	assert(counter == 3);
-	assert(!result);
-	fiber_destroy(&fiber);
-	return 0;
-}
+#endif /* __OSI_ALARM_H */
+/*!@} */

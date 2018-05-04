@@ -20,29 +20,39 @@
 #include <osi/sched.h>
 
 #include <assert.h>
+#include <stdio.h>
 
 static int counter = 0;
+static sched_t sched;
 
-void *call(void *arg)
+static void *loop1(void *arg)
 {
 	(void)arg;
-	++counter;
-	assert(counter == 2);
-	return NULL;
+	printf("loop1: %d\n", ++counter);
+	return (NULL);
+}
+
+static void *loop2(void *arg)
+{
+	(void)arg;
+	printf("loop2: %d\n", ++counter);
+	return (NULL);
+}
+
+static void *stop(void *arg)
+{
+	(void)arg;
+	if (counter >= 42)
+		sched_stop(&sched);
+	return (NULL);
 }
 
 int main(void)
 {
-	fiber_t fiber;
-	char *result;
-
-	fiber_init(&fiber, call, 32, FIBER_NONE);
-	++counter;
-	assert(counter == 1);
-	(void)(result = fiber_call(&fiber, NULL));
-	++counter;
-	assert(counter == 3);
-	assert(!result);
-	fiber_destroy(&fiber);
+	sched_init(&sched);
+	sched_loop(&sched, loop1, 32, NULL, 1);
+	sched_loop(&sched, loop2, 32, NULL, 1);
+	sched_loop(&sched, stop, 32, NULL, 1);
+	sched_start(&sched, false);
 	return 0;
 }
