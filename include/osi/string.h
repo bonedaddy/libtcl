@@ -33,5 +33,5 @@
 # include <strings.h>
 #endif
 
-#endif /* __OSI_FIBER_H */
+#endif /* __OSI_STRING_H */
 /*!@} */

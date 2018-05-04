@@ -35,5 +35,7 @@
 #cmakedefine HAS_SYS_EVENTFD_H
 #cmakedefine HAS_SYS_TIME_H
 
+#include <pp.h>
+
 #endif /* __OSI_CONF_H */
 

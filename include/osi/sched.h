@@ -67,7 +67,14 @@ __api__ void sched_init(sched_t *sched);
  * @brief
  * TODO
  */
-__api__ void sched_start(sched_t *sched);
+__api__ void sched_start(sched_t *sched, bool loop);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ */
+__api__ void sched_stop(sched_t *sched);
 
 /*!@public
  *
@@ -82,5 +89,5 @@ __api__ void sched_start(sched_t *sched);
 __api__ void sched_spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
 	int prio);
 
-#endif /* __OSI_FIBER_H */
+#endif /* __OSI_SCHED_H */
 /*!@} */

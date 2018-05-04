@@ -60,7 +60,7 @@ static void test_0(void)
 		sched_spawn(&sched, fiber_func_0, 32, names + i, 1);
 	}
 	assert(counter == 0);
-	sched_start(&sched);
+	sched_start(&sched, false);
 	assert(counter == 10);
 }
 
@@ -75,7 +75,7 @@ static void test_1(void)
 		sched_spawn(&sched, fiber_func_1, 32, names + i, 1);
 	}
 	assert(counter == 0);
-	sched_start(&sched);
+	sched_start(&sched, false);
 	assert(counter == 10);
 }
 

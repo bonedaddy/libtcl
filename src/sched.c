@@ -43,7 +43,7 @@ void sched_spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
 	list_unshift(&sched->ready, &fib->hold);
 }
 
-void sched_start(sched_t *sched)
+void sched_start(sched_t *sched, bool loop)
 {
 	fiber_t *fib;
 	node_t *head;
@@ -55,9 +55,11 @@ void sched_start(sched_t *sched)
 	sched->scheduled = 1;
 
 	/* Schedule ready fibers */
-	while (1) {
-		if (!(head = list_shift(&sched->ready)))
+	while (sched->scheduled) {
+		if (!(head = list_shift(&sched->ready))) {
+			if (loop) continue;
 			break;
+		}
 		fib = LIST_ENTRY(head, fiber_t, hold);
 		fib->status = OSI_FIB_RUNNING;
 
@@ -70,6 +72,13 @@ void sched_start(sched_t *sched)
 		}
 	}
 
+	/* Release ready fibers */
+	while ((head = list_shift(&sched->ready)) != NULL) {
+		fib = LIST_ENTRY(head, fiber_t, hold);
+		fiber_destroy(fib);
+		free(fib);
+	}
+
 	/* Release dead fibers */
 	while ((head = list_shift(&sched->dead)) != NULL) {
 		fib = LIST_ENTRY(head, fiber_t, hold);
@@ -80,5 +89,10 @@ void sched_start(sched_t *sched)
 	/* Release scheduler stacks */
 	list_init(&sched->ready);
 	list_init(&sched->dead);
+	sched->scheduled = 0;
+}
+
+void sched_stop(sched_t *sched)
+{
 	sched->scheduled = 0;
 }

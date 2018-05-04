@@ -27,7 +27,6 @@
 # define __OSI_SEMA_H
 
 #include <osi/conf.h>
-#include <pp.h>
 
 /*!@public
  *
