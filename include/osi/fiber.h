@@ -102,6 +102,8 @@ struct fiber {
 	int priority;
 
 #ifdef OS_PROVENCORE
+
+	/** ProveNCore coroutine context */
 	struct context *context;
 #else
 	/** Coroutine context */
