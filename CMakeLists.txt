@@ -78,7 +78,7 @@ else ()
 endif ()
 
 if (ENABLE_TEST)
-  add_subdirectory(test)
+  add_subdirectory(${osi_TEST_DIR})
 endif ()
 
 install(FILES ${osi_HDRS} DESTINATION include/osi)
