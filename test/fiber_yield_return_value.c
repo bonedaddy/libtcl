@@ -33,13 +33,13 @@ void *yield_return_value(void *arg)
 
 int main(void)
 {
-	fiber_t *fiber;
+	fiber_t fiber;
 
-	fiber = fiber_new(yield_return_value, 32);
+	fiber_init(&fiber, yield_return_value, 32);
 
-	printf("%s\n", (char *) fiber_call(fiber, result[0]));
-	printf("%s\n", (char *) fiber_call(fiber, result[2]));
+	printf("%s\n", (char *) fiber_call(&fiber, result[0]));
+	printf("%s\n", (char *) fiber_call(&fiber, result[2]));
 
-	fiber_del(fiber);
+	fiber_destroy(&fiber);
 	return 0;
 }

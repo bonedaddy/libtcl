@@ -26,15 +26,27 @@
 #ifndef __OSI_FIBER_H
 # define __OSI_FIBER_H
 
-#include <osi/conf.h>
-#include <pp.h>
+#include <osi/list.h>
+
+#ifdef OS_PROVENCORE
+# include <threads/threads.h>
+#else
+# include <coro.h>
+#endif
 
 /*!@public
  *
  * @brief
- * The fiber opaque structure.
+ * The fiber structure.
  */
 typedef struct fiber fiber_t;
+
+/*!@private
+ *
+ * @brief
+ * Fiber status.
+ */
+typedef enum fiber_st fiber_st_t;
 
 /*!@public
  *
@@ -42,21 +54,77 @@ typedef struct fiber fiber_t;
  * Declaration of fiber function, which should be passed to the
  * `fiber_new'.
  */
-typedef void *(fiber_fn_t)(void *arg);
+typedef void *(work_t)(void *arg);
+
+/*!@public
+ *
+ * @brief
+ * The fiber status definition
+ */
+enum fiber_st {
+
+	/*! The fiber was just created so ready */
+	OSI_FIB_READY,
+
+	/*! The fiber is running in it's own context until it finish or yield */
+	OSI_FIB_RUNNING,
+
+	/*! The fiber is terminated but still exists */
+	OSI_FIB_EXITING
+};
+
+/*!@public
+ *
+ * @brief
+ * The fiber structure definition
+ */
+struct fiber {
+
+	/*! The fiber status */
+	fiber_st_t status;
+
+	/*! The fiber core function */
+	work_t *fn;
+
+	/*! The fiber core function argument */
+	void *arg;
+
+	/*! The fiber result */
+	void *result;
+
+	/*! The fiber caller */
+	fiber_t *caller;
+
+	/*! Fiber list hold */
+	node_t hold;
+
+	/*! The priority used by scheduler */
+	int priority;
+
+#ifdef OS_PROVENCORE
+	struct context *context;
+#else
+	/** Coroutine context */
+	coro_context context;
+
+	/** Coroutine stack */
+	struct coro_stack stack;
+#endif
+};
 
 /*!@public
  *
  * @brief
  * Creates the new fiber, which will execute the given fn after
- * calling the `sched_start'.
+ * calling the `fiber_call'.
  * ss (stack size) is the size of the stack for the given fiber.
  * If it is set to 0, then the stack size will be set automatically.
  *
- * @param fn The fiber function.
- * @param ss The stack size of the new fiber.
- * @return   The new fiber.
+ * @param fiber The fiber to initialize.
+ * @param fn    The fiber function.
+ * @param ss    The stack size of the new fiber.
  */
-__api__ fiber_t *fiber_new(fiber_fn_t *fn, uint16_t ss);
+__api__ void fiber_init(fiber_t *fiber, work_t *fn, uint16_t ss);
 
 /*!@public
  *
@@ -65,7 +133,7 @@ __api__ fiber_t *fiber_new(fiber_fn_t *fn, uint16_t ss);
  *
  * @param fiber The fiber to delete.
  */
-__api__ void fiber_del(fiber_t *fiber);
+__api__ void fiber_destroy(fiber_t *fiber);
 
 /*!@public
  *

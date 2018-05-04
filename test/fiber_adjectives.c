@@ -22,8 +22,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-static fiber_t *fiber;
-
 void *call_fiber(void *arg)
 {
 	static char *adjectives[] = { "small", "clean", NULL, "fast", NULL };
@@ -39,9 +37,11 @@ void *call_fiber(void *arg)
 
 int main(void)
 {
-	fiber = fiber_new(call_fiber, 32);
-	while (!fiber_isdone(fiber))
-		printf("%s\n", (char *) fiber_call(fiber, NULL));
-	fiber_del(fiber);
+	fiber_t fiber;
+
+	fiber_init(&fiber, call_fiber, 32);
+	while (!fiber_isdone(&fiber))
+		printf("%s\n", (char *) fiber_call(&fiber, NULL));
+	fiber_destroy(&fiber);
 	return 0;
 }

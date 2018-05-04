@@ -36,29 +36,29 @@ void *call(void *arg)
 
 int main(void)
 {
-	fiber_t *fiber;
+	fiber_t fiber;
 
-	fiber = fiber_new(call, 32);
+	fiber_init(&fiber, call, 32);
 
-	assert(!fiber_isdone(fiber));
+	assert(!fiber_isdone(&fiber));
 
 	++counter;
 	assert(counter == 1);
 
-	fiber_call(fiber, NULL);
+	fiber_call(&fiber, NULL);
 
 	++counter;
 	assert(counter == 3);
 
-	assert(!fiber_isdone(fiber));
+	assert(!fiber_isdone(&fiber));
 
-	fiber_call(fiber, NULL);
+	fiber_call(&fiber, NULL);
 
 	++counter;
 	assert(counter == 5);
 
-	assert(fiber_isdone(fiber));
-	fiber_del(fiber);
+	assert(fiber_isdone(&fiber));
+	fiber_destroy(&fiber);
 
 	return 0;
 }

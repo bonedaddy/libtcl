@@ -22,8 +22,8 @@
 #include <assert.h>
 #include <stdio.h>
 
-static fiber_t *a;
-static fiber_t *b;
+static fiber_t a;
+static fiber_t b;
 
 void *call_b(void *arg)
 {
@@ -36,19 +36,19 @@ void *call_a(void *arg)
 {
 	(void)arg;
 	printf("begin fiber a\n");
-	fiber_call(b, NULL);
+	fiber_call(&b, NULL);
 	printf("end fiber a\n");
 	return NULL;
 }
 
 int main(void)
 {
-	a = fiber_new(call_a, 32);
-	b = fiber_new(call_b, 32);
+	fiber_init(&a, call_a, 32);
+	fiber_init(&b, call_b, 32);
 	printf("begin main\n");
-	fiber_call(a, NULL);
+	fiber_call(&a, NULL);
 	printf("end main\n");
-	fiber_del(a);
-	fiber_del(b);
+	fiber_destroy(&a);
+	fiber_destroy(&b);
 	return 0;
 }

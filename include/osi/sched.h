@@ -79,7 +79,8 @@ __api__ void sched_start(sched_t *sched);
  * @param arg
  * @param prio
  */
-__api__ void sched_spawn(sched_t *sched, fiber_t *fiber, void *arg, int prio);
+__api__ void sched_spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
+	int prio);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */

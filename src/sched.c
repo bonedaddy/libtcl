@@ -33,9 +33,13 @@ void sched_init(sched_t *sched)
 /*
  * TODO: Insert by priority
  */
-void sched_spawn(sched_t *sched, fiber_t *fib, void *arg, int prio)
+void sched_spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
+	int prio)
 {
+	fiber_t *fib;
+
 	(void)prio;
+	fiber_init(fib = malloc(sizeof(fiber_t)), work, ss);
 	fib->status = OSI_FIB_READY;
 	fib->arg = arg;
 	list_unshift(&sched->ready, &fib->hold);
@@ -71,7 +75,8 @@ void sched_start(sched_t *sched)
 	/* Release dead fibers */
 	while ((head = list_shift(&sched->dead)) != NULL) {
 		fib = LIST_ENTRY(head, fiber_t, hold);
-		fiber_del(fib);
+		fiber_destroy(fib);
+		free(fib);
 	}
 
 	/* Release scheduler stacks */

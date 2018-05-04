@@ -33,16 +33,16 @@ void *call(void *arg)
 
 int main(void)
 {
-	fiber_t *fiber;
+	fiber_t fiber;
 	char *result;
 
-	fiber = fiber_new(call, 32);
+	fiber_init(&fiber, call, 32);
 	++counter;
 	assert(counter == 1);
-	(void)(result = fiber_call(fiber, NULL));
+	(void)(result = fiber_call(&fiber, NULL));
 	++counter;
 	assert(counter == 3);
 	assert(!result);
-	fiber_del(fiber);
+	fiber_destroy(&fiber);
 	return 0;
 }

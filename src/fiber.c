@@ -35,14 +35,12 @@ static void __fibfn(fiber_t *fib)
 	fiber_yield(fib->result);
 }
 
-fiber_t *fiber_new(fiber_fn_t *fn, uint16_t ss)
+void fiber_init(fiber_t *fib, work_t *fn, uint16_t ss)
 {
 #ifdef OS_PROVENCORE
 	static int init = 0;
 #endif
-	fiber_t *fib;
 
-	fib = malloc(sizeof(fiber_t));
 	bzero(fib, sizeof(fiber_t));
 	node_init(&fib->hold);
 	fib->fn = fn;
@@ -57,16 +55,14 @@ fiber_t *fiber_new(fiber_fn_t *fn, uint16_t ss)
 	coro_create(&fib->context, (coro_func)__fibfn, fib, fib->stack.sptr,
 		fib->stack.ssze);
 #endif
-	return fib;
 }
 
-void fiber_del(fiber_t *fiber)
+void fiber_destroy(fiber_t *fiber)
 {
 #ifndef OS_PROVENCORE
 	(void)coro_destroy(&fiber->context);
 	coro_stack_free(&fiber->stack);
 #endif
-	free(fiber);
 }
 
 void *fiber_call(fiber_t *fiber, void *ctx)
