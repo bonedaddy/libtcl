@@ -21,8 +21,6 @@
 
 #include <errno.h>
 
-#include "fiber.h"
-
 void sched_init(sched_t *sched)
 {
 	bzero(sched, sizeof(sched_t));

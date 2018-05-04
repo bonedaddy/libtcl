@@ -16,16 +16,14 @@
  * limitations under the License.
  */
 
-#include "fiber.h"
-#include "sched.h"
-
+#include <osi/fiber.h>
 #include <osi/string.h>
 
 #ifdef OS_PROVENCORE
-fiber_t *__fiber = NULL;
+static fiber_t *__fiber = NULL;
 #else
 static fiber_t __s_fiber = { };
-fiber_t *__fiber = &__s_fiber;
+static fiber_t *__fiber = &__s_fiber;
 #endif
 
 static void __fibfn(fiber_t *fib)
