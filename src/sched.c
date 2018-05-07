@@ -32,7 +32,7 @@ static void __spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
 {
 	fiber_t *fib;
 
-	fib = fiber_pool_new(&sched->pool, prio);
+	fib = fiber_pool_new(&sched->pool);
 	if (!(fib->status == OSI_FIB_EXITING))
 		fiber_init(fib, work, ss, flags);
 	else {
@@ -45,6 +45,7 @@ static void __spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
 		fiber_reuse(fib, work, flags);
 	}
 	fib->arg = arg;
+	fib->priority = prio;
 	fiber_pool_ready(&sched->pool, fib);
 }
 

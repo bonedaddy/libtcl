@@ -45,7 +45,7 @@ void fiber_pool_destroy(fiber_pool_t *pool)
 	free(pool->fibers);
 }
 
-fiber_t *fiber_pool_new(fiber_pool_t *pool, int prio)
+fiber_t *fiber_pool_new(fiber_pool_t *pool)
 {
 	node_t *head;
 	fiber_t *fiber;
@@ -64,14 +64,32 @@ fiber_t *fiber_pool_new(fiber_pool_t *pool, int prio)
 		}
 		fiber = pool->fibers + pool->slot++;
 	}
-	fiber->priority = prio;
 	return fiber;
 }
 
 void fiber_pool_ready(fiber_pool_t *pool, fiber_t *fiber)
 {
+	node_t *head;
+	node_t *entry;
+	fiber_t *fib;
+
 	fiber->status = OSI_FIB_READY;
-	list_unshift(&pool->ready, &fiber->hold);
+	head = pool->ready.succ;
+	entry = &fiber->hold;
+	while (head != (node_t *)&pool->ready) {
+		fib = LIST_ENTRY(head, fiber_t, hold);
+		if (fiber->priority > fib->priority) {
+			entry->pred = head->pred;
+			entry->succ = head;
+			head->pred->succ = entry;
+			head->pred = entry;
+			pool->ready.len++;
+			return;
+		}
+		head = head->succ;
+	}
+	list_unshift(&pool->ready, entry);
+
 }
 
 void fiber_pool_dead(fiber_pool_t *pool, fiber_t *fiber)

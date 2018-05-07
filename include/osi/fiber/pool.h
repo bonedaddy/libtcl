@@ -84,7 +84,7 @@ __api__ void fiber_pool_destroy(fiber_pool_t *pool);
  * @param pool
  * @return
  */
-__api__ fiber_t *fiber_pool_new(fiber_pool_t *pool, int prio);
+__api__ fiber_t *fiber_pool_new(fiber_pool_t *pool);
 
 __api__ void fiber_pool_ready(fiber_pool_t *pool, fiber_t *fiber);
 
