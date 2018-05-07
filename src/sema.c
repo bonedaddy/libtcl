@@ -44,7 +44,7 @@ sema_t *sema_new(unsigned value)
 	sem_init(&sema->handle, 0, value);
 #elif defined(SEMA_EVENTFD)
 	sema->handle = eventfd(value, EFD_SEMAPHORE);
-	if (sema->handle == INVALID_FD) {
+	if (sema->handle < 0) {
 		free(sema);
 		sema = NULL;
 	}
@@ -60,7 +60,7 @@ void sema_del(sema_t *sema)
 #if defined(SEMA_SEM)
 	sem_destroy(&sema->handle);
 #elif defined(SEMA_EVENTFD)
-	if (sema->handle != INVALID_FD)
+	if (sema->handle >= 0)
     	close(sema->handle);
 #else
 	sema->handle = 0;
