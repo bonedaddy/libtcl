@@ -28,10 +28,14 @@
 
 #include <osi/list.h>
 
-#ifdef OS_PROVENCORE
+#if defined(USE_CORO)
+# include <coro.h>
+#elif defined(USE_PICORO)
+# include <picoro.h>
+#elif defined(OS_PROVENCORE)
 # include <threads/threads.h>
 #else
-# include <coro.h>
+# error "Unable to implement software coroutines"
 #endif
 
 /*!@public
@@ -115,16 +119,24 @@ struct fiber {
 	/*! The priority used by scheduler */
 	int priority;
 
-#ifdef OS_PROVENCORE
+#if defined(USE_CORO)
 
-	/** ProveNCore coroutine context */
-	struct context *context;
-#else
 	/** Coroutine context */
 	coro_context context;
 
 	/** Coroutine stack */
 	struct coro_stack stack;
+#elif defined(USE_PICORO)
+
+	/** Picoro coroutine context */
+	coro context;
+
+	/** Picoro coroutine stack size */
+	size_t ss;
+#elif defined(HAS_SETJMP_H)
+
+	/** ProveNCore coroutine context */
+	struct context *context;
 #endif
 };
 

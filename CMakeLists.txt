@@ -39,7 +39,7 @@ include(CheckIncludeFile)
 check_include_file(sys/eventfd.h HAS_SYS_EVENTFD_H)
 check_include_file(sys/time.h HAS_SYS_TIME_H)
 
-configure_file(${osi_INC_DIR}/osi/conf.h.in ${osi_INC_DIR}/osi/conf.h)
+configure_file(${osi_INC_DIR}/osi/conf.h.in ${osi_INC_DIR}/osi/conf.h @ONLY)
 
 file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.c)
 file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.h)
@@ -51,9 +51,12 @@ target_include_directories(osi PUBLIC ${osi_INC_DIR} PRIVATE ${osi_SRC_DIR})
 target_link_libraries(osi PUBLIC pp)
 add_dependencies(osi pp)
 
-if (NOT OS_PROVENCORE)
+if (USE_CORO)
   target_link_libraries(osi PUBLIC coro)
   add_dependencies(osi coro)
+elseif (USE_PICORO)
+  target_link_libraries(osi PUBLIC picoro)
+  add_dependencies(osi picoro)
 endif ()
 
 if (MSVC)

@@ -21,7 +21,7 @@
 
 #ifdef OS_PROVENCORE
 static fiber_t *__fiber = NULL;
-#else
+#elif defined(USE_CORO)
 static fiber_t __s_fiber = { };
 static fiber_t *__fiber = &__s_fiber;
 #endif
@@ -79,10 +79,13 @@ void fiber_init(fiber_t *fib, work_t *fn, uint16_t ss, uint8_t flags)
 		if (init_threads()) return NULL;
 	}
 	fib->context = create_context(ss, 0, 0, 0, __coro(flags), fib);
-#else
+#elif defined(USE_CORO)
 	coro_stack_alloc(&fib->stack, ss);
 	coro_create(&fib->context, __coro(flags), fib, fib->stack.sptr,
 		fib->stack.ssze);
+#else
+	fib->ss = ss;
+	fib->context = coroutine(__coro(flags));
 #endif
 }
 
@@ -95,10 +98,12 @@ int fiber_reuse(fiber_t *fib, work_t *fn, uint8_t flags)
 	if (fn) fib->fn = fn;
 #ifdef OS_PROVENCORE
 	fib->context = create_context(ss, 0, 0, 0, __coro(flags), fib);
-#else
+#elif defined(USE_CORO)
 	(void)coro_destroy(&fib->context);
 	coro_create(&fib->context, __coro(flags), fib, fib->stack.sptr,
 		fib->stack.ssze);
+#else
+	fib->context = coroutine(__coro(flags));
 #endif
 	fib->status = OSI_FIB_READY;
 	return 0;
@@ -106,27 +111,33 @@ int fiber_reuse(fiber_t *fib, work_t *fn, uint8_t flags)
 
 void fiber_destroy(fiber_t *fiber)
 {
-#ifndef OS_PROVENCORE
+#ifdef USE_CORO
 	(void)coro_destroy(&fiber->context);
 	coro_stack_free(&fiber->stack);
+#else
+	(void)fiber;
 #endif
 }
 
 void *fiber_call(fiber_t *fiber, void *ctx)
 {
-	fiber->caller = __fiber;
 	fiber->arg = ctx;
 	fiber->status = OSI_FIB_RUNNING;
+#ifdef USE_PICORO
+	fiber->result = resume(fiber->context, fiber);
+#else
+	fiber->caller = __fiber;
 	__fiber = fiber;
-#ifdef OS_PROVENCORE
+# ifdef OS_PROVENCORE
 	int dummy;
 
 	if (resume(fiber->context, &dummy))
 		fiber->status = OSI_FIB_EXITING;
-#else
+# else
 	if (fiber->caller != fiber) {
 		coro_transfer(&fiber->caller->context, &fiber->context);
 	}
+# endif
 #endif
 	return fiber->result;
 }
@@ -138,6 +149,9 @@ bool fiber_isdone(fiber_t *fiber)
 
 void *fiber_yield(void *arg)
 {
+#ifdef USE_PICORO
+	return yield(arg);
+#else
 	fiber_t *caller;
 	fiber_t *fib;
 
@@ -149,7 +163,7 @@ void *fiber_yield(void *arg)
 	__fiber = caller;
 	fib->caller = NULL;
 
-#ifdef OS_PROVENCORE
+# ifdef OS_PROVENCORE
 	if (caller) {
 		int dummy;
 
@@ -158,8 +172,9 @@ void *fiber_yield(void *arg)
 	} else {
 		yield();
 	}
-#else
+# else
 	coro_transfer(&fib->context, &caller->context);
-#endif
+# endif
 	return fib->arg;
+#endif
 }

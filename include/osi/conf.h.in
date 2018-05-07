@@ -26,6 +26,9 @@
 
 #cmakedefine OS_PROVENCORE
 
+#cmakedefine USE_CORO
+#cmakedefine USE_PICORO
+
 #cmakedefine HAS_BZERO
 #cmakedefine HAS_FREE
 #cmakedefine HAS_REALLOC

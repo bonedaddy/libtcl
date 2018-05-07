@@ -36,7 +36,7 @@ static void __spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
 	if (!(fib->status == OSI_FIB_EXITING))
 		fiber_init(fib, work, ss, flags);
 	else {
-#ifndef OS_PROVENCORE
+#ifdef USE_CORO
 		if (fib->stack.ssze < ss) {
 			coro_stack_free(&fib->stack);
 			coro_stack_alloc(&fib->stack, ss);
