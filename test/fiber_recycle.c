@@ -34,7 +34,7 @@ int main(void)
 {
 	fiber_t fiber;
 
-	fiber_init(&fiber, call, 32, FIBER_NONE);
+	fiber_init(&fiber, call, 1024, FIBER_NONE);
 	fiber_call(&fiber, result[0]);
 	fiber_reuse(&fiber, NULL, FIBER_NONE);
 	fiber_call(&fiber, result[1]);

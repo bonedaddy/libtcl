@@ -29,7 +29,6 @@
 #cmakedefine HAS_BZERO
 #cmakedefine HAS_FREE
 #cmakedefine HAS_REALLOC
-#cmakedefine HAS_SIGALTSTACK 
 
 #cmakedefine HAS_SYS_EVENTFD_H
 #cmakedefine HAS_SYS_TIME_H

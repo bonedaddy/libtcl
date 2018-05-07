@@ -36,7 +36,6 @@ check_function_exists(free HAS_FREE)
 check_function_exists(realloc HAS_REALLOC)
 
 include(CheckIncludeFile)
-check_include_file(semaphore.h HAS_SEMAPHORE_H)
 check_include_file(sys/eventfd.h HAS_SYS_EVENTFD_H)
 check_include_file(sys/time.h HAS_SYS_TIME_H)
 
