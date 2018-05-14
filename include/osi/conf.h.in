@@ -28,15 +28,45 @@
 # cmakedefine OS_PROVENCORE
 #endif
 
-#cmakedefine USE_CORO
-#cmakedefine USE_PICORO
+#ifndef USE_CORO
+# cmakedefine USE_CORO
+#endif
+#ifndef USE_PICORO
+# cmakedefine USE_PICORO
+#endif
 
-#cmakedefine HAS_BZERO
-#cmakedefine HAS_FREE
-#cmakedefine HAS_REALLOC
+#ifndef HAS_BZERO
+# cmakedefine HAS_BZERO
+#endif
+#ifndef HAS_FREE
+# cmakedefine HAS_FREE
+#endif
+#ifndef HAS_REALLOC
+# cmakedefine HAS_REALLOC
+#endif
 
-#cmakedefine HAS_SYS_EVENTFD_H
-#cmakedefine HAS_SYS_TIME_H
+#ifndef HAS_SYS_EVENTFD_H
+# cmakedefine HAS_SYS_EVENTFD_H
+#endif
+#ifndef HAS_SYS_EPOLL_H
+# cmakedefine HAS_SYS_EPOLL_H
+#endif
+#ifndef HAS_SYS_TIME_H
+# cmakedefine HAS_SYS_TIME_H
+#endif
+#ifndef HAS_PTHREAD_H
+# cmakedefine HAS_PTHREAD_H
+#endif
+#ifndef HAS_UNISTD_H
+# cmakedefine HAS_UNISTD_H
+#endif
+
+#if defined(HAS_SYS_EVENTFD_H) && defined(HAS_SYS_EPOLL_H) \
+  && defined(HAS_PTHREAD_H) && defined(HAS_UNISTD_H)
+# define OSI_PTHREAD_MOD
+#else
+# define OSI_FIBER_MOD
+#endif
 
 #include <pp.h>
 

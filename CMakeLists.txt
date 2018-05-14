@@ -37,7 +37,10 @@ check_function_exists(realloc HAS_REALLOC)
 
 include(CheckIncludeFile)
 check_include_file(sys/eventfd.h HAS_SYS_EVENTFD_H)
+check_include_file(sys/epoll.h HAS_SYS_EPOLL_H)
 check_include_file(sys/time.h HAS_SYS_TIME_H)
+check_include_file(pthread.h HAS_PTHREAD_H)
+check_include_file(unistd.h HAS_UNISTD_H)
 
 configure_file(${osi_INC_DIR}/osi/conf.h.in ${osi_INC_DIR}/osi/conf.h @ONLY)
 
