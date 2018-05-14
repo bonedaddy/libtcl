@@ -16,11 +16,9 @@
  * limitations under the License.
  */
 
-#include <osi/fiber.h>
-#include <osi/sched.h>
+#include "test.h"
 
-#include <assert.h>
-#include <stdio.h>
+#include <osi/fiber.h>
 
 static fiber_t a;
 static fiber_t b;

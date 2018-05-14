@@ -20,17 +20,47 @@
 
 #include <osi/reactor.h>
 
+static pthread_t thread;
+static volatile bool thread_running;
+
+static void *reactor_thread(void *ptr)
+{
+	reactor_t *reactor;
+
+	reactor = (reactor_t *)ptr;
+	thread_running = true;
+	reactor_start(reactor);
+	thread_running = false;
+	return NULL;
+}
+
+static void spawn_reactor_thread(reactor_t *reactor)
+{
+	int ret;
+
+	ret = pthread_create(&thread, NULL, reactor_thread, reactor);
+	(void)ret;
+	ASSERT(ret == 0);
+}
+
+static void join_reactor_thread()
+{
+	pthread_join(thread, NULL);
+}
+
 int main(void)
 {
 	reactor_t reactor;
 
-	ASSERT(reactor_init(&reactor) == 0);
-	ASSERT(reactor.epoll_fd != INVALID_FD);
-	ASSERT(reactor.event_fd != INVALID_FD);
-	ASSERT(list_pop(&reactor.invalidation_list) == NULL);
+	ASSERT_EQ(0, reactor_init(&reactor));
+	spawn_reactor_thread(&reactor);
+	usleep(50 * 1000);
+	ASSERT_TRUE(thread_running);
+
+	reactor_stop(&reactor);
+	join_reactor_thread();
+	ASSERT_FALSE(thread_running);
+
 	reactor_destroy(&reactor);
-	ASSERT(reactor.epoll_fd == INVALID_FD);
-	ASSERT(reactor.event_fd == INVALID_FD);
-	ASSERT(list_pop(&reactor.invalidation_list) == NULL);
 	return 0;
 }

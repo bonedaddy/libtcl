@@ -16,11 +16,9 @@
  * limitations under the License.
  */
 
-#include <osi/event.h>
-#include <osi/string.h>
+#include "test.h"
 
-#include <assert.h>
-#include <stdio.h>
+#include <osi/event.h>
 
 void *reader(equeue_t *equeue) {
 	event_t *ev;

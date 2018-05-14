@@ -79,7 +79,7 @@
 #include <pp.h>
 
 #ifndef INVALID_FD
-# define INVALID_FD -1
+# define INVALID_FD (-1)
 #endif
 
 #endif /* __OSI_CONF_H */

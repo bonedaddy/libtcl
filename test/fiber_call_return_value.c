@@ -16,11 +16,9 @@
  * limitations under the License.
  */
 
-#include <osi/fiber.h>
-#include <osi/sched.h>
-#include <osi/string.h>
+#include "test.h"
 
-#include <assert.h>
+#include <osi/fiber.h>
 
 void *call_return_value(void *arg)
 {
@@ -37,7 +35,7 @@ int main(void)
 
 	fiber_init(&fiber, call_return_value, 32, FIBER_NONE);
 	(void)(result = fiber_call(&fiber, NULL));
-	assert(!strcmp("result", result));
+	ASSERT(!strcmp("result", result));
 	fiber_destroy(&fiber);
 	return 0;
 }

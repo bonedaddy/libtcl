@@ -16,10 +16,9 @@
  * limitations under the License.
  */
 
-#include <osi/fiber.h>
-#include <osi/sched.h>
+#include "test.h"
 
-#include <assert.h>
+#include <osi/fiber.h>
 
 static int counter = 0;
 
@@ -27,10 +26,10 @@ void *call(void *arg)
 {
 	(void)arg;
 	++counter;
-	assert(counter == 2);
+	ASSERT(counter == 2);
 	fiber_yield(NULL);
 	++counter;
-	assert(counter == 4);
+	ASSERT(counter == 4);
 	return NULL;
 }
 
@@ -39,17 +38,17 @@ int main(void)
 	fiber_t fiber;
 
 	fiber_init(&fiber, call, 32, FIBER_NONE);
-	assert(!fiber_isdone(&fiber));
+	ASSERT(!fiber_isdone(&fiber));
 	++counter;
-	assert(counter == 1);
+	ASSERT(counter == 1);
 	fiber_call(&fiber, NULL);
 	++counter;
-	assert(counter == 3);
-	assert(!fiber_isdone(&fiber));
+	ASSERT(counter == 3);
+	ASSERT(!fiber_isdone(&fiber));
 	fiber_call(&fiber, NULL);
 	++counter;
-	assert(counter == 5);
-	assert(fiber_isdone(&fiber));
+	ASSERT(counter == 5);
+	ASSERT(fiber_isdone(&fiber));
 	fiber_destroy(&fiber);
 	return 0;
 }

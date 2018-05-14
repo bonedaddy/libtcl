@@ -16,41 +16,25 @@
  * limitations under the License.
  */
 
-#include "test.h"
+#pragma once
 
-#include <osi/sched.h>
+#ifndef __OSI_TEST_H
+# define __OSI_TEST_H
 
-static int counter = 0;
-static sched_t sched;
+#include <osi/conf.h>
+#include <osi/string.h>
 
-static void *loop1(void *arg)
-{
-	(void)arg;
-	printf("loop1: %d\n", ++counter);
-	return (NULL);
-}
+#include <assert.h>
+#include <stdio.h>
 
-static void *loop2(void *arg)
-{
-	(void)arg;
-	printf("loop2: %d\n", ++counter);
-	return (NULL);
-}
+#ifndef ASSERT_F
+# define ASSERT_F(cond) "%s:%d: `%s'\n", __FILE__, __LINE__, #cond
+#endif
 
-static void *stop(void *arg)
-{
-	(void)arg;
-	if (counter >= 42)
-		sched_stop(&sched);
-	return (NULL);
-}
+#define ASSERT(cond) do if(!(cond))exit(printf(ASSERT_F(pool))>0);while(0)
+#define ASSERT_EQ(a, b) ASSERT((a) == (b))
+#define ASSERT_NEQ(a, b) ASSERT((a) != (b))
+#define ASSERT_TRUE(a) ASSERT_EQ(a, true)
+#define ASSERT_FALSE(a) ASSERT_EQ(a, false)
 
-int main(void)
-{
-	sched_init(&sched);
-	sched_loop(&sched, loop1, 32, NULL, 1);
-	sched_loop(&sched, loop2, 32, NULL, 1);
-	sched_loop(&sched, stop, 32, NULL, 1);
-	sched_start(&sched);
-	return 0;
-}
+#endif /* __OSI_TEST_H */

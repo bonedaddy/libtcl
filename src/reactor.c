@@ -35,23 +35,19 @@ int reactor_init(reactor_t *reactor)
 {
 	struct epoll_event event;
 
-	reactor->epoll_fd = INVALID_FD;
-	reactor->event_fd = INVALID_FD;
-	reactor->epoll_fd = epoll_create(__max_events);
-	if (reactor->epoll_fd == INVALID_FD) {
+	if ((reactor->epoll_fd = epoll_create(__max_events)) < 0) {
 		LOG_ERROR("unable to create epoll instance: %m");
 		return -1;
 	}
-	reactor->event_fd = eventfd(0, 0);
-	if (reactor->event_fd == INVALID_FD) {
+	if ((reactor->event_fd = eventfd(0, 0)) < 0) {
 		LOG_ERROR("unable to create eventfd: %m");
 		return -1;
 	}
-	bzero(&event, sizeof(struct epoll_event));
+	bzero(&event, sizeof(event));
 	event.events = EPOLLIN;
 	event.data.ptr = NULL;
-	if (epoll_ctl(reactor->epoll_fd, EPOLL_CTL_ADD,
-		reactor->event_fd, &event) == INVALID_FD) {
+	if (epoll_ctl(reactor->epoll_fd, EPOLL_CTL_ADD, reactor->event_fd,
+		&event) < 0) {
 		LOG_ERROR("unable to register eventfd with epoll set: %m");
 		return -1;
 	}
@@ -103,7 +99,7 @@ reactor_object_t *reactor_register(reactor_t *reactor,
 	if (read_ready) event.events |= (EPOLLIN | EPOLLRDHUP);
 	if (write_ready) event.events |= EPOLLOUT;
 	event.data.ptr = object;
-	if (epoll_ctl(reactor->epoll_fd, EPOLL_CTL_ADD, fd, &event) == INVALID_FD) {
+	if (epoll_ctl(reactor->epoll_fd, EPOLL_CTL_ADD, fd, &event) < 0) {
 		LOG_ERROR("unable to register fd %d to epoll set: %m", fd);
 		pthread_mutex_destroy(&object->lock);
 		free(object);
