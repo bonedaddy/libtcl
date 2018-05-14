@@ -64,7 +64,10 @@ void reactor_destroy(reactor_t *reactor)
 {
 	list_init(&reactor->invalidation_list);
 	close(reactor->event_fd);
+	reactor->event_fd = INVALID_FD;
 	close(reactor->epoll_fd);
+	reactor->epoll_fd = INVALID_FD;
+	pthread_mutex_destroy(&reactor->list_lock);
 }
 
 reactor_st_t reactor_start(reactor_t *reactor)

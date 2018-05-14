@@ -20,3 +20,7 @@ osi_register_test(sched_loop)
 
 osi_register_test(event_post)
 osi_register_test(event_read_loop)
+
+if (HAS_SYS_EVENTFD_H AND HAS_SYS_EPOLL_H AND HAS_PTHREAD_H AND HAS_UNISTD_H)
+  osi_register_test(reactor_init)
+endif ()
