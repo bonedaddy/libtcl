@@ -26,7 +26,7 @@
 #ifndef __OSI_REACTOR_H
 # define __OSI_REACTOR_H
 
-#include <osi/conf.h>
+#include <osi/fiber.h>
 #include <osi/list.h>
 
 /*!@brief
@@ -102,10 +102,10 @@ struct reactor_object {
 	pthread_mutex_t lock;
 
 	/*! function to call when the file descriptor becomes readable. */
-	void (*read_ready)(void *context);
+	work_t *read_ready;
 
 	/*! function to call when the file descriptor becomes writeable. */
-	void (*write_ready)(void *context);
+	work_t *write_ready;
 
 	/*! List head. */
 	node_t hold;
@@ -202,9 +202,7 @@ __api__ void reactor_stop(reactor_t *reactor);
  * @return            A fresh reactor object on success, NULL otherwise.
  */
 __api__ reactor_object_t *reactor_register(reactor_t *reactor,
-	int fd, void *context,
-	void (*read_ready)(void *context),
-	void (*write_ready)(void *context));
+	int fd, void *context, work_t *read_ready, work_t *write_ready);
 
 /*!@public
  *

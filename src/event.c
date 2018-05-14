@@ -17,15 +17,33 @@
  */
 
 #include <osi/event.h>
+#include <osi/thread.h>
 #include <osi/string.h>
 
-void equeue_init(equeue_t *equeue)
+int equeue_init(equeue_t *equeue)
 {
 	bzero(equeue, sizeof(equeue_t));
+	if (sema_init(&equeue->enqueue_sem, 0))
+		return -1;
+	if (sema_init(&equeue->dequeue_sem, 0))
+		return -1;
+#ifdef OSI_THREAD_MOD
+	pthread_mutex_init(&equeue->lock, NULL);
+#endif
+	return 0;
 }
 
 void equeue_destroy(equeue_t *equeue)
 {
+	if (equeue->reactor_object) {
+		reactor_unregister(equeue->reactor_object);
+		equeue->reactor_object = NULL;
+	}
+	sema_destroy(&equeue->enqueue_sem);
+	sema_destroy(&equeue->dequeue_sem);
+#ifdef OSI_THREAD_MOD
+	pthread_mutex_destroy(&equeue->lock);
+#endif
 	if (equeue->buf) {
 		free(equeue->buf);
 		bzero(equeue, sizeof(equeue_t));
@@ -43,28 +61,53 @@ void equeue_push_silent(equeue_t *equeue, event_t *ev)
 
 void equeue_push(equeue_t *equeue, event_t *ev)
 {
+	sema_wait(&equeue->enqueue_sem);
+#ifdef OSI_THREAD_MOD
+	pthread_mutex_lock(&equeue->lock);
+#endif
 	equeue_push_silent(equeue, ev);
+#ifdef OSI_THREAD_MOD
+	pthread_mutex_unlock(&equeue->lock);
+#else
 	if (equeue->listener) {
-		sched_spawn(equeue->sched, (work_t *)equeue->listener, 32, equeue, 1);
+		sched_spawn(stdsched, (work_t *)equeue->listener, 32, equeue, 1);
 		fiber_yield(NULL);
 	}
+#endif
+	sema_post(&equeue->dequeue_sem);
 }
 
 event_t *equeue_pop(equeue_t *equeue)
 {
 	event_t *ev;
 
+	sema_wait(&equeue->dequeue_sem);
+#ifdef OSI_THREAD_MOD
+	pthread_mutex_lock(&equeue->lock);
+#endif
 	if (!equeue->slot) ev = NULL;
 	else {
 		ev = *equeue->buf;
 		memmove(equeue->buf, equeue->buf + 1,
 			--equeue->slot * sizeof(event_t));
 	}
+#ifdef OSI_THREAD_MOD
+	pthread_mutex_unlock(&equeue->lock);
+#endif
+	sema_post(&equeue->enqueue_sem);
 	return ev;
 }
 
-void equeue_listen(equeue_t *equeue, sched_t *sched, listener_t *listener)
+void equeue_listen(equeue_t *equeue, thread_t *thread, listener_t *listener)
 {
 	equeue->listener = listener;
-	equeue->sched = sched;
+#ifdef OSI_THREAD_MOD
+	if (equeue->reactor_object) {
+		reactor_unregister(equeue->reactor_object);
+		equeue->reactor_object = NULL;
+	}
+	equeue->reactor_object = reactor_register(
+		&thread->reactor, equeue->dequeue_sem.handle, equeue,
+		(work_t *)listener, NULL);
+#endif /* OSI_THREAD_MOD */
 }

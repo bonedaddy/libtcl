@@ -27,6 +27,10 @@
 # define __OSI_EVENT_H
 
 #include <osi/sched.h>
+#include <osi/sema.h>
+
+struct thread;
+struct reactor_object;
 
 /*!@public
  *
@@ -53,14 +57,28 @@ typedef struct equeue equeue_t;
 typedef void *(listener_t)(equeue_t *ev);
 
 struct equeue {
+
 	event_t **buf;
+
 	size_t slot;
+
 	size_t size;
+
 	listener_t *listener;
-	sched_t *sched;
+
+	sema_t enqueue_sem;
+
+	sema_t dequeue_sem;
+
+#ifdef OSI_THREAD_MOD
+
+	pthread_mutex_t lock;
+
+	struct reactor_object *reactor_object;
+#endif /* OSI_THREAD_MOD */
 };
 
-__api__ void equeue_init(equeue_t *equeue);
+__api__ int equeue_init(equeue_t *equeue);
 
 __api__ void equeue_destroy(equeue_t *equeue);
 
@@ -70,7 +88,8 @@ __api__ void equeue_push(equeue_t *equeue, event_t *ev);
 
 __api__ event_t *equeue_pop(equeue_t *equeue);
 
-__api__ void equeue_listen(equeue_t *equeue, sched_t *s, listener_t *listener);
+__api__ void equeue_listen(equeue_t *equeue, struct thread *thread,
+	listener_t *listener);
 
 #endif /* __OSI_EVENT_H */
 /*!@} */

@@ -82,9 +82,7 @@ void reactor_stop(reactor_t *reactor)
 }
 
 reactor_object_t *reactor_register(reactor_t *reactor,
-	int fd, void *context,
-	void (*read_ready)(void *),
-	void (*write_ready)(void *))
+	int fd, void *context, work_t *read_ready, work_t *write_ready)
 {
 	reactor_object_t *object;
 	struct epoll_event event;

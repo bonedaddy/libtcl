@@ -21,13 +21,23 @@
 
 #include <errno.h>
 
+static sched_t __sched = {
+	.pool = {
+		NULL, 0, 0,
+		{ (node_t *)&__sched.pool.ready, (node_t *)&__sched.pool.ready, 0 },
+		{ (node_t *)&__sched.pool.dead, (node_t *)&__sched.pool.dead, 0 },
+	},
+	.scheduled = false
+};
+sched_t *stdsched = &__sched;
+
 void sched_init(sched_t *sched)
 {
 	sched->scheduled = false;
 	fiber_pool_init(&sched->pool);
 }
 
-static void __spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
+static fiber_t *__spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
 	int prio, uint8_t flags)
 {
 	fiber_t *fib;
@@ -47,18 +57,19 @@ static void __spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
 	fib->arg = arg;
 	fib->priority = prio;
 	fiber_pool_ready(&sched->pool, fib);
+	return fib;
 }
 
-void sched_spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
+fiber_t *sched_spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
 	int prio)
 {
-	__spawn(sched, work, ss, arg, prio, FIBER_NONE);
+	return __spawn(sched, work, ss, arg, prio, FIBER_NONE);
 }
 
-void sched_loop(sched_t *sched, work_t *work, uint16_t ss, void *arg,
+fiber_t *sched_loop(sched_t *sched, work_t *work, uint16_t ss, void *arg,
 	int prio)
 {
-	__spawn(sched, work, ss, arg, prio, FIBER_LOOP);
+	return __spawn(sched, work, ss, arg, prio, FIBER_LOOP);
 }
 
 void sched_start(sched_t *sched)
