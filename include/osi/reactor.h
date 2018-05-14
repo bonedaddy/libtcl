@@ -87,7 +87,7 @@ struct reactor {
 	bool object_removed;
 };
 
-struct reactor_object_t {
+struct reactor_object {
 
 	/*! the file descriptor to monitor for events. */
 	int fd;
@@ -106,6 +106,9 @@ struct reactor_object_t {
 
 	/*! function to call when the file descriptor becomes writeable. */
 	void (*write_ready)(void *context);
+
+	/*! List head. */
+	node_t hold;
 };
 
 /*!@public

@@ -95,3 +95,16 @@ node_t *list_pop(list_t *list)
 	list_detach(list, pred);
 	return pred;
 }
+
+bool list_contains(list_t *list, node_t *entry)
+{
+	node_t *head;
+
+	head = list->succ;
+	while (head != (node_t *)list) {
+		if (head == entry)
+			return true;
+		head = head->succ;
+	}
+	return false;
+}

@@ -139,6 +139,17 @@ __api__ node_t *list_pop(list_t *list);
  * TODO
  *
  * @param list
+ * @param entry
+ * @return
+ */
+__api__ bool list_contains(list_t *list, node_t *entry);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param list
  * @return
  */
 #define LIST_INITIALIZER(list) \

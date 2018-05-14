@@ -30,6 +30,8 @@ set(osi_INC_DIR ${CMAKE_CURRENT_LIST_DIR}/include)
 set(osi_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 set(osi_TEST_DIR ${CMAKE_CURRENT_LIST_DIR}/test)
 
+option(OSI_LOGGING "Enable Logging" ON)
+
 include(CheckFunctionExists)
 check_function_exists(bzero HAS_BZERO)
 check_function_exists(free HAS_FREE)
@@ -71,7 +73,7 @@ else ()
   target_compile_options(osi
     PUBLIC -Wall -Werror -Wextra -fomit-frame-pointer
     PUBLIC -Wno-missing-field-initializers
-    PUBLIC -Wno-unused-function
+    PUBLIC -Wno-unused-function -Wno-format
     PUBLIC -O$<$<CONFIG:Debug>:0 -g3>$<$<CONFIG:Release>:2>)
   if(CMAKE_C_FLAGS_RELEASE MATCHES "-O3")
     string(REPLACE "-O3" "-O2" CMAKE_C_FLAGS_RELEASE
