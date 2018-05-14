@@ -19,6 +19,8 @@
 #include <osi/fiber.h>
 #include <osi/string.h>
 
+#include <errno.h>
+
 #ifdef OS_PROVENCORE
 static fiber_t *__fiber = NULL;
 #elif defined(USE_CORO)
@@ -76,8 +78,9 @@ void fiber_init(fiber_t *fib, work_t *fn, uint16_t ss, uint8_t flags)
 #ifdef OS_PROVENCORE
 	if (!init) {
 		init = 1;
-		if (init_threads()) return NULL;
+		if (init_threads()) return;
 	}
+	fib->ss = ss;
 	fib->context = create_context(ss, 0, 0, 0, __coro(flags), fib);
 #elif defined(USE_CORO)
 	coro_stack_alloc(&fib->stack, ss);
@@ -97,7 +100,7 @@ int fiber_reuse(fiber_t *fib, work_t *fn, uint8_t flags)
 	}
 	if (fn) fib->fn = fn;
 #ifdef OS_PROVENCORE
-	fib->context = create_context(ss, 0, 0, 0, __coro(flags), fib);
+	fib->context = create_context(fib->ss, 0, 0, 0, __coro(flags), fib);
 #elif defined(USE_CORO)
 	(void)coro_destroy(&fib->context);
 	coro_create(&fib->context, __coro(flags), fib, fib->stack.sptr,

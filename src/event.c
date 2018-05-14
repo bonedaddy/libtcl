@@ -17,6 +17,7 @@
  */
 
 #include <osi/event.h>
+#include <osi/string.h>
 
 void equeue_init(equeue_t *equeue)
 {

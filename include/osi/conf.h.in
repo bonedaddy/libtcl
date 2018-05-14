@@ -24,7 +24,9 @@
 #ifndef __OSI_CONF_H
 # define __OSI_CONF_H
 
-#cmakedefine OS_PROVENCORE
+#ifndef OS_PROVENCORE
+# cmakedefine OS_PROVENCORE
+#endif
 
 #cmakedefine USE_CORO
 #cmakedefine USE_PICORO

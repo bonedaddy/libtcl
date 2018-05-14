@@ -133,10 +133,13 @@ struct fiber {
 
 	/** Picoro coroutine stack size */
 	size_t ss;
-#elif defined(HAS_SETJMP_H)
+#elif defined(OS_PROVENCORE)
 
 	/** ProveNCore coroutine context */
 	struct context *context;
+
+	/** ProveNCore coroutine stack size */
+	uint16_t ss;
 #endif
 };
 
