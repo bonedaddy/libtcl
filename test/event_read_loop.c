@@ -17,6 +17,7 @@
  */
 
 #include <osi/event.h>
+#include <osi/string.h>
 
 #include <assert.h>
 #include <stdio.h>
