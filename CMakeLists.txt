@@ -69,7 +69,7 @@ if (MSVC)
     PUBLIC /O$<$<CONFIG:Debug>:d>$<$<CONFIG:Release>:x>)
 else ()
   target_compile_options(osi
-    PUBLIC -Wall -Werror -Wextra -fomit-frame-pointer -ansi
+    PUBLIC -Wall -Werror -Wextra -fomit-frame-pointer
     PUBLIC -Wno-missing-field-initializers
     PUBLIC -Wno-unused-function
     PUBLIC -O$<$<CONFIG:Debug>:0 -g3>$<$<CONFIG:Release>:2>)

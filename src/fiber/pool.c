@@ -17,6 +17,7 @@
  */
 
 #include <osi/fiber/pool.h>
+#include <osi/string.h>
 
 void fiber_pool_init(fiber_pool_t *pool)
 {
