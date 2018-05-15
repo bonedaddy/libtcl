@@ -60,18 +60,23 @@ bool equeue_empty(equeue_t *equeue)
 	return empty;
 }
 
-size_t equeue_length(equeue_t *equeue)
+unsigned equeue_length(equeue_t *equeue)
 {
-	size_t len;
+	unsigned len;
 
 #ifdef OSI_THREADING
 	pthread_mutex_lock(&equeue->lock);
 #endif
-	len = equeue->list.len;
+	len = (unsigned)equeue->list.len;
 #ifdef OSI_THREADING
 	pthread_mutex_unlock(&equeue->lock);
 #endif
 	return len;
+}
+
+unsigned equeue_capacity(equeue_t *equeue)
+{
+	return equeue->capacity;
 }
 
 void equeue_push(equeue_t *equeue, node_t *ev)

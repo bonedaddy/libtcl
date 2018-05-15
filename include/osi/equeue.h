@@ -71,25 +71,117 @@ struct equeue {
 #endif /* OSI_THREADING */
 };
 
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param equeue
+ * @param capacity
+ * @return
+ */
 __api__ int equeue_init(equeue_t *equeue, unsigned capacity);
 
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param equeue
+ * @param dtor
+ */
 __api__ void equeue_destroy(equeue_t *equeue, node_dtor_t *dtor);
 
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param equeue
+ * @return
+ */
 __api__ bool equeue_empty(equeue_t *equeue);
 
-__api__ size_t equeue_length(equeue_t *equeue);
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param equeue
+ * @return
+ */
+__api__ unsigned equeue_length(equeue_t *equeue);
 
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param equeue
+ * @return
+ */
+__api__ unsigned equeue_capacity(equeue_t *equeue);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param equeue
+ * @param ev
+ */
 __api__ void equeue_push(equeue_t *equeue, node_t *ev);
 
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param equeue
+ * @return
+ */
 __api__ node_t *equeue_pop(equeue_t *equeue);
 
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param equeue
+ * @param ev
+ * @return
+ */
 __api__ bool equeue_trypush(equeue_t *equeue, node_t *ev);
 
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param equeue
+ * @return
+ */
 __api__ node_t *equeue_trypop(equeue_t *equeue);
 
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param equeue
+ * @param thread
+ * @param listener
+ */
 __api__ void equeue_listen(equeue_t *equeue, struct thread *thread,
 	listener_t *listener);
 
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param equeue
+ */
 __api__ void equeue_unlisten(equeue_t *equeue);
 
 #endif /* __OSI_EQUEUE_H */
