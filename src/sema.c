@@ -18,47 +18,31 @@
 
 #include <osi/sema.h>
 
-#if defined(HAS_SYS_EVENTFD_H)
-# include <sys/eventfd.h>
-# include <sys/fcntl.h>
-#endif
-
-struct sema {
-	int handle;
-};
-
-sema_t *sema_new(unsigned value)
+int sema_init(sema_t *sema, unsigned value)
 {
-	sema_t *sema;
-
-	sema = malloc(sizeof(sema_t));
-#if defined(HAS_SYS_EVENTFD_H)
-	sema->handle = eventfd(value, EFD_SEMAPHORE);
-	if (sema->handle < 0) {
-		free(sema);
-		sema = NULL;
-	}
+#if defined(OSI_THREAD_MOD)
+	if ((sema->handle = eventfd(value, EFD_SEMAPHORE)) < 0)
+		return sema->handle;
 #else
 	(void)value;
 	sema->handle = 0;
 #endif
-	return sema;
+	return 0;
 }
 
-void sema_del(sema_t *sema)
+void sema_destroy(sema_t *sema)
 {
-#if defined(HAS_SYS_EVENTFD_H)
+#if defined(OSI_THREAD_MOD)
 	if (sema->handle >= 0)
     	close(sema->handle);
 #else
 	sema->handle = 0;
 #endif
-	free(sema);
 }
 
 void sema_wait(sema_t *sema)
 {
-#if defined(HAS_SYS_EVENTFD_H)
+#if defined(OSI_THREAD_MOD)
 	eventfd_t value;
 
 	eventfd_read(sema->handle, &value);
@@ -69,7 +53,7 @@ void sema_wait(sema_t *sema)
 
 bool sema_trywait(sema_t *sema)
 {
-#if defined(HAS_SYS_EVENTFD_H)
+#if defined(OSI_THREAD_MOD)
 	int flags;
 	bool rc;
 	eventfd_t value;
@@ -91,7 +75,7 @@ bool sema_trywait(sema_t *sema)
 
 void sema_post(sema_t *sema)
 {
-#if defined(HAS_SYS_EVENTFD_H)
+#if defined(OSI_THREAD_MOD)
 	eventfd_write(sema->handle, 1ULL);
 #else
 	++sema->handle;

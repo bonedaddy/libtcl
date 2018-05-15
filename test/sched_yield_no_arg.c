@@ -16,11 +16,9 @@
  * limitations under the License.
  */
 
-#include <osi/fiber.h>
-#include <osi/sched.h>
+#include "test.h"
 
-#include <assert.h>
-#include <stdio.h>
+#include <osi/sched.h>
 
 static int counter = 0;
 
@@ -31,7 +29,7 @@ static void *fiber_func_0(void *ctx)
 		if (++counter > 10)
 			counter = 1;
 		printf("%d [%d/%d]\n", *(int *)ctx, i, 10);
-		assert(counter == *(int *)ctx);
+		ASSERT(counter == *(int *)ctx);
 		fiber_yield(NULL);
 	}
 	return NULL;
@@ -44,7 +42,7 @@ static void *fiber_func_1(void *ctx)
 		counter = 1;
 	for (int i = 0; i < 10; ++i) {
 		printf("%d [%d/%d]\n", *(int *)ctx, i, 10);
-		assert(counter == *(int *)ctx);
+		ASSERT(counter == *(int *)ctx);
 	}
 	return NULL;
 }
@@ -59,9 +57,9 @@ static void test_0(void)
 	for (int i = 0; i < 10; i++) {
 		sched_spawn(&sched, fiber_func_0, 32, names + i, 1);
 	}
-	assert(counter == 0);
+	ASSERT(counter == 0);
 	sched_start(&sched);
-	assert(counter == 10);
+	ASSERT(counter == 10);
 }
 
 static void test_1(void)
@@ -74,9 +72,9 @@ static void test_1(void)
 	for (int i = 0; i < 10; i++) {
 		sched_spawn(&sched, fiber_func_1, 32, names + i, 1);
 	}
-	assert(counter == 0);
+	ASSERT(counter == 0);
 	sched_start(&sched);
-	assert(counter == 10);
+	ASSERT(counter == 10);
 }
 
 int main(void)

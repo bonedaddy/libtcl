@@ -38,12 +38,23 @@ typedef struct sema sema_t;
 /*!@public
  *
  * @brief
+ * The sema structure definition
+ */
+struct sema {
+
+	/*! fd when `OSI_THREAD_MOD', counter otherwise */
+	int handle;
+};
+
+/*!@public
+ *
+ * @brief
  * TODO
  *
  * @param value
  * @return
  */
-__api__ sema_t *sema_new(unsigned value);
+__api__ int sema_init(sema_t *sema, unsigned value);
 
 /*!@public
  *
@@ -52,7 +63,7 @@ __api__ sema_t *sema_new(unsigned value);
  *
  * @param sema
  */
-__api__ void sema_del(sema_t *sema);
+__api__ void sema_destroy(sema_t *sema);
 
 /*!@public
  *

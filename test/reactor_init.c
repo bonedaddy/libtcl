@@ -18,39 +18,19 @@
 
 #include "test.h"
 
-#include <osi/sched.h>
-
-static int counter = 0;
-static sched_t sched;
-
-static void *loop1(void *arg)
-{
-	(void)arg;
-	printf("loop1: %d\n", ++counter);
-	return (NULL);
-}
-
-static void *loop2(void *arg)
-{
-	(void)arg;
-	printf("loop2: %d\n", ++counter);
-	return (NULL);
-}
-
-static void *stop(void *arg)
-{
-	(void)arg;
-	if (counter >= 42)
-		sched_stop(&sched);
-	return (NULL);
-}
+#include <osi/reactor.h>
 
 int main(void)
 {
-	sched_init(&sched);
-	sched_loop(&sched, loop1, 32, NULL, 1);
-	sched_loop(&sched, loop2, 32, NULL, 1);
-	sched_loop(&sched, stop, 32, NULL, 1);
-	sched_start(&sched);
+	reactor_t reactor;
+
+	ASSERT(reactor_init(&reactor) == 0);
+	ASSERT(reactor.epoll_fd != INVALID_FD);
+	ASSERT(reactor.event_fd != INVALID_FD);
+	ASSERT(list_pop(&reactor.invalidation_list) == NULL);
+	reactor_destroy(&reactor);
+	ASSERT(reactor.epoll_fd == INVALID_FD);
+	ASSERT(reactor.event_fd == INVALID_FD);
+	ASSERT(list_pop(&reactor.invalidation_list) == NULL);
 	return 0;
 }

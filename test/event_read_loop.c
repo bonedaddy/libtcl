@@ -16,11 +16,9 @@
  * limitations under the License.
  */
 
-#include <osi/event.h>
-#include <osi/string.h>
+#include "test.h"
 
-#include <assert.h>
-#include <stdio.h>
+#include <osi/event.h>
 
 static equeue_t queue;
 static int counter = 0;
@@ -78,7 +76,7 @@ int main(void)
 	sched_init(&sched);
 	sched_loop(&sched, (work_t *)writer, 32, &sched, 1);
 	sched_start(&sched);
-	assert(counter == 42);
+	ASSERT(counter == 42);
 
 	equeue_destroy(&queue);
 	return 0;

@@ -61,6 +61,10 @@
 # cmakedefine HAS_UNISTD_H
 #endif
 
+#ifndef OSI_LOGGING
+# cmakedefine OSI_LOGGING
+#endif
+
 #if defined(HAS_SYS_EVENTFD_H) && defined(HAS_SYS_EPOLL_H) \
   && defined(HAS_PTHREAD_H) && defined(HAS_UNISTD_H)
 # define OSI_THREAD_MOD
@@ -73,6 +77,10 @@
 #endif
 
 #include <pp.h>
+
+#ifndef INVALID_FD
+# define INVALID_FD (-1)
+#endif
 
 #endif /* __OSI_CONF_H */
 
