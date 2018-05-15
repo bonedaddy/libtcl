@@ -67,7 +67,7 @@ bool sema_trywait(sema_t *sema)
 
 	return rc;
 #else
-	if (sema->handle) return false;
+	if (!sema->handle) return false;
 	--sema->handle;
 	return true;
 #endif

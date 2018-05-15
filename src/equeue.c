@@ -157,6 +157,8 @@ void equeue_listen(equeue_t *equeue, thread_t *thread, listener_t *listener)
 	equeue->reactor_object = reactor_register(
 		&thread->reactor, equeue->dequeue_sem.handle, equeue,
 		(reactor_ready_t *)listener, NULL);
+#else
+	(void)thread;
 #endif /* OSI_THREADING */
 }
 
