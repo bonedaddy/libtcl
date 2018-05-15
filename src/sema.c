@@ -31,22 +31,22 @@ int sema_init(sema_t *sema, unsigned value)
 
 void sema_destroy(sema_t *sema)
 {
-#if defined(OSI_THREADING)
+#ifdef OSI_THREADING
 	if (sema->handle >= 0)
     	close(sema->handle);
-#endif
+#endif /* OSI_THREADING */
 	sema->handle = INVALID_FD;
 }
 
 void sema_wait(sema_t *sema)
 {
-#if defined(OSI_THREADING)
+#ifdef OSI_THREADING
 	eventfd_t value;
 
 	eventfd_read(sema->handle, &value);
 #else
 	if (sema->handle) --sema->handle;
-#endif
+#endif /* OSI_THREADING */
 }
 
 bool sema_trywait(sema_t *sema)
@@ -70,14 +70,14 @@ bool sema_trywait(sema_t *sema)
 	if (!sema->handle) return false;
 	--sema->handle;
 	return true;
-#endif
+#endif /* OSI_THREADING */
 }
 
 void sema_post(sema_t *sema)
 {
-#if defined(OSI_THREADING)
+#ifdef OSI_THREADING
 	eventfd_write(sema->handle, 1ULL);
 #else
 	++sema->handle;
-#endif
+#endif /* OSI_THREADING */
 }
