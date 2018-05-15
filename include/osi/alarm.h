@@ -27,6 +27,7 @@
 # define __OSI_ALARM_H
 
 #include <osi/equeue.h>
+#include <osi/thread.h>
 
 /*!@public
  *
@@ -52,7 +53,6 @@ struct alarm {
 typedef void (*alarm_callback_t)(void *data);
 typedef uint64_t period_ms_t;
 typedef struct fixed_queue_t fixed_queue_t;
-typedef struct thread_t thread_t;
 
 void alarm_cancel(alarm_t *alarm);
 void alarm_set(alarm_t *alarm, period_ms_t interval_ms,

@@ -18,6 +18,9 @@
 
 #include "test.h"
 
+#ifdef OS_PROVENCORE
+#include <unistd.h>
+#endif
 #include <osi/thread.h>
 
 typedef struct {
@@ -31,7 +34,11 @@ static void *sleep_then_increment_counter(void *context) {
 	helper = (dummy_t *)context;
 	ASSERT(helper);
 	ASSERT(helper->sema);
+#ifdef OS_PROVENCORE
+	sleep(50 * 1000);
+#else
 	usleep(50 * 1000);
+#endif
 	++helper->counter;
 	sema_post(helper->sema);
 	return NULL;

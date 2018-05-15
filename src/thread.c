@@ -21,6 +21,7 @@
 #include <osi/log.h>
 #include <osi/thread.h>
 #include <osi/sema.h>
+#include <osi/string.h>
 
 #define DEFAULT_WORK_QUEUE_CAPACITY 128
 
@@ -74,7 +75,7 @@ static void *__run_thread(void *context)
 	}
 #endif
 	sema_post(&arg->start_sem);
-	LOG_INFO("thread name %s started", thread->name);
+	LOG_INFO(LOG_TAG, "thread name %s started", thread->name);
 
 
 #ifdef OSI_THREADING
@@ -114,9 +115,9 @@ static void *__run_thread(void *context)
 	}
 
 	if (count > equeue_capacity(&thread->work_queue))
-		LOG_DEBUG("Growing event queue on shutdown.");
+		LOG_DEBUG(LOG_TAG, "Growing event queue on shutdown.");
 
-	LOG_INFO("thread name %s exited", thread->name);
+	LOG_INFO(LOG_TAG, "thread name %s exited", thread->name);
 	return NULL;
 }
 
