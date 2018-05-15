@@ -18,51 +18,44 @@
 
 #pragma once
 
-/*!@file osi/event.h
+/*!@file osi/equeue.h
  * @author uael
  *
- * @addtogroup osi.event @{
+ * @addtogroup osi.equeue @{
  */
-#ifndef __OSI_EVENT_H
-# define __OSI_EVENT_H
+#ifndef __OSI_EQUEUE_H
+# define __OSI_EQUEUE_H
 
 #include <osi/sched.h>
+#include <osi/reactor.h>
 #include <osi/sema.h>
 
 struct thread;
-struct reactor_object;
 
 /*!@public
  *
  * @brief
- * The event structure.
+ * The event queue structure declaration.
  */
-typedef struct event event_t;
-
-/*!@public
- *
- * @brief
- * The event structure implementation.
- */
-struct event {
-	uint16_t event;
-	uint16_t len;
-	uint16_t offset;
-	uint16_t layer;
-	uint8_t data[];
-};
-
 typedef struct equeue equeue_t;
 
-typedef void *(listener_t)(equeue_t *ev);
+/*!@public
+ *
+ * @brief
+ * The event queue listener function callback.
+ */
+typedef void (listener_t)(equeue_t *equeue);
 
+/*!@public
+ *
+ * @brief
+ * The event queue structure definition.
+ */
 struct equeue {
 
-	event_t **buf;
+	list_t list;
 
-	size_t slot;
-
-	size_t size;
+	uint32_t capacity;
 
 	listener_t *listener;
 
@@ -70,26 +63,34 @@ struct equeue {
 
 	sema_t dequeue_sem;
 
-#ifdef OSI_THREAD_MOD
+#ifdef OSI_THREADING
 
 	pthread_mutex_t lock;
 
-	struct reactor_object *reactor_object;
-#endif /* OSI_THREAD_MOD */
+	reactor_object_t *reactor_object;
+#endif /* OSI_THREADING */
 };
 
-__api__ int equeue_init(equeue_t *equeue);
+__api__ int equeue_init(equeue_t *equeue, unsigned capacity);
 
-__api__ void equeue_destroy(equeue_t *equeue);
+__api__ void equeue_destroy(equeue_t *equeue, node_dtor_t *dtor);
 
-__api__ void equeue_push_silent(equeue_t *equeue, event_t *ev);
+__api__ bool equeue_empty(equeue_t *equeue);
 
-__api__ void equeue_push(equeue_t *equeue, event_t *ev);
+__api__ size_t equeue_length(equeue_t *equeue);
 
-__api__ event_t *equeue_pop(equeue_t *equeue);
+__api__ void equeue_push(equeue_t *equeue, node_t *ev);
+
+__api__ node_t *equeue_pop(equeue_t *equeue);
+
+__api__ bool equeue_trypush(equeue_t *equeue, node_t *ev);
+
+__api__ node_t *equeue_trypop(equeue_t *equeue);
 
 __api__ void equeue_listen(equeue_t *equeue, struct thread *thread,
 	listener_t *listener);
 
-#endif /* __OSI_EVENT_H */
+__api__ void equeue_unlisten(equeue_t *equeue);
+
+#endif /* __OSI_EQUEUE_H */
 /*!@} */

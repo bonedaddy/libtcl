@@ -22,7 +22,7 @@
 #include <osi/string.h>
 #include <osi/log.h>
 
-#ifdef OSI_THREAD_MOD
+#ifdef OSI_THREADING
 # ifndef EFD_SEMAPHORE
 #   define EFD_SEMAPHORE (1 << 0)
 # endif /* EFD_SEMAPHORE */
@@ -81,8 +81,8 @@ void reactor_stop(reactor_t *reactor)
 	eventfd_write(reactor->event_fd, __event_reactor_stop);
 }
 
-reactor_object_t *reactor_register(reactor_t *reactor,
-	int fd, void *context, work_t *read_ready, work_t *write_ready)
+reactor_object_t *reactor_register(reactor_t *reactor, int fd, void *context,
+	reactor_ready_t *read_ready, reactor_ready_t *write_ready)
 {
 	reactor_object_t *object;
 	struct epoll_event event;
@@ -198,4 +198,4 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 	return REACTOR_STATUS_DONE;
 }
 
-#endif /* OSI_THREAD_MOD */
+#endif /* OSI_THREADING */

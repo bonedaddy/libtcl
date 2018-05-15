@@ -35,7 +35,7 @@
  * properly when the stack is running on multi threads.
  * His implementation depends on `pthread' and `eventfd'.
  */
-#ifdef OSI_THREAD_MOD
+#ifdef OSI_THREADING
 
 /*!@public
  *
@@ -57,6 +57,13 @@ typedef struct reactor_object reactor_object_t;
  * Reactor status.
  */
 typedef enum reactor_st reactor_st_t;
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ */
+typedef void (reactor_ready_t)(void *arg);
 
 /*!@public
  *
@@ -102,10 +109,10 @@ struct reactor_object {
 	pthread_mutex_t lock;
 
 	/*! function to call when the file descriptor becomes readable. */
-	work_t *read_ready;
+	reactor_ready_t *read_ready;
 
 	/*! function to call when the file descriptor becomes writeable. */
-	work_t *write_ready;
+	reactor_ready_t *write_ready;
 
 	/*! List head. */
 	node_t hold;
@@ -201,8 +208,8 @@ __api__ void reactor_stop(reactor_t *reactor);
  * @param write_ready Function to call when the fd becomes writeable.
  * @return            A fresh reactor object on success, NULL otherwise.
  */
-__api__ reactor_object_t *reactor_register(reactor_t *reactor,
-	int fd, void *context, work_t *read_ready, work_t *write_ready);
+__api__ reactor_object_t *reactor_register(reactor_t *reactor, int fd,
+	void *context, reactor_ready_t *read_ready, reactor_ready_t *write_ready);
 
 /*!@public
  *
@@ -215,7 +222,7 @@ __api__ reactor_object_t *reactor_register(reactor_t *reactor,
  */
 __api__ void reactor_unregister(reactor_object_t *obj);
 
-#endif /* OSI_THREAD_MOD */
+#endif /* OSI_THREADING */
 
 #endif /* __OSI_REACTOR_H */
 /*!@} */

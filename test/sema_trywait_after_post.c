@@ -16,38 +16,19 @@
  * limitations under the License.
  */
 
-#pragma once
+#include "test.h"
 
-/*!@file osi/alarm.h
- * @author uael
- *
- * @addtogroup osi.alarm @{
- */
-#ifndef __OSI_ALARM_H
-# define __OSI_ALARM_H
+#include <osi/sema.h>
 
-#include <osi/equeue.h>
+int main(void)
+{
+	sema_t sema;
 
-/*!@public
- *
- * @brief
- * The alarm structure declaration.
- */
-typedef struct alarm alarm_t;
-
-/*!@public
- *
- * @brief
- * The alarm structure definition.
- */
-struct alarm {
-	const char *name;
-	uint64_t last_exec;
-	uint64_t interval;
-	bool periodic;
-	void *data;
-	work_t *work;
-};
-
-#endif /* __OSI_ALARM_H */
-/*!@} */
+	ASSERT_EQ(0, sema_init(&sema, 0));
+	ASSERT_FALSE(sema_trywait(&sema));
+	sema_post(&sema);
+	sema_wait(&sema);
+	sema_destroy(&sema);
+	ASSERT_EQ(INVALID_FD, sema.handle);
+	return 0;
+}

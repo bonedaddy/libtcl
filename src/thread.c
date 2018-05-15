@@ -19,19 +19,37 @@
 #include <osi/thread.h>
 #include <osi/sema.h>
 
-#ifdef OSI_THREAD_MOD
-typedef struct start_arg {
+#ifdef OSI_THREADING
+typedef struct {
 	thread_t *thread;
 	sema_t start_sem;
 	int error;
 } start_arg_t;
 
-static void *__run_thread(void *start_arg);
-#endif /* OSI_THREAD_MOD */
+typedef struct {
+	work_t *func;
+	void *context;
+	node_t hold;
+} work_item_t;
+
+static void *__run_thread(void *start_arg)
+{
+	(void)start_arg;
+	return NULL;
+}
+
+static void __work_dtor(node_t *head)
+{
+	work_item_t *work;
+
+	work = LIST_ENTRY(head, work_item_t, hold);
+	free(work);
+}
+#endif /* OSI_THREADING */
 
 int thread_init(thread_t *thread, char const *name)
 {
-#ifdef OSI_THREAD_MOD
+#ifdef OSI_THREADING
 	start_arg_t start;
 
 	if (sema_init(&start.start_sem, 0))
@@ -42,18 +60,18 @@ int thread_init(thread_t *thread, char const *name)
 	start.error = 0;
 	strncpy(thread->name, name, THREAD_NAME_MAX);
 	reactor_init(&thread->reactor);
-	equeue_init(&thread->work_queue);
+	equeue_init(&thread->work_queue, 128);
 	pthread_create(&thread->pthread, NULL, __run_thread, &start);
 	sema_wait(&start.start_sem);
 	sema_destroy(&start.start_sem);
 	if (start.error) {
-		equeue_destroy(&thread->work_queue);
+		equeue_destroy(&thread->work_queue, __work_dtor);
 		reactor_destroy(&thread->reactor);
 	}
 #else
 	strncpy(thread->name, name, THREAD_NAME_MAX);
 	list_init(&thread->fibers);
-#endif /* OSI_THREAD_MOD */
+#endif /* OSI_THREADING */
 	return 0;
 }
 
@@ -61,17 +79,17 @@ void thread_destroy(thread_t *thread)
 {
 	thread_stop(thread);
 	thread_join(thread);
-#ifdef OSI_THREAD_MOD
-	equeue_destroy(&thread->work_queue);
+#ifdef OSI_THREADING
+	equeue_destroy(&thread->work_queue, __work_dtor);
 	reactor_destroy(&thread->reactor);
 #else
-	list_init(&thread->fibers);
-#endif /* OSI_THREAD_MOD */
+	/* TODO */
+#endif /* OSI_THREADING */
 }
 
 void thread_join(thread_t *thread)
 {
-#ifdef OSI_THREAD_MOD
+#ifdef OSI_THREADING
 	if (!thread->is_joined) {
 		thread->is_joined = true;
 		pthread_join(thread->pthread, NULL);
@@ -85,26 +103,34 @@ void thread_join(thread_t *thread)
 		while (!fiber_isdone(fiber))
 			fiber_call(fiber, NULL);
 	}
-#endif /* OSI_THREAD_MOD */
+#endif /* OSI_THREADING */
 }
 
 bool thread_post(thread_t *thread, work_t *work, void *context)
 {
-#ifdef OSI_THREAD_MOD
+	(void)thread;
+	(void)work;
+	(void)context;
+#ifdef OSI_THREADING
 #else
-#endif /* OSI_THREAD_MOD */
+#endif /* OSI_THREADING */
+	return true;
 }
 
 void thread_stop(thread_t *thread)
 {
-#ifdef OSI_THREAD_MOD
+	(void)thread;
+#ifdef OSI_THREADING
 #else
-#endif /* OSI_THREAD_MOD */
+#endif /* OSI_THREADING */
 }
 
 bool thread_priority(thread_t *thread, int priority)
 {
-#ifdef OSI_THREAD_MOD
+	(void)thread;
+	(void)priority;
+#ifdef OSI_THREADING
 #else
-#endif /* OSI_THREAD_MOD */
+#endif /* OSI_THREADING */
+	return true;
 }

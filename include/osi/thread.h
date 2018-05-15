@@ -27,7 +27,7 @@
 # define __OSI_THREAD_H
 
 #include <osi/reactor.h>
-#include <osi/event.h>
+#include <osi/equeue.h>
 
 #define THREAD_NAME_MAX 16
 
@@ -47,7 +47,7 @@ struct thread {
 
 	char name[THREAD_NAME_MAX + 1];
 
-#ifdef OSI_THREAD_MOD
+#ifdef OSI_THREADING
 
 	bool is_joined;
 

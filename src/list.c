@@ -22,23 +22,36 @@
 
 void node_init(node_t *node)
 {
-	node->pred = node->succ = (node_t *) node;
+	node->prev = node->next = node;
 }
 
 void list_init(list_t *list)
 {
-	list->pred = list->succ = (node_t *) list;
+	list->prev = list->next = (node_t *) list;
 	list->len = 0;
+}
+
+void list_destroy(list_t *list, node_dtor_t *dtor)
+{
+	node_t *head;
+
+	while ((head = list_pop(list)))
+		if (dtor) dtor(head);
+}
+
+bool list_empty(list_t *list)
+{
+	return list->len == 0;
 }
 
 void list_push(list_t *list, node_t *entry)
 {
 	if (list == NULL || entry == NULL)
 		return;
-	entry->succ = list->succ;
-	entry->pred = (node_t *) list;
-	list->succ->pred = entry;
-	list->succ = entry;
+	entry->next = list->next;
+	entry->prev = (node_t *) list;
+	list->next->prev = entry;
+	list->next = entry;
 	list->len++;
 }
 
@@ -46,10 +59,10 @@ void list_unshift(list_t *list, node_t *entry)
 {
 	if (list == NULL || entry == NULL)
 		return;
-	entry->pred = list->pred;
-	entry->succ = (node_t *) list;
-	list->pred->succ = entry;
-	list->pred = entry;
+	entry->prev = list->prev;
+	entry->next = (node_t *) list;
+	list->prev->next = entry;
+	list->prev = entry;
 	list->len++;
 }
 
@@ -60,14 +73,14 @@ void list_detach(list_t *list, node_t *entry)
 
 	if (entry == NULL)
 		return;
-	succ = entry->succ;
-	pred = entry->pred;
+	succ = entry->next;
+	pred = entry->prev;
 	if (succ == NULL || pred == NULL)
 		return;
-	pred->succ = succ;
-	succ->pred = pred;
+	pred->next = succ;
+	succ->prev = pred;
 	list->len--;
-	entry->succ = entry->pred = entry;
+	entry->next = entry->prev = entry;
 }
 
 node_t *list_shift(list_t *list)
@@ -76,7 +89,7 @@ node_t *list_shift(list_t *list)
 
 	if (list == NULL)
 		return NULL;
-	succ = list->succ;
+	succ = list->next;
 	if (succ == (node_t *) list)
 		return NULL;
 	list_detach(list, succ);
@@ -89,7 +102,7 @@ node_t *list_pop(list_t *list)
 
 	if (list == NULL)
 		return NULL;
-	pred = list->pred;
+	pred = list->prev;
 	if (pred == (node_t *) list)
 		return NULL;
 	list_detach(list, pred);
@@ -100,11 +113,11 @@ bool list_contains(list_t *list, node_t *entry)
 {
 	node_t *head;
 
-	head = list->succ;
+	head = list->next;
 	while (head != (node_t *)list) {
 		if (head == entry)
 			return true;
-		head = head->succ;
+		head = head->next;
 	}
 	return false;
 }

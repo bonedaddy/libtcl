@@ -42,24 +42,31 @@ typedef struct node node_t;
  * @brief
  * TODO
  */
+typedef void (node_dtor_t)(node_t *node);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ */
 typedef struct list list_t;
 
 struct node {
 
 	/** Predecessor */
-	node_t *pred;
+	node_t *prev;
 
 	/** Successor */
-	node_t *succ;
+	node_t *next;
 };
 
 struct list {
 
 	/** Predecessor */
-	node_t *pred;
+	node_t *prev;
 
 	/** Successor */
-	node_t *succ;
+	node_t *next;
 
 	/** The count in the list */
 	size_t len;
@@ -82,6 +89,26 @@ __api__ void node_init(node_t *node);
  * @param list
  */
 __api__ void list_init(list_t *list);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param list
+ * @param dtor
+ */
+__api__ void list_destroy(list_t *list, node_dtor_t *dtor);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param list
+ * @return
+ */
+__api__ bool list_empty(list_t *list);
 
 /*!@public
  *

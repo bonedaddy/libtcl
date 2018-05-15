@@ -16,38 +16,22 @@
  * limitations under the License.
  */
 
-#pragma once
-
-/*!@file osi/alarm.h
- * @author uael
- *
- * @addtogroup osi.alarm @{
- */
-#ifndef __OSI_ALARM_H
-# define __OSI_ALARM_H
+#include "test.h"
 
 #include <osi/equeue.h>
 
-/*!@public
- *
- * @brief
- * The alarm structure declaration.
- */
-typedef struct alarm alarm_t;
+int main(void)
+{
+	equeue_t equeue;
 
-/*!@public
- *
- * @brief
- * The alarm structure definition.
- */
-struct alarm {
-	const char *name;
-	uint64_t last_exec;
-	uint64_t interval;
-	bool periodic;
-	void *data;
-	work_t *work;
-};
+	ASSERT_EQ(0, equeue_init(&equeue, 0));
+	ASSERT_EQ(0, equeue_length(&equeue));
+	ASSERT_TRUE(equeue_empty(&equeue));
+	equeue_destroy(&equeue, NULL);
 
-#endif /* __OSI_ALARM_H */
-/*!@} */
+	ASSERT_EQ(0, equeue_init(&equeue, 1));
+	ASSERT_EQ(0, equeue_length(&equeue));
+	ASSERT_TRUE(equeue_empty(&equeue));
+	equeue_destroy(&equeue, NULL);
+	return 0;
+}

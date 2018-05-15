@@ -20,40 +20,38 @@
 
 int sema_init(sema_t *sema, unsigned value)
 {
-#if defined(OSI_THREAD_MOD)
+#ifdef OSI_THREADING
 	if ((sema->handle = eventfd(value, EFD_SEMAPHORE)) < 0)
 		return sema->handle;
 #else
-	(void)value;
-	sema->handle = 0;
-#endif
+	sema->handle = value;
+#endif /* OSI_THREADING */
 	return 0;
 }
 
 void sema_destroy(sema_t *sema)
 {
-#if defined(OSI_THREAD_MOD)
+#if defined(OSI_THREADING)
 	if (sema->handle >= 0)
     	close(sema->handle);
-#else
-	sema->handle = 0;
 #endif
+	sema->handle = INVALID_FD;
 }
 
 void sema_wait(sema_t *sema)
 {
-#if defined(OSI_THREAD_MOD)
+#if defined(OSI_THREADING)
 	eventfd_t value;
 
 	eventfd_read(sema->handle, &value);
 #else
-	--sema->handle;
+	if (sema->handle) --sema->handle;
 #endif
 }
 
 bool sema_trywait(sema_t *sema)
 {
-#if defined(OSI_THREAD_MOD)
+#ifdef OSI_THREADING
 	int flags;
 	bool rc;
 	eventfd_t value;
@@ -63,19 +61,21 @@ bool sema_trywait(sema_t *sema)
 	if (fcntl(sema->handle, F_SETFL, flags | O_NONBLOCK) < 0)
 		return false;
 	rc = true;
-	if (eventfd_read(sema->handle, &value))
+	if (eventfd_read(sema->handle, &value) < 0)
     	rc = false;
 	fcntl(sema->handle, F_SETFL, flags);
 
 	return rc;
 #else
-	return --sema->handle == 0;
+	if (sema->handle) return false;
+	--sema->handle;
+	return true;
 #endif
 }
 
 void sema_post(sema_t *sema)
 {
-#if defined(OSI_THREAD_MOD)
+#if defined(OSI_THREADING)
 	eventfd_write(sema->handle, 1ULL);
 #else
 	++sema->handle;

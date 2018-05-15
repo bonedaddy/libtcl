@@ -16,38 +16,37 @@
  * limitations under the License.
  */
 
-#pragma once
-
-/*!@file osi/alarm.h
- * @author uael
- *
- * @addtogroup osi.alarm @{
- */
-#ifndef __OSI_ALARM_H
-# define __OSI_ALARM_H
+#include "test.h"
 
 #include <osi/equeue.h>
 
-/*!@public
- *
- * @brief
- * The alarm structure declaration.
- */
-typedef struct alarm alarm_t;
+static const char *DUMMY_DATA_STRING = "Dummy data string";
 
-/*!@public
- *
- * @brief
- * The alarm structure definition.
- */
-struct alarm {
-	const char *name;
-	uint64_t last_exec;
-	uint64_t interval;
-	bool periodic;
-	void *data;
-	work_t *work;
-};
+typedef struct {
+	node_t hold;
+	char const *data;
+} dummy_t;
 
-#endif /* __OSI_ALARM_H */
-/*!@} */
+int main(void)
+{
+	equeue_t equeue;
+	dummy_t dummy, *entry;
+	node_t *head;
+
+	ASSERT_EQ(0, equeue_init(&equeue, 1));
+	ASSERT_EQ(0, equeue_length(&equeue));
+	ASSERT_TRUE(equeue_empty(&equeue));
+
+	node_init(&dummy.hold);
+	dummy.data = DUMMY_DATA_STRING;
+
+	ASSERT_TRUE(equeue_trypush(&equeue, &dummy.hold));
+	ASSERT_FALSE(equeue_empty(&equeue));
+
+	ASSERT(head = equeue_trypop(&equeue));
+	entry = LIST_ENTRY(head, dummy_t, hold);
+	ASSERT_STREQ(DUMMY_DATA_STRING, entry->data);
+
+	equeue_destroy(&equeue, NULL);
+	return 0;
+}
