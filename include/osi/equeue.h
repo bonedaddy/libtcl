@@ -68,6 +68,9 @@ struct equeue {
 	pthread_mutex_t lock;
 
 	reactor_object_t *reactor_object;
+#else
+
+	struct thread *thread;
 #endif /* OSI_THREADING */
 };
 

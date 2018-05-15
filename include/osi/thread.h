@@ -47,18 +47,18 @@ struct thread {
 
 	char name[THREAD_NAME_MAX + 1];
 
-#ifdef OSI_THREADING
-
 	bool is_joined;
+
+	equeue_t work_queue;
+
+#ifdef OSI_THREADING
 
 	pthread_t pthread;
 
 	reactor_t reactor;
-
-	equeue_t work_queue;
 #else
 
-	list_t fibers;
+	fiber_t fiber;
 #endif
 };
 

@@ -163,7 +163,7 @@ void equeue_listen(equeue_t *equeue, thread_t *thread, listener_t *listener)
 		&thread->reactor, equeue->dequeue_sem.handle, equeue,
 		(reactor_ready_t *)listener, NULL);
 #else
-	(void)thread;
+	equeue->thread = thread;
 #endif /* OSI_THREADING */
 }
 

@@ -81,6 +81,5 @@ void sema_post(sema_t *sema)
 	eventfd_write(sema->handle, 1ULL);
 #else
 	++sema->handle;
-	fiber_yield(NULL);
 #endif /* OSI_THREADING */
 }

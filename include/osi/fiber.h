@@ -220,5 +220,14 @@ __api__ bool fiber_isdone(fiber_t *fiber);
  */
 __api__ void *fiber_yield(void *arg);
 
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @return
+ */
+__api__ fiber_t *fiber_current(void);
+
 #endif /* __OSI_FIBER_H */
 /*!@} */

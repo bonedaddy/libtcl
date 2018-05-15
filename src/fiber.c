@@ -21,12 +21,8 @@
 
 #include <errno.h>
 
-#ifdef OS_PROVENCORE
-static fiber_t *__fiber = NULL;
-#elif defined(USE_CORO)
 static fiber_t __s_fiber = { };
 static fiber_t *__fiber = &__s_fiber;
-#endif
 
 #ifdef OS_PROVENCORE
 static int
@@ -158,8 +154,10 @@ void *fiber_yield(void *arg)
 	fiber_t *caller;
 	fiber_t *fib;
 
-	if (!(fib = __fiber) || !fib->caller)
+	if (!(fib = __fiber))
 		return NULL;
+	if (!fib->caller)
+		return fiber_call(fib, arg);
 
 	fib->result = arg;
 	caller = fib->caller;
@@ -180,4 +178,9 @@ void *fiber_yield(void *arg)
 # endif
 	return fib->arg;
 #endif
+}
+
+fiber_t *fiber_current(void)
+{
+	return __fiber->caller ? __fiber : NULL;
 }
