@@ -29,7 +29,7 @@ typedef struct {
 typedef struct {
 	work_t *func;
 	void *context;
-	node_t hold;
+	head_t hold;
 } work_item_t;
 
 static void *__run_thread(void *start_arg)
@@ -38,7 +38,7 @@ static void *__run_thread(void *start_arg)
 	return NULL;
 }
 
-static void __work_dtor(node_t *head)
+static void __work_dtor(head_t *head)
 {
 	work_item_t *work;
 
@@ -95,7 +95,7 @@ void thread_join(thread_t *thread)
 		pthread_join(thread->pthread, NULL);
 	}
 #else
-	node_t *head;
+	head_t *head;
 	fiber_t *fiber;
 
 	while ((head = list_pop(&thread->fibers))) {

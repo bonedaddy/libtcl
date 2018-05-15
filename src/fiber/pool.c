@@ -28,7 +28,7 @@ void fiber_pool_init(fiber_pool_t *pool)
 
 void fiber_pool_destroy(fiber_pool_t *pool)
 {
-	node_t *head;
+	head_t *head;
 	fiber_t *fib;
 
 	/* Release ready fibers */
@@ -48,7 +48,7 @@ void fiber_pool_destroy(fiber_pool_t *pool)
 
 fiber_t *fiber_pool_new(fiber_pool_t *pool)
 {
-	node_t *head;
+	head_t *head;
 	fiber_t *fiber;
 
 	if ((head = list_pop(&pool->dead)))
@@ -70,14 +70,14 @@ fiber_t *fiber_pool_new(fiber_pool_t *pool)
 
 void fiber_pool_ready(fiber_pool_t *pool, fiber_t *fiber)
 {
-	node_t *head;
-	node_t *entry;
+	head_t *head;
+	head_t *entry;
 	fiber_t *fib;
 
 	fiber->status = OSI_FIB_READY;
 	head = pool->ready.next;
 	entry = &fiber->hold;
-	while (head != (node_t *)&pool->ready) {
+	while (head != (head_t *)&pool->ready) {
 		fib = LIST_ENTRY(head, fiber_t, hold);
 		if (fiber->priority > fib->priority) {
 			entry->prev = head->prev;
@@ -101,7 +101,7 @@ void fiber_pool_dead(fiber_pool_t *pool, fiber_t *fiber)
 
 fiber_t *fiber_pool_pop(fiber_pool_t *pool)
 {
-	node_t *head;
+	head_t *head;
 
 	if ((head = list_shift(&pool->ready)))
 		return LIST_ENTRY(head, fiber_t, hold);

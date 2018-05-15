@@ -35,7 +35,7 @@ int equeue_init(equeue_t *equeue, unsigned capacity)
 	return 0;
 }
 
-void equeue_destroy(equeue_t *equeue, node_dtor_t *dtor)
+void equeue_destroy(equeue_t *equeue, head_dtor_t *dtor)
 {
 	equeue_unlisten(equeue);
 	list_destroy(&equeue->list, dtor);
@@ -79,7 +79,7 @@ unsigned equeue_capacity(equeue_t *equeue)
 	return equeue->capacity;
 }
 
-void equeue_push(equeue_t *equeue, node_t *ev)
+void equeue_push(equeue_t *equeue, head_t *ev)
 {
 	sema_wait(&equeue->enqueue_sem);
 
@@ -98,9 +98,9 @@ void equeue_push(equeue_t *equeue, node_t *ev)
 	sema_post(&equeue->dequeue_sem);
 }
 
-node_t *equeue_pop(equeue_t *equeue)
+head_t *equeue_pop(equeue_t *equeue)
 {
-	node_t *ev;
+	head_t *ev;
 
 	sema_wait(&equeue->dequeue_sem);
 
@@ -115,7 +115,7 @@ node_t *equeue_pop(equeue_t *equeue)
 	return ev;
 }
 
-bool equeue_trypush(equeue_t *equeue, node_t *ev)
+bool equeue_trypush(equeue_t *equeue, head_t *ev)
 {
 	if (!sema_trywait(&equeue->enqueue_sem))
 		return false;
@@ -136,9 +136,9 @@ bool equeue_trypush(equeue_t *equeue, node_t *ev)
 	return true;
 }
 
-node_t *equeue_trypop(equeue_t *equeue)
+head_t *equeue_trypop(equeue_t *equeue)
 {
-	node_t *ev;
+	head_t *ev;
 
 	if (!sema_trywait(&equeue->dequeue_sem))
 		return false;

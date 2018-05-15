@@ -20,20 +20,20 @@
 
 #include <stddef.h>
 
-void node_init(node_t *node)
+void head_init(head_t *node)
 {
 	node->prev = node->next = node;
 }
 
 void list_init(list_t *list)
 {
-	list->prev = list->next = (node_t *) list;
+	list->prev = list->next = (head_t *) list;
 	list->len = 0;
 }
 
-void list_destroy(list_t *list, node_dtor_t *dtor)
+void list_destroy(list_t *list, head_dtor_t *dtor)
 {
-	node_t *head;
+	head_t *head;
 
 	while ((head = list_pop(list)))
 		if (dtor) dtor(head);
@@ -44,32 +44,32 @@ bool list_empty(list_t *list)
 	return list->len == 0;
 }
 
-void list_push(list_t *list, node_t *entry)
+void list_push(list_t *list, head_t *entry)
 {
 	if (list == NULL || entry == NULL)
 		return;
 	entry->next = list->next;
-	entry->prev = (node_t *) list;
+	entry->prev = (head_t *) list;
 	list->next->prev = entry;
 	list->next = entry;
 	list->len++;
 }
 
-void list_unshift(list_t *list, node_t *entry)
+void list_unshift(list_t *list, head_t *entry)
 {
 	if (list == NULL || entry == NULL)
 		return;
 	entry->prev = list->prev;
-	entry->next = (node_t *) list;
+	entry->next = (head_t *) list;
 	list->prev->next = entry;
 	list->prev = entry;
 	list->len++;
 }
 
-void list_detach(list_t *list, node_t *entry)
+void list_detach(list_t *list, head_t *entry)
 {
-	node_t *succ;
-	node_t *pred;
+	head_t *succ;
+	head_t *pred;
 
 	if (entry == NULL)
 		return;
@@ -83,38 +83,38 @@ void list_detach(list_t *list, node_t *entry)
 	entry->next = entry->prev = entry;
 }
 
-node_t *list_shift(list_t *list)
+head_t *list_shift(list_t *list)
 {
-	node_t *succ;
+	head_t *succ;
 
 	if (list == NULL)
 		return NULL;
 	succ = list->next;
-	if (succ == (node_t *) list)
+	if (succ == (head_t *) list)
 		return NULL;
 	list_detach(list, succ);
 	return succ;
 }
 
-node_t *list_pop(list_t *list)
+head_t *list_pop(list_t *list)
 {
-	node_t *pred;
+	head_t *pred;
 
 	if (list == NULL)
 		return NULL;
 	pred = list->prev;
-	if (pred == (node_t *) list)
+	if (pred == (head_t *) list)
 		return NULL;
 	list_detach(list, pred);
 	return pred;
 }
 
-bool list_contains(list_t *list, node_t *entry)
+bool list_contains(list_t *list, head_t *entry)
 {
-	node_t *head;
+	head_t *head;
 
 	head = list->next;
-	while (head != (node_t *)list) {
+	while (head != (head_t *)list) {
 		if (head == entry)
 			return true;
 		head = head->next;

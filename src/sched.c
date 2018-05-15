@@ -24,8 +24,8 @@
 static sched_t __sched = {
 	.pool = {
 		NULL, 0, 0,
-		{ (node_t *)&__sched.pool.ready, (node_t *)&__sched.pool.ready, 0 },
-		{ (node_t *)&__sched.pool.dead, (node_t *)&__sched.pool.dead, 0 },
+		{ (head_t *)&__sched.pool.ready, (head_t *)&__sched.pool.ready, 0 },
+		{ (head_t *)&__sched.pool.dead, (head_t *)&__sched.pool.dead, 0 },
 	},
 	.scheduled = false
 };

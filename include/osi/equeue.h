@@ -90,7 +90,7 @@ __api__ int equeue_init(equeue_t *equeue, unsigned capacity);
  * @param equeue
  * @param dtor
  */
-__api__ void equeue_destroy(equeue_t *equeue, node_dtor_t *dtor);
+__api__ void equeue_destroy(equeue_t *equeue, head_dtor_t *dtor);
 
 /*!@public
  *
@@ -130,7 +130,7 @@ __api__ unsigned equeue_capacity(equeue_t *equeue);
  * @param equeue
  * @param ev
  */
-__api__ void equeue_push(equeue_t *equeue, node_t *ev);
+__api__ void equeue_push(equeue_t *equeue, head_t *ev);
 
 /*!@public
  *
@@ -140,7 +140,7 @@ __api__ void equeue_push(equeue_t *equeue, node_t *ev);
  * @param equeue
  * @return
  */
-__api__ node_t *equeue_pop(equeue_t *equeue);
+__api__ head_t *equeue_pop(equeue_t *equeue);
 
 /*!@public
  *
@@ -151,7 +151,7 @@ __api__ node_t *equeue_pop(equeue_t *equeue);
  * @param ev
  * @return
  */
-__api__ bool equeue_trypush(equeue_t *equeue, node_t *ev);
+__api__ bool equeue_trypush(equeue_t *equeue, head_t *ev);
 
 /*!@public
  *
@@ -161,7 +161,7 @@ __api__ bool equeue_trypush(equeue_t *equeue, node_t *ev);
  * @param equeue
  * @return
  */
-__api__ node_t *equeue_trypop(equeue_t *equeue);
+__api__ head_t *equeue_trypop(equeue_t *equeue);
 
 /*!@public
  *

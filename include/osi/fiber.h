@@ -114,7 +114,7 @@ struct fiber {
 	fiber_t *caller;
 
 	/*! Fiber list hold */
-	node_t hold;
+	head_t hold;
 
 	/*! The priority used by scheduler */
 	int priority;

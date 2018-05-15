@@ -25,7 +25,7 @@
 static const char *DUMMY_DATA_STRING = "Dummy data string";
 
 typedef struct {
-	node_t hold;
+	head_t hold;
 	char const *data;
 } dummy_t;
 
@@ -34,11 +34,11 @@ int main(void)
 	unsigned i;
 	equeue_t equeue;
 	dummy_t dummy, *entry, dummies[TEST_QUEUE_SIZE + 1];
-	node_t *head;
+	head_t *head;
 
 	ASSERT_EQ(0, equeue_init(&equeue, TEST_QUEUE_SIZE));
 
-	node_init(&dummy.hold);
+	head_init(&dummy.hold);
 	dummy.data = DUMMY_DATA_STRING;
 
 	equeue_push(&equeue, &dummy.hold);
@@ -52,11 +52,11 @@ int main(void)
 	ASSERT_STREQ(DUMMY_DATA_STRING, entry->data);
 
 	for (i = 0; i < TEST_QUEUE_SIZE; ++i) {
-		node_init(&dummies[i].hold);
+		head_init(&dummies[i].hold);
 		dummies[i].data = DUMMY_DATA_STRING;
 		ASSERT_TRUE(equeue_trypush(&equeue, &dummies[i].hold));
 	}
-	node_init(&dummies[i].hold);
+	head_init(&dummies[i].hold);
 	dummies[i].data = DUMMY_DATA_STRING;
 	ASSERT_FALSE(equeue_trypush(&equeue, &dummies[i].hold));
 

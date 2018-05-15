@@ -115,7 +115,7 @@ struct reactor_object {
 	reactor_ready_t *write_ready;
 
 	/*! List head. */
-	node_t hold;
+	head_t hold;
 };
 
 /*!@public

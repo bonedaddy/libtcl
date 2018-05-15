@@ -23,7 +23,7 @@
 static const char *DUMMY_DATA_STRING = "Dummy data string";
 
 typedef struct {
-	node_t hold;
+	head_t hold;
 	char const *data;
 } dummy_t;
 
@@ -31,13 +31,13 @@ int main(void)
 {
 	equeue_t equeue;
 	dummy_t dummy, *entry;
-	node_t *head;
+	head_t *head;
 
 	ASSERT_EQ(0, equeue_init(&equeue, 1));
 	ASSERT_EQ(0, equeue_length(&equeue));
 	ASSERT_TRUE(equeue_empty(&equeue));
 
-	node_init(&dummy.hold);
+	head_init(&dummy.hold);
 	dummy.data = DUMMY_DATA_STRING;
 
 	ASSERT_TRUE(equeue_trypush(&equeue, &dummy.hold));

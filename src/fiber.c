@@ -73,7 +73,7 @@ void fiber_init(fiber_t *fib, work_t *fn, uint16_t ss, uint8_t flags)
 #endif
 
 	bzero(fib, sizeof(fiber_t));
-	node_init(&fib->hold);
+	head_init(&fib->hold);
 	fib->fn = fn;
 #ifdef OS_PROVENCORE
 	if (!init) {
