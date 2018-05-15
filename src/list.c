@@ -27,7 +27,7 @@ void head_init(head_t *node)
 
 void list_init(list_t *list)
 {
-	list->prev = list->next = (head_t *) list;
+	list->prev = list->next = (head_t *)list;
 	list->len = 0;
 }
 
@@ -49,7 +49,7 @@ void list_push(list_t *list, head_t *entry)
 	if (list == NULL || entry == NULL)
 		return;
 	entry->next = list->next;
-	entry->prev = (head_t *) list;
+	entry->prev = (head_t *)list;
 	list->next->prev = entry;
 	list->next = entry;
 	list->len++;
@@ -60,7 +60,7 @@ void list_unshift(list_t *list, head_t *entry)
 	if (list == NULL || entry == NULL)
 		return;
 	entry->prev = list->prev;
-	entry->next = (head_t *) list;
+	entry->next = (head_t *)list;
 	list->prev->next = entry;
 	list->prev = entry;
 	list->len++;
@@ -90,7 +90,7 @@ head_t *list_shift(list_t *list)
 	if (list == NULL)
 		return NULL;
 	succ = list->next;
-	if (succ == (head_t *) list)
+	if (succ == (head_t *)list)
 		return NULL;
 	list_detach(list, succ);
 	return succ;
@@ -103,7 +103,7 @@ head_t *list_pop(list_t *list)
 	if (list == NULL)
 		return NULL;
 	pred = list->prev;
-	if (pred == (head_t *) list)
+	if (pred == (head_t *)list)
 		return NULL;
 	list_detach(list, pred);
 	return pred;
