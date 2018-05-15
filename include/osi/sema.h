@@ -27,6 +27,7 @@
 # define __OSI_SEMA_H
 
 #include <osi/conf.h>
+#include <osi/fiber.h>
 
 /*!@public
  *
@@ -44,6 +45,10 @@ struct sema {
 
 	/*! fd when `OSI_THREAD_MOD', counter otherwise */
 	int handle;
+
+#ifndef OSI_THREADING
+	fiber_t *fiber;
+#endif
 };
 
 /*!@public

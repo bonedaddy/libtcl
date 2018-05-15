@@ -114,7 +114,7 @@ struct fiber {
 	fiber_t *caller;
 
 	/*! Fiber list hold */
-	node_t hold;
+	head_t hold;
 
 	/*! The priority used by scheduler */
 	int priority;
@@ -219,6 +219,15 @@ __api__ bool fiber_isdone(fiber_t *fiber);
  * @return    The argument of `fiber_call' after yielding.
  */
 __api__ void *fiber_yield(void *arg);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @return
+ */
+__api__ fiber_t *fiber_current(void);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */

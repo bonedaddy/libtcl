@@ -35,7 +35,14 @@
  * @brief
  * TODO
  */
-typedef struct node node_t;
+typedef struct head head_t;
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ */
+typedef void (head_dtor_t)(head_t *node);
 
 /*!@public
  *
@@ -44,22 +51,22 @@ typedef struct node node_t;
  */
 typedef struct list list_t;
 
-struct node {
+struct head {
 
 	/** Predecessor */
-	node_t *pred;
+	head_t *prev;
 
 	/** Successor */
-	node_t *succ;
+	head_t *next;
 };
 
 struct list {
 
 	/** Predecessor */
-	node_t *pred;
+	head_t *prev;
 
 	/** Successor */
-	node_t *succ;
+	head_t *next;
 
 	/** The count in the list */
 	size_t len;
@@ -72,7 +79,7 @@ struct list {
  *
  * @param node
  */
-__api__ void node_init(node_t *node);
+__api__ void head_init(head_t *node);
 
 /*!@public
  *
@@ -89,29 +96,9 @@ __api__ void list_init(list_t *list);
  * TODO
  *
  * @param list
- * @param entry
+ * @param dtor
  */
-__api__ void list_unshift(list_t *list, node_t *entry);
-
-/*!@public
- *
- * @brief
- * TODO
- *
- * @param list
- * @param entry
- */
-__api__ void list_push(list_t *list, node_t *entry);
-
-/*!@public
- *
- * @brief
- * TODO
- *
- * @param list
- * @param entry
- */
-__api__ void list_detach(list_t *list, node_t *entry);
+__api__ void list_destroy(list_t *list, head_dtor_t *dtor);
 
 /*!@public
  *
@@ -121,7 +108,37 @@ __api__ void list_detach(list_t *list, node_t *entry);
  * @param list
  * @return
  */
-__api__ node_t *list_shift(list_t *list);
+__api__ bool list_empty(list_t *list);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param list
+ * @param entry
+ */
+__api__ void list_unshift(list_t *list, head_t *entry);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param list
+ * @param entry
+ */
+__api__ void list_push(list_t *list, head_t *entry);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param list
+ * @param entry
+ */
+__api__ void list_detach(list_t *list, head_t *entry);
 
 /*!@public
  *
@@ -131,7 +148,17 @@ __api__ node_t *list_shift(list_t *list);
  * @param list
  * @return
  */
-__api__ node_t *list_pop(list_t *list);
+__api__ head_t *list_shift(list_t *list);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param list
+ * @return
+ */
+__api__ head_t *list_pop(list_t *list);
 
 /*!@public
  *
@@ -142,7 +169,7 @@ __api__ node_t *list_pop(list_t *list);
  * @param entry
  * @return
  */
-__api__ bool list_contains(list_t *list, node_t *entry);
+__api__ bool list_contains(list_t *list, head_t *entry);
 
 /*!@public
  *

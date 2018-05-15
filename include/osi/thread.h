@@ -18,36 +18,59 @@
 
 #pragma once
 
-/*!@file osi/alarm.h
+/*!@file osi/thread.h
  * @author uael
  *
- * @addtogroup osi.alarm @{
+ * @addtogroup osi.thread @{
  */
-#ifndef __OSI_ALARM_H
-# define __OSI_ALARM_H
+#ifndef __OSI_THREAD_H
+# define __OSI_THREAD_H
 
+#include <osi/reactor.h>
 #include <osi/equeue.h>
 
-/*!@public
- *
- * @brief
- * The alarm structure declaration.
- */
-typedef struct alarm alarm_t;
+#define THREAD_NAME_MAX 16
 
 /*!@public
  *
  * @brief
- * The alarm structure definition.
+ * The thread structure declaration.
  */
-struct alarm {
-	const char *name;
-	uint64_t last_exec;
-	uint64_t interval;
-	bool periodic;
-	void *data;
-	work_t *work;
+typedef struct thread thread_t;
+
+/*!@public
+ *
+ * @brief
+ * The thread structure definition.
+ */
+struct thread {
+
+	char name[THREAD_NAME_MAX + 1];
+
+	bool is_joined;
+
+	equeue_t work_queue;
+
+#ifdef OSI_THREADING
+
+	pthread_t pthread;
+
+	reactor_t reactor;
+#else
+
+	fiber_t fiber;
+#endif
 };
 
-#endif /* __OSI_ALARM_H */
+__api__ int thread_init(thread_t *thread, char const *name);
+
+__api__ void thread_destroy(thread_t *thread);
+
+__api__ void thread_join(thread_t *thread);
+
+__api__ bool thread_post(thread_t *thread, work_t *work, void *context);
+
+__api__ void thread_stop(thread_t *thread);
+
+#endif /* __OSI_THREAD_H */
 /*!@} */

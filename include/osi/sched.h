@@ -49,6 +49,8 @@ struct sched {
 	bool scheduled;
 };
 
+__api__ sched_t *stdsched;
+
 /*!@public
  *
  * @brief
@@ -81,9 +83,10 @@ __api__ void sched_stop(sched_t *sched);
  * @param fiber
  * @param arg
  * @param prio
+ * @return
  */
-__api__ void sched_spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
-	int prio);
+__api__ fiber_t *sched_spawn(sched_t *sched, work_t *work, uint16_t ss,
+	void *arg, int prio);
 
 /*!@public
  *
@@ -94,9 +97,10 @@ __api__ void sched_spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
  * @param fiber
  * @param arg
  * @param prio
+ * @return
  */
-__api__ void sched_loop(sched_t *sched, work_t *work, uint16_t ss, void *arg,
-	int prio);
+__api__ fiber_t *sched_loop(sched_t *sched, work_t *work, uint16_t ss,
+	void *arg, int prio);
 
 #endif /* __OSI_SCHED_H */
 /*!@} */

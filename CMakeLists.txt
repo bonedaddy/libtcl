@@ -31,6 +31,7 @@ set(osi_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 set(osi_TEST_DIR ${CMAKE_CURRENT_LIST_DIR}/test)
 
 option(OSI_LOGGING "Enable Logging" ON)
+option(OSI_THREADING "Enable Logging" ON)
 
 include(CheckFunctionExists)
 check_function_exists(bzero HAS_BZERO)
@@ -41,8 +42,14 @@ include(CheckIncludeFile)
 check_include_file(sys/eventfd.h HAS_SYS_EVENTFD_H)
 check_include_file(sys/epoll.h HAS_SYS_EPOLL_H)
 check_include_file(sys/time.h HAS_SYS_TIME_H)
+check_include_file(sys/prctl.h HAS_SYS_PRCTL_H)
 check_include_file(pthread.h HAS_PTHREAD_H)
 check_include_file(unistd.h HAS_UNISTD_H)
+
+if (OSI_THREADING AND (NOT HAS_SYS_EVENTFD_H OR NOT HAS_SYS_EPOLL_H
+  OR NOT HAS_PTHREAD_H OR NOT HAS_UNISTD_H OR NOT HAS_SYS_PRCTL_H))
+  set(OSI_THREADING OFF)
+endif ()
 
 configure_file(${osi_INC_DIR}/osi/conf.h.in ${osi_INC_DIR}/osi/conf.h @ONLY)
 
