@@ -49,5 +49,23 @@ struct alarm {
 	work_t *work;
 };
 
+typedef void (*alarm_callback_t)(void *data);
+typedef uint64_t period_ms_t;
+typedef struct fixed_queue_t fixed_queue_t;
+typedef struct thread_t thread_t;
+
+void alarm_cancel(alarm_t *alarm);
+void alarm_set(alarm_t *alarm, period_ms_t interval_ms,
+			   alarm_callback_t cb, void *data);
+alarm_t *alarm_new(const char *name);
+void alarm_free(alarm_t *alarm);
+void alarm_set_on_queue(alarm_t *alarm, period_ms_t interval_ms,
+						alarm_callback_t cb, void *data,
+						fixed_queue_t *queue);
+void alarm_register_processing_queue(fixed_queue_t *queue, thread_t *thread);
+void alarm_unregister_processing_queue(fixed_queue_t *queue);
+bool alarm_is_scheduled(const alarm_t *alarm);
+
+
 #endif /* __OSI_ALARM_H */
 /*!@} */

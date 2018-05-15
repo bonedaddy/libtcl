@@ -33,5 +33,8 @@
 # include <strings.h>
 #endif
 
+//TODO TEMPOW
+size_t strlcpy(char * restrict dst, const	char * restrict	src, size_t dstsize);
+
 #endif /* __OSI_STRING_H */
 /*!@} */

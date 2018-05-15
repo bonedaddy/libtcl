@@ -168,5 +168,38 @@ __api__ bool list_contains(list_t *list, node_t *entry);
 #define LIST_ENTRY(list_ptr, app_type, list_member) \
     ((app_type *) (((char *) (list_ptr)) - offsetof(app_type, list_member)))
 
+
+#define list_new(x) ({(void)x;NULL;})
+#define list_append(...) false
+#define list_clear(x) (void)x
+#define list_begin(x) ({(void)x;NULL;})
+#define list_end(x) ({(void)x;NULL;})
+#define list_node(x) NULL
+#define list_next(x) NULL
+#define list_free(x) (void)x
+#define list_remove(...)
+#define list_front(...) NULL
+#define list_foreach(...) NULL
+#define list_prepend(...)
+#include <assert.h>
+
+struct list_node_t {
+	struct list_node_t *next;
+	void *data;
+};
+
+typedef struct list_node_t list_node_t;
+
+static inline size_t list_length(list_t *list) {
+	assert(list != NULL);
+	return list->len;
+}
+
+static inline bool list_is_empty(const list_t *list) {
+	assert(list != NULL);
+	return (list->len == 0);
+}
+
+
 #endif /* __OSI_LIST_H */
 /*!@} */
