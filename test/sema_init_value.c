@@ -16,17 +16,29 @@
  * limitations under the License.
  */
 
-#include <osi/string.h>
+#include "test.h"
 
-#ifndef HAS_BZERO
+#include <osi/sema.h>
 
-# include <string.h>
-# ifdef OS_PROVENCORE
-#   include <sizes.h>
-# endif
+int main(void)
+{
+	sema_t sema;
 
-void bzero(void *ptr, size_t n) {
-	memset(ptr, 0, n);
+	ASSERT_EQ(0, sema_init(&sema, 3));
+	ASSERT_TRUE(sema_trywait(&sema));
+	ASSERT_TRUE(sema_trywait(&sema));
+	ASSERT_TRUE(sema_trywait(&sema));
+	ASSERT_FALSE(sema_trywait(&sema));
+	sema_destroy(&sema);
+	ASSERT_EQ(INVALID_FD, sema.handle);
+
+	ASSERT_EQ(0, sema_init(&sema, 4));
+	ASSERT_TRUE(sema_trywait(&sema));
+	ASSERT_TRUE(sema_trywait(&sema));
+	ASSERT_TRUE(sema_trywait(&sema));
+	ASSERT_TRUE(sema_trywait(&sema));
+	ASSERT_FALSE(sema_trywait(&sema));
+	sema_destroy(&sema);
+	ASSERT_EQ(INVALID_FD, sema.handle);
+	return 0;
 }
-
-#endif /* HAS_BZERO */

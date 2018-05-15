@@ -26,7 +26,7 @@
 #ifndef __OSI_ALARM_H
 # define __OSI_ALARM_H
 
-#include <osi/event.h>
+#include <osi/equeue.h>
 
 /*!@public
  *

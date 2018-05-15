@@ -16,17 +16,20 @@
  * limitations under the License.
  */
 
-#include <osi/string.h>
+#include "test.h"
 
-#ifndef HAS_BZERO
+#include <osi/thread.h>
 
-# include <string.h>
-# ifdef OS_PROVENCORE
-#   include <sizes.h>
-# endif
+int main(void)
+{
+	thread_t thread;
 
-void bzero(void *ptr, size_t n) {
-	memset(ptr, 0, n);
+	ASSERT_EQ(0, thread_init(&thread, "ZOB"));
+	ASSERT_STREQ(thread.name, "ZOB");
+	thread_destroy(&thread);
+
+	ASSERT_EQ(0, thread_init(&thread, "ZEB"));
+	ASSERT_STREQ(thread.name, "ZEB");
+	thread_destroy(&thread);
+	return 0;
 }
-
-#endif /* HAS_BZERO */

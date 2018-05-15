@@ -16,17 +16,22 @@
  * limitations under the License.
  */
 
-#include <osi/string.h>
+#include "test.h"
 
-#ifndef HAS_BZERO
+#include <osi/equeue.h>
 
-# include <string.h>
-# ifdef OS_PROVENCORE
-#   include <sizes.h>
-# endif
+int main(void)
+{
+	equeue_t equeue;
 
-void bzero(void *ptr, size_t n) {
-	memset(ptr, 0, n);
+	ASSERT_EQ(0, equeue_init(&equeue, 0));
+	ASSERT_EQ(0, equeue_length(&equeue));
+	ASSERT_TRUE(equeue_empty(&equeue));
+	equeue_destroy(&equeue, NULL);
+
+	ASSERT_EQ(0, equeue_init(&equeue, 1));
+	ASSERT_EQ(0, equeue_length(&equeue));
+	ASSERT_TRUE(equeue_empty(&equeue));
+	equeue_destroy(&equeue, NULL);
+	return 0;
 }
-
-#endif /* HAS_BZERO */
