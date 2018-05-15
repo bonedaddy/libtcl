@@ -73,7 +73,9 @@ __api__ bool thread_post(thread_t *thread, work_t *work, void *context);
 __api__ void thread_stop(thread_t *thread);
 
 //TODO TEMPOW
+#ifdef OS_PROVENCORE
 typedef struct reactor_t reactor_t;
+#endif
 reactor_t *thread_get_reactor(const thread_t *thread);
 bool thread_set_priority(thread_t *thread, int priority);
 thread_t *thread_new(const char *name);
