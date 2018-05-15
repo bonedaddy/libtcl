@@ -54,6 +54,9 @@
 #ifndef HAS_SYS_TIME_H
 # cmakedefine HAS_SYS_TIME_H
 #endif
+#ifndef HAS_SYS_PRCTL_H
+# cmakedefine HAS_SYS_PRCTL_H
+#endif
 #ifndef HAS_PTHREAD_H
 # cmakedefine HAS_PTHREAD_H
 #endif
@@ -74,6 +77,7 @@
 # include <unistd.h>
 # include <sys/epoll.h>
 # include <sys/eventfd.h>
+# include <sys/prctl.h>
 #endif
 
 #include <pp.h>

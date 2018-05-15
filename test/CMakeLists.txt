@@ -40,3 +40,5 @@ osi_register_test(equeue_init)
 osi_register_test(equeue_empty)
 osi_register_test(equeue_length)
 osi_register_test(equeue_push_pop)
+
+osi_register_test(thread_init)

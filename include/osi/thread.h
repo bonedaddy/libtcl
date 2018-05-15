@@ -53,8 +53,6 @@ struct thread {
 
 	pthread_t pthread;
 
-	pid_t tid;
-
 	reactor_t reactor;
 
 	equeue_t work_queue;
@@ -64,17 +62,15 @@ struct thread {
 #endif
 };
 
-int thread_init(thread_t *thread, char const *name);
+__api__ int thread_init(thread_t *thread, char const *name);
 
-void thread_destroy(thread_t *thread);
+__api__ void thread_destroy(thread_t *thread);
 
-void thread_join(thread_t *thread);
+__api__ void thread_join(thread_t *thread);
 
-bool thread_post(thread_t *thread, work_t *work, void *context);
+__api__ bool thread_post(thread_t *thread, work_t *work, void *context);
 
-void thread_stop(thread_t *thread);
-
-bool thread_priority(thread_t *thread, int priority);
+__api__ void thread_stop(thread_t *thread);
 
 #endif /* __OSI_THREAD_H */
 /*!@} */

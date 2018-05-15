@@ -16,8 +16,13 @@
  * limitations under the License.
  */
 
+#define LOG_TAG "osi_thread"
+
+#include <osi/log.h>
 #include <osi/thread.h>
 #include <osi/sema.h>
+
+#define DEFAULT_WORK_QUEUE_CAPACITY 128
 
 #ifdef OSI_THREADING
 typedef struct {
@@ -32,9 +37,70 @@ typedef struct {
 	head_t hold;
 } work_item_t;
 
-static void *__run_thread(void *start_arg)
+static void __work_ready(void *context)
 {
-	(void)start_arg;
+	equeue_t *queue;
+	head_t *head;
+	work_item_t *item;
+
+	queue = (equeue_t *)context;
+	head = equeue_pop(queue);
+	item = LIST_ENTRY(head, work_item_t, hold);
+	item->func(item->context);
+	free(item);
+}
+
+static void *__run_thread(void *context)
+{
+	int fd;
+	start_arg_t *arg;
+	thread_t *thread;
+	reactor_object_t *reactor_object;
+	head_t *head;
+	work_item_t *item;
+	unsigned count;
+
+	arg = (start_arg_t *)context;
+	thread = arg->thread;
+
+	if (prctl(PR_SET_NAME, (unsigned long)thread->name) == -1) {
+		LOG_ERROR("unable to set thread name: %m");
+		arg->error = errno;
+		sema_post(&arg->start_sem);
+		return NULL;
+	}
+	LOG_INFO("thread name %s started", thread->name);
+	sema_post(&arg->start_sem);
+
+	fd = thread->work_queue.dequeue_sem.handle;
+	if (!(reactor_object = reactor_register(
+		&thread->reactor, fd, &thread->work_queue,
+		__work_ready, NULL))) {
+		LOG_ERROR("unable to register reactor: %m");
+		arg->error = errno;
+		sema_post(&arg->start_sem);
+		return NULL;
+	}
+	reactor_start(&thread->reactor);
+	reactor_unregister(reactor_object);
+
+	/*
+	 * Make sure we dispatch all queued work items before exiting the thread.
+     * This allows a caller to safely tear down by enqueuing a teardown
+     * work item and then joining the thread.
+	 */
+	count = 0;
+	while ((head = equeue_trypop(&thread->work_queue))
+		&& count <= equeue_capacity(&thread->work_queue)) {
+		item = LIST_ENTRY(head, work_item_t, hold);
+		item->func(item->context);
+		++count;
+	}
+
+	if (count > equeue_capacity(&thread->work_queue))
+		LOG_DEBUG("Growing event queue on shutdown.");
+
+	LOG_INFO("thread name %s exited", thread->name);
 	return NULL;
 }
 
@@ -54,13 +120,12 @@ int thread_init(thread_t *thread, char const *name)
 
 	if (sema_init(&start.start_sem, 0))
 		return -1;
-	thread->tid = 0;
 	thread->is_joined = false;
 	start.thread = thread;
 	start.error = 0;
 	strncpy(thread->name, name, THREAD_NAME_MAX);
 	reactor_init(&thread->reactor);
-	equeue_init(&thread->work_queue, 128);
+	equeue_init(&thread->work_queue, DEFAULT_WORK_QUEUE_CAPACITY);
 	pthread_create(&thread->pthread, NULL, __run_thread, &start);
 	sema_wait(&start.start_sem);
 	sema_destroy(&start.start_sem);
@@ -108,29 +173,27 @@ void thread_join(thread_t *thread)
 
 bool thread_post(thread_t *thread, work_t *work, void *context)
 {
+#ifdef OSI_THREADING
+	work_item_t *item;
+
+	item = (work_item_t *)malloc(sizeof(work_item_t));
+	item->func = work;
+	item->context = context;
+	head_init(&item->hold);
+	equeue_push(&thread->work_queue, &item->hold);
+#else
 	(void)thread;
 	(void)work;
 	(void)context;
-#ifdef OSI_THREADING
-#else
 #endif /* OSI_THREADING */
 	return true;
 }
 
 void thread_stop(thread_t *thread)
 {
-	(void)thread;
 #ifdef OSI_THREADING
+	reactor_stop(&thread->reactor);
 #else
-#endif /* OSI_THREADING */
-}
-
-bool thread_priority(thread_t *thread, int priority)
-{
 	(void)thread;
-	(void)priority;
-#ifdef OSI_THREADING
-#else
 #endif /* OSI_THREADING */
-	return true;
 }
