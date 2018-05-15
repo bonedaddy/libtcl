@@ -158,7 +158,7 @@ void *fiber_yield(void *arg)
 	fiber_t *caller;
 	fiber_t *fib;
 
-	if (!(fib = __fiber))
+	if (!(fib = __fiber) || !fib->caller)
 		return NULL;
 
 	fib->result = arg;

@@ -17,6 +17,7 @@
  */
 
 #include <osi/sema.h>
+#include <osi/fiber.h>
 
 int sema_init(sema_t *sema, unsigned value)
 {
@@ -45,7 +46,8 @@ void sema_wait(sema_t *sema)
 
 	eventfd_read(sema->handle, &value);
 #else
-	if (sema->handle) --sema->handle;
+	while (!sema->handle) fiber_yield(NULL);
+	--sema->handle;
 #endif /* OSI_THREADING */
 }
 
@@ -79,5 +81,6 @@ void sema_post(sema_t *sema)
 	eventfd_write(sema->handle, 1ULL);
 #else
 	++sema->handle;
+	fiber_yield(NULL);
 #endif /* OSI_THREADING */
 }
