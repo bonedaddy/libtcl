@@ -18,20 +18,20 @@
 
 #include "test.h"
 
-#include <osi/bqueue.h>
+#include <osi/blocking_queue.h>
 
 int main(void)
 {
-	bqueue_t bqueue;
+	blocking_queue_t blocking_queue;
 
-	ASSERT_EQ(0, bqueue_init(&bqueue, 0));
-	ASSERT_EQ(0, bqueue_length(&bqueue));
-	ASSERT_TRUE(bqueue_empty(&bqueue));
-	bqueue_destroy(&bqueue, NULL);
+	ASSERT_EQ(0, blocking_queue_init(&blocking_queue, 0));
+	ASSERT_EQ(0, blocking_queue_length(&blocking_queue));
+	ASSERT_TRUE(blocking_queue_empty(&blocking_queue));
+	blocking_queue_destroy(&blocking_queue, NULL);
 
-	ASSERT_EQ(0, bqueue_init(&bqueue, 1));
-	ASSERT_EQ(0, bqueue_length(&bqueue));
-	ASSERT_TRUE(bqueue_empty(&bqueue));
-	bqueue_destroy(&bqueue, NULL);
+	ASSERT_EQ(0, blocking_queue_init(&blocking_queue, 1));
+	ASSERT_EQ(0, blocking_queue_length(&blocking_queue));
+	ASSERT_TRUE(blocking_queue_empty(&blocking_queue));
+	blocking_queue_destroy(&blocking_queue, NULL);
 	return 0;
 }

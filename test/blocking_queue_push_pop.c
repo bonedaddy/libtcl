@@ -18,7 +18,7 @@
 
 #include "test.h"
 
-#include <osi/bqueue.h>
+#include <osi/blocking_queue.h>
 
 #define TEST_QUEUE_SIZE 10
 
@@ -32,42 +32,42 @@ typedef struct {
 int main(void)
 {
 	unsigned i;
-	bqueue_t bqueue;
+	blocking_queue_t blocking_queue;
 	dummy_t dummy, *entry, dummies[TEST_QUEUE_SIZE + 1];
 	head_t *head;
 
-	ASSERT_EQ(0, bqueue_init(&bqueue, TEST_QUEUE_SIZE));
+	ASSERT_EQ(0, blocking_queue_init(&blocking_queue, TEST_QUEUE_SIZE));
 
 	head_init(&dummy.hold);
 	dummy.data = DUMMY_DATA_STRING;
 
-	bqueue_push(&bqueue, &dummy.hold);
-	ASSERT(head = bqueue_pop(&bqueue));
+	blocking_queue_push(&blocking_queue, &dummy.hold);
+	ASSERT(head = blocking_queue_pop(&blocking_queue));
 	entry = LIST_ENTRY(head, dummy_t, hold);
 	ASSERT_STREQ(DUMMY_DATA_STRING, entry->data);
 
-	ASSERT_TRUE(bqueue_trypush(&bqueue, &dummy.hold));
-	ASSERT(head = bqueue_trypop(&bqueue));
+	ASSERT_TRUE(blocking_queue_trypush(&blocking_queue, &dummy.hold));
+	ASSERT(head = blocking_queue_trypop(&blocking_queue));
 	entry = LIST_ENTRY(head, dummy_t, hold);
 	ASSERT_STREQ(DUMMY_DATA_STRING, entry->data);
 
 	for (i = 0; i < TEST_QUEUE_SIZE; ++i) {
 		head_init(&dummies[i].hold);
 		dummies[i].data = DUMMY_DATA_STRING;
-		ASSERT_TRUE(bqueue_trypush(&bqueue, &dummies[i].hold));
+		ASSERT_TRUE(blocking_queue_trypush(&blocking_queue, &dummies[i].hold));
 	}
 	head_init(&dummies[i].hold);
 	dummies[i].data = DUMMY_DATA_STRING;
-	ASSERT_FALSE(bqueue_trypush(&bqueue, &dummies[i].hold));
+	ASSERT_FALSE(blocking_queue_trypush(&blocking_queue, &dummies[i].hold));
 
 	for (i = 0; i < TEST_QUEUE_SIZE; ++i) {
-		ASSERT(head = bqueue_trypop(&bqueue));
+		ASSERT(head = blocking_queue_trypop(&blocking_queue));
 		entry = LIST_ENTRY(head, dummy_t, hold);
 		ASSERT_STREQ(DUMMY_DATA_STRING, entry->data);
 	}
 
-	ASSERT_NULL(bqueue_trypop(&bqueue));
+	ASSERT_NULL(blocking_queue_trypop(&blocking_queue));
 
-	bqueue_destroy(&bqueue, NULL);
+	blocking_queue_destroy(&blocking_queue, NULL);
 	return 0;
 }

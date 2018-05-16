@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-#include <osi/fiber/pool.h>
-#include <osi/string.h>
+#include "osi/fiber/pool.h"
+#include "osi/string.h"
 
 void fiber_pool_init(fiber_pool_t *pool)
 {

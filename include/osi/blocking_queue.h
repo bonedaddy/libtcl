@@ -18,13 +18,13 @@
 
 #pragma once
 
-/*!@file osi/bqueue.h
+/*!@file osi/blocking_queue.h
  * @author uael
  *
- * @addtogroup osi.bqueue @{
+ * @addtogroup osi.blocking_queue @{
  */
-#ifndef __OSI_BQUEUE_H
-# define __OSI_BQUEUE_H
+#ifndef __OSI_BLOCKING_QUEUE_H
+# define __OSI_BLOCKING_QUEUE_H
 
 #include <osi/sched.h>
 #include <osi/reactor.h>
@@ -37,21 +37,21 @@ struct thread;
  * @brief
  * The blocking queue structure declaration.
  */
-typedef struct bqueue bqueue_t;
+typedef struct blocking_queue blocking_queue_t;
 
 /*!@public
  *
  * @brief
  * The blocking queue listener function callback.
  */
-typedef void (listener_t)(bqueue_t *bqueue);
+typedef void (listener_t)(blocking_queue_t *blocking_queue);
 
 /*!@public
  *
  * @brief
  * The blocking queue structure definition.
  */
-struct bqueue {
+struct blocking_queue {
 
 	list_t list;
 
@@ -79,103 +79,103 @@ struct bqueue {
  * @brief
  * TODO
  *
- * @param bqueue
+ * @param blocking_queue
  * @param capacity
  * @return
  */
-__api__ int bqueue_init(bqueue_t *bqueue, unsigned capacity);
+__api__ int blocking_queue_init(blocking_queue_t *blocking_queue, unsigned capacity);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param bqueue
+ * @param blocking_queue
  * @param dtor
  */
-__api__ void bqueue_destroy(bqueue_t *bqueue, head_dtor_t *dtor);
+__api__ void blocking_queue_destroy(blocking_queue_t *blocking_queue, head_dtor_t *dtor);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param bqueue
+ * @param blocking_queue
  * @return
  */
-__api__ bool bqueue_empty(bqueue_t *bqueue);
+__api__ bool blocking_queue_empty(blocking_queue_t *blocking_queue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param bqueue
+ * @param blocking_queue
  * @return
  */
-__api__ unsigned bqueue_length(bqueue_t *bqueue);
+__api__ unsigned blocking_queue_length(blocking_queue_t *blocking_queue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param bqueue
+ * @param blocking_queue
  * @return
  */
-__api__ unsigned bqueue_capacity(bqueue_t *bqueue);
+__api__ unsigned blocking_queue_capacity(blocking_queue_t *blocking_queue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param bqueue
+ * @param blocking_queue
  * @param ev
  */
-__api__ void bqueue_push(bqueue_t *bqueue, head_t *ev);
+__api__ void blocking_queue_push(blocking_queue_t *blocking_queue, head_t *ev);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param bqueue
+ * @param blocking_queue
  * @return
  */
-__api__ head_t *bqueue_pop(bqueue_t *bqueue);
+__api__ head_t *blocking_queue_pop(blocking_queue_t *blocking_queue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param bqueue
+ * @param blocking_queue
  * @param ev
  * @return
  */
-__api__ bool bqueue_trypush(bqueue_t *bqueue, head_t *ev);
+__api__ bool blocking_queue_trypush(blocking_queue_t *blocking_queue, head_t *ev);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param bqueue
+ * @param blocking_queue
  * @return
  */
-__api__ head_t *bqueue_trypop(bqueue_t *bqueue);
+__api__ head_t *blocking_queue_trypop(blocking_queue_t *blocking_queue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param bqueue
+ * @param blocking_queue
  * @param thread
  * @param listener
  */
-__api__ void bqueue_listen(bqueue_t *bqueue, struct thread *thread,
+__api__ void blocking_queue_listen(blocking_queue_t *blocking_queue, struct thread *thread,
 	listener_t *listener);
 
 /*!@public
@@ -183,9 +183,9 @@ __api__ void bqueue_listen(bqueue_t *bqueue, struct thread *thread,
  * @brief
  * TODO
  *
- * @param bqueue
+ * @param blocking_queue
  */
-__api__ void bqueue_unlisten(bqueue_t *bqueue);
+__api__ void blocking_queue_unlisten(blocking_queue_t *blocking_queue);
 
-#endif /* __OSI_BQUEUE_H */
+#endif /* __OSI_BLOCKING_QUEUE_H */
 /*!@} */

@@ -26,7 +26,7 @@
 #ifndef __OSI_ALARM_H
 # define __OSI_ALARM_H
 
-#include "bqueue.h"
+#include "osi/blocking_queue.h"
 #include <osi/thread.h>
 
 /*!@public

@@ -18,7 +18,7 @@
 
 #include "test.h"
 
-#include <osi/bqueue.h>
+#include <osi/blocking_queue.h>
 
 static const char *DUMMY_DATA_STRING = "Dummy data string";
 
@@ -29,24 +29,24 @@ typedef struct {
 
 int main(void)
 {
-	bqueue_t bqueue;
+	blocking_queue_t blocking_queue;
 	dummy_t dummy, *entry;
 	head_t *head;
 
-	ASSERT_EQ(0, bqueue_init(&bqueue, 1));
-	ASSERT_EQ(0, bqueue_length(&bqueue));
-	ASSERT_TRUE(bqueue_empty(&bqueue));
+	ASSERT_EQ(0, blocking_queue_init(&blocking_queue, 1));
+	ASSERT_EQ(0, blocking_queue_length(&blocking_queue));
+	ASSERT_TRUE(blocking_queue_empty(&blocking_queue));
 
 	head_init(&dummy.hold);
 	dummy.data = DUMMY_DATA_STRING;
 
-	ASSERT_TRUE(bqueue_trypush(&bqueue, &dummy.hold));
-	ASSERT_FALSE(bqueue_empty(&bqueue));
+	ASSERT_TRUE(blocking_queue_trypush(&blocking_queue, &dummy.hold));
+	ASSERT_FALSE(blocking_queue_empty(&blocking_queue));
 
-	ASSERT(head = bqueue_trypop(&bqueue));
+	ASSERT(head = blocking_queue_trypop(&blocking_queue));
 	entry = LIST_ENTRY(head, dummy_t, hold);
 	ASSERT_STREQ(DUMMY_DATA_STRING, entry->data);
 
-	bqueue_destroy(&bqueue, NULL);
+	blocking_queue_destroy(&blocking_queue, NULL);
 	return 0;
 }

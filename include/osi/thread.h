@@ -27,7 +27,7 @@
 # define __OSI_THREAD_H
 
 #include <osi/reactor.h>
-#include <osi/bqueue.h>
+#include "osi/blocking_queue.h"
 #include <osi/fiber/pool.h>
 
 #define THREAD_NAME_MAX 16
@@ -50,7 +50,7 @@ struct thread {
 
 	bool is_joined;
 
-	bqueue_t work_queue;
+	blocking_queue_t work_queue;
 
 #ifdef OSI_THREADING
 

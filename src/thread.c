@@ -40,12 +40,12 @@ typedef struct {
 #ifdef OSI_THREADING
 static void __work_ready(void *context)
 {
-	bqueue_t *queue;
+	blocking_queue_t *queue;
 	head_t *head;
 	work_item_t *item;
 
-	queue = (bqueue_t *)context;
-	head = bqueue_pop(queue);
+	queue = (blocking_queue_t *)context;
+	head = blocking_queue_pop(queue);
 	item = LIST_ENTRY(head, work_item_t, hold);
 	item->func(item->context);
 	free(item);
@@ -96,7 +96,7 @@ static void *__run_thread(void *context)
 
 	thread->running = true;
 	while (thread->running) {
-		if (!(head = bqueue_trypop(&thread->work_queue)))
+		if (!(head = blocking_queue_trypop(&thread->work_queue)))
 			fiber = fiber_pool_pop(&thread->pool);
 		else {
 			item = LIST_ENTRY(head, work_item_t, hold);
@@ -121,15 +121,15 @@ static void *__run_thread(void *context)
      * work item and then joining the thread.
 	 */
 	count = 0;
-	while ((head = bqueue_trypop(&thread->work_queue))
-		   && count <= bqueue_capacity(&thread->work_queue)) {
+	while ((head = blocking_queue_trypop(&thread->work_queue))
+		   && count <= blocking_queue_capacity(&thread->work_queue)) {
 		item = LIST_ENTRY(head, work_item_t, hold);
 		item->func(item->context);
 		free(item);
 		++count;
 	}
 
-	if (count > bqueue_capacity(&thread->work_queue))
+	if (count > blocking_queue_capacity(&thread->work_queue))
 		LOG_DEBUG("Growing event queue on shutdown.");
 
 	LOG_INFO("thread name %s exited", thread->name);
@@ -155,7 +155,7 @@ int thread_init(thread_t *thread, char const *name)
 	start.thread = thread;
 	start.error = 0;
 	strncpy(thread->name, name, THREAD_NAME_MAX);
-	bqueue_init(&thread->work_queue, DEFAULT_WORK_QUEUE_CAPACITY);
+	blocking_queue_init(&thread->work_queue, DEFAULT_WORK_QUEUE_CAPACITY);
 #ifdef OSI_THREADING
 	reactor_init(&thread->reactor);
 	pthread_create(&thread->pthread, NULL, __run_thread, &start);
@@ -167,7 +167,7 @@ int thread_init(thread_t *thread, char const *name)
 	sema_wait(&start.start_sem);
 	sema_destroy(&start.start_sem);
 	if (start.error) {
-		bqueue_destroy(&thread->work_queue, __work_dtor);
+		blocking_queue_destroy(&thread->work_queue, __work_dtor);
 #ifdef OSI_THREADING
 		reactor_destroy(&thread->reactor);
 #endif /* OSI_THREADING */
@@ -179,7 +179,7 @@ void thread_destroy(thread_t *thread)
 {
 	thread_stop(thread);
 	thread_join(thread);
-	bqueue_destroy(&thread->work_queue, __work_dtor);
+	blocking_queue_destroy(&thread->work_queue, __work_dtor);
 #ifdef OSI_THREADING
 	reactor_destroy(&thread->reactor);
 #else
@@ -208,7 +208,7 @@ bool thread_post(thread_t *thread, work_t *work, void *context)
 	item->func = work;
 	item->context = context;
 	head_init(&item->hold);
-	bqueue_push(&thread->work_queue, &item->hold);
+	blocking_queue_push(&thread->work_queue, &item->hold);
 	return true;
 }
 

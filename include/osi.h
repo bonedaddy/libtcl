@@ -24,7 +24,7 @@
 
 #include "osi/conf.h"
 #include "osi/alarm.h"
-#include "osi/bqueue.h"
+#include "osi/blocking_queue.h"
 #include "osi/fiber.h"
 #include "osi/list.h"
 #include "osi/log.h"
