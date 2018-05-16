@@ -18,39 +18,35 @@
 
 #pragma once
 
-/*!@file osi/sema.h
+/*!@file osi/future.h
  * @author uael
  *
- * @addtogroup osi.sema @{
+ * @addtogroup osi.future @{
  */
-#ifndef __OSI_SEMA_H
-# define __OSI_SEMA_H
+#ifndef __OSI_FUTURE_H
+# define __OSI_FUTURE_H
 
-#include <osi/conf.h>
-#include <osi/fiber/ev.h>
+#include <osi/sema.h>
 
 /*!@public
  *
  * @brief
- * The semaphore opaque structure.
+ * The future structure declaration.
  */
-typedef struct sema sema_t;
+typedef struct future future_t;
 
 /*!@public
  *
  * @brief
- * The sema structure definition
+ * The future structure definition.
  */
-struct sema {
+struct future {
 
-	/*! fd when `OSI_THREADING', counter otherwise */
-	int handle;
+	bool awaitable;
 
-#ifndef OSI_THREADING
+	sema_t sema;
 
-	/*! On fiber fiber mode, we use an event to delegate work. */
-	list_t queue;
-#endif
+	void const *result;
 };
 
 /*!@public
@@ -58,47 +54,41 @@ struct sema {
  * @brief
  * TODO
  *
+ * @param future
+ * @return
+ */
+__api__ int future_init(future_t *future);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param future
  * @param value
  * @return
  */
-__api__ int sema_init(sema_t *sema, unsigned value);
+__api__ void future_immediate(future_t *future, void const *value);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param sema
+ * @param future
+ * @param value
  */
-__api__ void sema_destroy(sema_t *sema);
+__api__ void future_ready(future_t *future, void *value);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param sema
- */
-__api__ void sema_wait(sema_t *sema);
-
-/*!@public
- *
- * @brief
- * TODO
- *
- * @param sema
+ * @param future
  * @return
  */
-__api__ bool sema_trywait(sema_t *sema);
+__api__ void *future_await(future_t *future);
 
-/*!@public
- *
- * @brief
- * TODO
- *
- * @param sema
- */
-__api__ void sema_post(sema_t *sema);
-
-#endif /* __OSI_SEMA_H */
+#endif /* __OSI_FUTURE_H */
 /*!@} */

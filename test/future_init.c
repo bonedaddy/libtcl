@@ -16,37 +16,31 @@
  * limitations under the License.
  */
 
-/*!@file osi.h
- * @author uael
- */
-#ifndef __OSI_H
-# define __OSI_H
+#include "test.h"
 
-#include "osi/conf.h"
-#include "osi/alarm.h"
-#include "osi/bqueue.h"
-#include "osi/fiber.h"
-#include "osi/list.h"
-#include "osi/log.h"
-#include "osi/mutex.h"
-#include "osi/reactor.h"
-#include "osi/sched.h"
-#include "osi/sema.h"
-#include "osi/string.h"
-#include "osi/thread.h"
+#include <osi/future.h>
+#include <osi/thread.h>
 
-/*!@public
- *
- * @brief
- * TODO
- */
-__api__ void osi_init(void);
+static const char *pass_back_data0 =
+	"fancy a sandwich? it's a fancy sandwich";
 
-/*!@public
- *
- * @brief
- * TODO
- */
-__api__ void osi_cleanup(void);
+static void *post_to_future(void *context)
+{
+	future_ready((future_t *)context, (void *)pass_back_data0);
+	return NULL;
+}
 
-#endif /* __OSI_H */
+int main(void)
+{
+	future_t future;
+	thread_t thread;
+
+	ASSERT_EQ(0, future_init(&future));
+	ASSERT_EQ(0, thread_init(&thread, "ZOB"));
+
+	thread_post(&thread, post_to_future, &future);
+	ASSERT_STREQ(pass_back_data0, future_await(&future));
+
+	thread_destroy(&thread);
+	return 0;
+}

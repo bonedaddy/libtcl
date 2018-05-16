@@ -137,16 +137,13 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 
 	reactor->run_thread = pthread_self();
 	reactor->is_running = true;
-
 	for (i = 0; iterations == 0 || i < iterations; ++i) {
 		pthread_mutex_lock(&reactor->list_lock);
 		list_init(&reactor->invalidation_list);
 		pthread_mutex_unlock(&reactor->list_lock);
 
-
 		do (ret = epoll_wait(reactor->epoll_fd, events, __max_events, -1));
 		while (ret < 0 && errno == EINTR);
-
 		if (ret < 0) {
 			LOG_ERROR("error in epoll_wait: %m");
 			reactor->is_running = false;
@@ -165,7 +162,6 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 				reactor->is_running = false;
 				return REACTOR_STATUS_STOP;
 			}
-
 			object = (reactor_object_t *)events[j].data.ptr;
 
 			pthread_mutex_lock(&reactor->list_lock);
@@ -177,7 +173,6 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 			/* Downgrade the list lock to an object lock. */
 			pthread_mutex_lock(&object->lock);
 			pthread_mutex_unlock(&reactor->list_lock);
-
 			reactor->object_removed = false;
 			if ((events[j].events &
 				(EPOLLIN | EPOLLHUP | EPOLLRDHUP | EPOLLERR))

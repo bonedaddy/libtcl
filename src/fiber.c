@@ -33,7 +33,6 @@ __fn(fiber_t *fiber)
 {
 	fiber->result = fiber->fn(fiber->arg);
 	fiber->status = FIBER_EXITING;
-	fiber_ev_set(&fiber->stopev);
 	fiber_yield(fiber->result);
 #ifdef OS_PROVENCORE
 	return 0;
@@ -50,7 +49,6 @@ __fn_loop(fiber_t *fiber)
 	while (fiber->status == FIBER_RUNNING)
 		fiber_yield(fiber->result = fiber->fn(fiber->arg));
 	fiber->status = FIBER_EXITING;
-	fiber_ev_set(&fiber->stopev);
 	fiber_yield(fiber->result);
 #ifdef OS_PROVENCORE
 	return 0;
@@ -73,7 +71,6 @@ void fiber_init(fiber_t *fiber, work_t *work, uint16_t ss, uint8_t flags)
 	bzero(fiber, sizeof(fiber_t));
 	head_init(&fiber->hold);
 	fiber->fn = work;
-	fiber_ev_init(&fiber->stopev, FIBER_EV_MANUAL);
 #ifdef OS_PROVENCORE
 	if (!init) {
 		init = 1;
@@ -98,7 +95,6 @@ int fiber_reuse(fiber_t *fiber, work_t *fn, uint8_t flags)
 		return -1;
 	}
 	if (fn) fiber->fn = fn;
-	fiber_ev_init(&fiber->stopev, FIBER_EV_MANUAL);
 #ifdef OS_PROVENCORE
 	fiber->context = create_context(fiber->ss, 0, 0, 0, __coro(flags), fiber);
 #elif defined(USE_CORO)
@@ -114,7 +110,6 @@ int fiber_reuse(fiber_t *fiber, work_t *fn, uint8_t flags)
 
 void fiber_destroy(fiber_t *fiber)
 {
-	fiber_ev_destroy(&fiber->stopev);
 #ifdef USE_CORO
 	(void)coro_destroy(&fiber->context);
 	coro_stack_free(&fiber->stack);
@@ -153,7 +148,8 @@ bool fiber_isdone(fiber_t *fiber)
 
 void fiber_join(fiber_t *fiber)
 {
-	fiber_ev_wait(&fiber->stopev);
+	while (!fiber_isdone(fiber))
+		fiber_call(fiber, NULL);
 }
 
 void *fiber_yield(void *arg)
@@ -192,5 +188,5 @@ void *fiber_yield(void *arg)
 
 fiber_t *fiber_current(void)
 {
-	return __fiber->caller ? __fiber : NULL;
+	return __fiber;
 }

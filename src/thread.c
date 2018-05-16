@@ -37,6 +37,7 @@ typedef struct {
 	head_t hold;
 } work_item_t;
 
+#ifdef OSI_THREADING
 static void __work_ready(void *context)
 {
 	bqueue_t *queue;
@@ -49,7 +50,7 @@ static void __work_ready(void *context)
 	item->func(item->context);
 	free(item);
 }
-
+#endif
 
 static void *__run_thread(void *context)
 {
@@ -61,6 +62,8 @@ static void *__run_thread(void *context)
 #ifdef OSI_THREADING
 	int fd;
 	reactor_object_t *reactor_object;
+#else
+	fiber_t *fiber;
 #endif
 
 	arg = (start_arg_t *)context;
@@ -73,13 +76,8 @@ static void *__run_thread(void *context)
 		sema_post(&arg->start_sem);
 		return NULL;
 	}
-#endif
-	sema_post(&arg->start_sem);
-	LOG_INFO( "thread name %s started", thread->name);
 
-
-#ifdef OSI_THREADING
-	fd = thread->work_queue.dbqueue_sem.handle;
+	fd = thread->work_queue.dequeue_sem.handle;
 	if (!(reactor_object = reactor_register(
 		&thread->reactor, fd, &thread->work_queue, __work_ready, NULL))) {
 		LOG_ERROR("unable to register reactor: %m");
@@ -87,15 +85,34 @@ static void *__run_thread(void *context)
 		sema_post(&arg->start_sem);
 		return NULL;
 	}
+	sema_post(&arg->start_sem);
+	LOG_INFO("thread name %s started", thread->name);
+
 	reactor_start(&thread->reactor);
 	reactor_unregister(reactor_object);
 #else
-	/*
-	 * We don't need to use the reactor pattern here, the combination of fiber
-	 * and fiber events perfectly reproduce it on one core architecture.
-	 */
-	while (thread->fiber.status == FIBER_RUNNING)
-		__work_ready(&thread->work_queue);
+	sema_post(&arg->start_sem);
+	LOG_INFO("thread name %s started", thread->name);
+
+	thread->running = true;
+	while (thread->running) {
+		if (!(head = bqueue_trypop(&thread->work_queue)))
+			fiber = fiber_pool_pop(&thread->pool);
+		else {
+			item = LIST_ENTRY(head, work_item_t, hold);
+			fiber = fiber_pool_new(&thread->pool);
+			fiber_init(fiber, item->func, 4096, FIBER_NONE);
+			fiber->arg = item->context;
+			free(item);
+		}
+		if (fiber) {
+			fiber_call(fiber, fiber->arg);
+			if (fiber->status == FIBER_EXITING)
+				fiber_pool_dead(&thread->pool, fiber);
+			else
+				fiber_pool_ready(&thread->pool, fiber);
+		}
+	}
 #endif
 
 	/*
@@ -105,7 +122,7 @@ static void *__run_thread(void *context)
 	 */
 	count = 0;
 	while ((head = bqueue_trypop(&thread->work_queue))
-		&& count <= bqueue_capacity(&thread->work_queue)) {
+		   && count <= bqueue_capacity(&thread->work_queue)) {
 		item = LIST_ENTRY(head, work_item_t, hold);
 		item->func(item->context);
 		free(item);
@@ -113,9 +130,9 @@ static void *__run_thread(void *context)
 	}
 
 	if (count > bqueue_capacity(&thread->work_queue))
-		LOG_DEBUG( "Growing event queue on shutdown.");
+		LOG_DEBUG("Growing event queue on shutdown.");
 
-	LOG_INFO(LOG_TAG, "thread name %s exited", thread->name);
+	LOG_INFO("thread name %s exited", thread->name);
 	return NULL;
 }
 
@@ -143,6 +160,7 @@ int thread_init(thread_t *thread, char const *name)
 	reactor_init(&thread->reactor);
 	pthread_create(&thread->pthread, NULL, __run_thread, &start);
 #else
+	fiber_pool_init(&thread->pool);
 	fiber_init(&thread->fiber, __run_thread, 4096, FIBER_NONE);
 	fiber_call(&thread->fiber, &start);
 #endif /* OSI_THREADING */
@@ -166,6 +184,7 @@ void thread_destroy(thread_t *thread)
 	reactor_destroy(&thread->reactor);
 #else
 	fiber_destroy(&thread->fiber);
+	fiber_pool_destroy(&thread->pool);
 #endif /* OSI_THREADING */
 }
 
@@ -198,6 +217,6 @@ void thread_stop(thread_t *thread)
 #ifdef OSI_THREADING
 	reactor_stop(&thread->reactor);
 #else
-	thread->fiber.status = FIBER_EXITING;
+	thread->running = false;
 #endif /* OSI_THREADING */
 }

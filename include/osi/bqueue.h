@@ -61,7 +61,7 @@ struct bqueue {
 
 	sema_t enqueue_sem;
 
-	sema_t dbqueue_sem;
+	sema_t dequeue_sem;
 
 #ifdef OSI_THREADING
 

@@ -16,37 +16,19 @@
  * limitations under the License.
  */
 
-/*!@file osi.h
- * @author uael
- */
-#ifndef __OSI_H
-# define __OSI_H
+#include "test.h"
 
-#include "osi/conf.h"
-#include "osi/alarm.h"
-#include "osi/bqueue.h"
-#include "osi/fiber.h"
-#include "osi/list.h"
-#include "osi/log.h"
-#include "osi/mutex.h"
-#include "osi/reactor.h"
-#include "osi/sched.h"
-#include "osi/sema.h"
-#include "osi/string.h"
-#include "osi/thread.h"
+#include <osi/future.h>
+#include <osi/thread.h>
 
-/*!@public
- *
- * @brief
- * TODO
- */
-__api__ void osi_init(void);
+static const char *pass_back_data1 =
+	"what kind of ice cream truck plays the worst christmas song of all time?";
 
-/*!@public
- *
- * @brief
- * TODO
- */
-__api__ void osi_cleanup(void);
+int main(void)
+{
+	future_t future;
 
-#endif /* __OSI_H */
+	future_immediate(&future, pass_back_data1);
+	ASSERT_STREQ(pass_back_data1, future_await(&future));
+	return 0;
+}

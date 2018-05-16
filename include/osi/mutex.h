@@ -18,13 +18,13 @@
 
 #pragma once
 
-/*!@file osi/sema.h
+/*!@file osi/mutex.h
  * @author uael
  *
- * @addtogroup osi.sema @{
+ * @addtogroup osi.mutex @{
  */
-#ifndef __OSI_SEMA_H
-# define __OSI_SEMA_H
+#ifndef __OSI_MUTEX_H
+# define __OSI_MUTEX_H
 
 #include <osi/conf.h>
 #include <osi/fiber/ev.h>
@@ -32,25 +32,26 @@
 /*!@public
  *
  * @brief
- * The semaphore opaque structure.
+ * The mutex structure declaration.
  */
-typedef struct sema sema_t;
+typedef struct mutex mutex_t;
 
 /*!@public
  *
  * @brief
- * The sema structure definition
+ * The mutex structure definition.
  */
-struct sema {
+struct mutex {
 
-	/*! fd when `OSI_THREADING', counter otherwise */
-	int handle;
+#ifdef OSI_THREADING
 
-#ifndef OSI_THREADING
+	pthread_mutex_t mutex;
+#else
 
-	/*! On fiber fiber mode, we use an event to delegate work. */
-	list_t queue;
-#endif
+	list_t pending;
+
+	bool islocked;
+#endif /* OSI_THREADING */
 };
 
 /*!@public
@@ -58,47 +59,68 @@ struct sema {
  * @brief
  * TODO
  *
- * @param value
+ * @param mutex
  * @return
  */
-__api__ int sema_init(sema_t *sema, unsigned value);
+__api__ int mutex_init(mutex_t *mutex);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param sema
+ * @param mutex
  */
-__api__ void sema_destroy(sema_t *sema);
+__api__ void mutex_destroy(mutex_t *mutex);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param sema
+ * @param mutex
  */
-__api__ void sema_wait(sema_t *sema);
+__api__ void mutex_lock(mutex_t *mutex);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param sema
+ * @param mutex
  * @return
  */
-__api__ bool sema_trywait(sema_t *sema);
+__api__ void mutex_unlock(mutex_t *mutex);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param sema
+ * @return
  */
-__api__ void sema_post(sema_t *sema);
+__api__ int mutex_global_init(void);
 
-#endif /* __OSI_SEMA_H */
+/*!@public
+ *
+ * @brief
+ * TODO
+ */
+__api__ void mutex_global_cleanup(void);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ */
+__api__ void mutex_global_lock(void);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ */
+__api__ void mutex_global_unlock(void);
+
+#endif /* __OSI_MUTEX_H */
 /*!@} */
