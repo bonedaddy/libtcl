@@ -21,7 +21,7 @@
 /*!@file osi/blocking_queue.h
  * @author uael
  *
- * @addtogroup osi.blocking_queue @{
+ * @addtogroup osi.ds @{
  */
 #ifndef __OSI_BLOCKING_QUEUE_H
 # define __OSI_BLOCKING_QUEUE_H
@@ -79,113 +79,113 @@ struct blocking_queue {
  * @brief
  * TODO
  *
- * @param blocking_queue
+ * @param queue
  * @param capacity
  * @return
  */
-__api__ int blocking_queue_init(blocking_queue_t *blocking_queue, unsigned capacity);
+__api__ int blocking_queue_init(blocking_queue_t *queue,unsigned capacity);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param blocking_queue
+ * @param queue
  * @param dtor
  */
-__api__ void blocking_queue_destroy(blocking_queue_t *blocking_queue, head_dtor_t *dtor);
+__api__ void blocking_queue_destroy(blocking_queue_t *queue, head_dtor_t *dtor);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param blocking_queue
+ * @param queue
  * @return
  */
-__api__ bool blocking_queue_empty(blocking_queue_t *blocking_queue);
+__api__ bool blocking_queue_empty(blocking_queue_t *queue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param blocking_queue
+ * @param queue
  * @return
  */
-__api__ unsigned blocking_queue_length(blocking_queue_t *blocking_queue);
+__api__ unsigned blocking_queue_length(blocking_queue_t *queue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param blocking_queue
+ * @param queue
  * @return
  */
-__api__ unsigned blocking_queue_capacity(blocking_queue_t *blocking_queue);
+__api__ unsigned blocking_queue_capacity(blocking_queue_t *queue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param blocking_queue
+ * @param queue
  * @param ev
  */
-__api__ void blocking_queue_push(blocking_queue_t *blocking_queue, head_t *ev);
+__api__ void blocking_queue_push(blocking_queue_t *queue, head_t *ev);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param blocking_queue
+ * @param queue
  * @return
  */
-__api__ head_t *blocking_queue_pop(blocking_queue_t *blocking_queue);
+__api__ head_t *blocking_queue_pop(blocking_queue_t *queue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param blocking_queue
- * @param ev
+ * @param queue
+ * @param node
  * @return
  */
-__api__ bool blocking_queue_trypush(blocking_queue_t *blocking_queue, head_t *ev);
+__api__ bool blocking_queue_trypush(blocking_queue_t *queue, head_t *node);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param blocking_queue
+ * @param queue
  * @return
  */
-__api__ head_t *blocking_queue_trypop(blocking_queue_t *blocking_queue);
+__api__ head_t *blocking_queue_trypop(blocking_queue_t *queue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param blocking_queue
+ * @param queue
  * @param thread
  * @param listener
  */
-__api__ void blocking_queue_listen(blocking_queue_t *blocking_queue, struct thread *thread,
-	listener_t *listener);
+__api__ void blocking_queue_listen(blocking_queue_t *queue,
+	struct thread *thread, listener_t *listener);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param blocking_queue
+ * @param queue
  */
-__api__ void blocking_queue_unlisten(blocking_queue_t *blocking_queue);
+__api__ void blocking_queue_unlisten(blocking_queue_t *queue);
 
 #endif /* __OSI_BLOCKING_QUEUE_H */
 /*!@} */
