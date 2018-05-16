@@ -51,7 +51,8 @@ if (OSI_THREADING AND (NOT HAS_SYS_EVENTFD_H OR NOT HAS_SYS_EPOLL_H
   set(OSI_THREADING OFF)
 endif ()
 
-configure_file(${osi_INC_DIR}/osi/conf.h.in ${osi_INC_DIR}/osi/conf.h @ONLY)
+configure_file(${osi_INC_DIR}/osi/conf.h.in
+  ${CMAKE_BINARY_DIR}/include/osi/conf.h @ONLY)
 
 file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.c)
 file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.h)
@@ -59,7 +60,9 @@ file(GLOB_RECURSE osi_HDRS ${osi_HDRS} ${osi_INC_DIR}/osi/*.h)
 set(osi_HDR ${osi_INC_DIR}/osi.h)
 
 add_library(osi ${osi_SRCS} ${osi_HDRS} ${osi_HDR})
-target_include_directories(osi PUBLIC ${osi_INC_DIR} PRIVATE ${osi_SRC_DIR})
+target_include_directories(osi
+  PUBLIC ${osi_INC_DIR} ${CMAKE_BINARY_DIR}/include
+  PRIVATE ${osi_SRC_DIR})
 target_link_libraries(osi PUBLIC pp)
 add_dependencies(osi pp)
 
