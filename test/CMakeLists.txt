@@ -31,6 +31,9 @@ osi_register_test(sema_rw)
 
 osi_register_test(mutex_init)
 
+osi_register_test(future_init)
+osi_register_test(future_init_imediate)
+
 if (OSI_THREADING)
   osi_register_test(reactor_init)
   osi_register_test(reactor_stop_start)
