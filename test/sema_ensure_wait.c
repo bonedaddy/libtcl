@@ -34,10 +34,11 @@ static void *sleep_then_increment_counter(void *context) {
 	helper = (dummy_t *)context;
 	ASSERT(helper);
 	ASSERT(helper->sema);
+/* TODO: put this compat somewhere else */
 #ifdef OS_PROVENCORE
-	sleep(200 * 1000);
+	sleep(100 * 1000);
 #else
-	usleep(200 * 1000);
+	usleep(100 * 1000);
 #endif
 	++helper->counter;
 	sema_post(helper->sema);

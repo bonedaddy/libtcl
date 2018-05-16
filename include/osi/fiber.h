@@ -119,9 +119,6 @@ struct fiber {
 	/*! The priority used by scheduler */
 	int priority;
 
-	/*! The event, which is used by `fiber_join' */
-	fiber_ev_t stopev;
-
 #if defined(USE_CORO)
 
 	/** Coroutine context */

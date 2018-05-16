@@ -16,37 +16,14 @@
  * limitations under the License.
  */
 
-/*!@file osi.h
- * @author uael
- */
-#ifndef __OSI_H
-# define __OSI_H
+#include <osi.h>
 
-#include "osi/conf.h"
-#include "osi/alarm.h"
-#include "osi/bqueue.h"
-#include "osi/fiber.h"
-#include "osi/list.h"
-#include "osi/log.h"
-#include "osi/mutex.h"
-#include "osi/reactor.h"
-#include "osi/sched.h"
-#include "osi/sema.h"
-#include "osi/string.h"
-#include "osi/thread.h"
+void osi_init(void)
+{
+	mutex_global_init();
+}
 
-/*!@public
- *
- * @brief
- * TODO
- */
-__api__ void osi_init(void);
-
-/*!@public
- *
- * @brief
- * TODO
- */
-__api__ void osi_cleanup(void);
-
-#endif /* __OSI_H */
+void osi_cleanup(void)
+{
+	mutex_global_cleanup();
+}

@@ -26,7 +26,7 @@ int bqueue_init(bqueue_t *bqueue, unsigned capacity)
 	bqueue->capacity = capacity;
 	if (sema_init(&bqueue->enqueue_sem, capacity))
 		return -1;
-	if (sema_init(&bqueue->dbqueue_sem, 0))
+	if (sema_init(&bqueue->dequeue_sem, 0))
 		return -1;
 	list_init(&bqueue->list);
 #ifdef OSI_THREADING
@@ -40,7 +40,7 @@ void bqueue_destroy(bqueue_t *bqueue, head_dtor_t *dtor)
 	bqueue_unlisten(bqueue);
 	list_destroy(&bqueue->list, dtor);
 	sema_destroy(&bqueue->enqueue_sem);
-	sema_destroy(&bqueue->dbqueue_sem);
+	sema_destroy(&bqueue->dequeue_sem);
 #ifdef OSI_THREADING
 	pthread_mutex_destroy(&bqueue->lock);
 #endif
@@ -95,14 +95,14 @@ void bqueue_push(bqueue_t *bqueue, head_t *ev)
 		fiber_yield(NULL);
 	}
 #endif
-	sema_post(&bqueue->dbqueue_sem);
+	sema_post(&bqueue->dequeue_sem);
 }
 
 head_t *bqueue_pop(bqueue_t *bqueue)
 {
 	head_t *ev;
 
-	sema_wait(&bqueue->dbqueue_sem);
+	sema_wait(&bqueue->dequeue_sem);
 
 #ifdef OSI_THREADING
 	pthread_mutex_lock(&bqueue->lock);
@@ -132,7 +132,7 @@ bool bqueue_trypush(bqueue_t *bqueue, head_t *ev)
 		fiber_yield(NULL);
 	}
 #endif
-	sema_post(&bqueue->dbqueue_sem);
+	sema_post(&bqueue->dequeue_sem);
 	return true;
 }
 
@@ -140,7 +140,7 @@ head_t *bqueue_trypop(bqueue_t *bqueue)
 {
 	head_t *ev;
 
-	if (!sema_trywait(&bqueue->dbqueue_sem))
+	if (!sema_trywait(&bqueue->dequeue_sem))
 		return false;
 
 #ifdef OSI_THREADING
@@ -160,7 +160,7 @@ void bqueue_listen(bqueue_t *bqueue, thread_t *thread, listener_t *listener)
 #ifdef OSI_THREADING
 	bqueue_unlisten(bqueue);
 	bqueue->reactor_object = reactor_register(
-		&thread->reactor, bqueue->dbqueue_sem.handle, bqueue,
+		&thread->reactor, bqueue->dequeue_sem.handle, bqueue,
 		(reactor_ready_t *)listener, NULL);
 #else
 	bqueue->thread = thread;

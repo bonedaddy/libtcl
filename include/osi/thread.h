@@ -27,7 +27,8 @@
 # define __OSI_THREAD_H
 
 #include <osi/reactor.h>
-#include "bqueue.h"
+#include <osi/bqueue.h>
+#include <osi/fiber/pool.h>
 
 #define THREAD_NAME_MAX 16
 
@@ -58,7 +59,11 @@ struct thread {
 	reactor_t reactor;
 #else
 
+	bool running;
+
 	fiber_t fiber;
+
+	fiber_pool_t pool;
 #endif
 };
 
