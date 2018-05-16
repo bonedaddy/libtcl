@@ -25,51 +25,51 @@
 # define __OSI_CONF_H
 
 #ifndef OS_PROVENCORE
-# cmakedefine OS_PROVENCORE
+#cmakedefine OS_PROVENCORE
 #endif
 
 #ifndef USE_CORO
-# cmakedefine USE_CORO
+#cmakedefine USE_CORO
 #endif
 #ifndef USE_PICORO
-# cmakedefine USE_PICORO
+#cmakedefine USE_PICORO
 #endif
 
 #ifndef HAS_BZERO
-# cmakedefine HAS_BZERO
+#cmakedefine HAS_BZERO
 #endif
 #ifndef HAS_FREE
-# cmakedefine HAS_FREE
+#cmakedefine HAS_FREE
 #endif
 #ifndef HAS_REALLOC
-# cmakedefine HAS_REALLOC
+#cmakedefine HAS_REALLOC
 #endif
 
 #ifndef HAS_SYS_EVENTFD_H
-# cmakedefine HAS_SYS_EVENTFD_H
+#cmakedefine HAS_SYS_EVENTFD_H
 #endif
 #ifndef HAS_SYS_EPOLL_H
-# cmakedefine HAS_SYS_EPOLL_H
+#cmakedefine HAS_SYS_EPOLL_H
 #endif
 #ifndef HAS_SYS_TIME_H
-# cmakedefine HAS_SYS_TIME_H
+#cmakedefine HAS_SYS_TIME_H
 #endif
 #ifndef HAS_SYS_PRCTL_H
-# cmakedefine HAS_SYS_PRCTL_H
+#cmakedefine HAS_SYS_PRCTL_H
 #endif
 #ifndef HAS_PTHREAD_H
-# cmakedefine HAS_PTHREAD_H
+#cmakedefine HAS_PTHREAD_H
 #endif
 #ifndef HAS_UNISTD_H
-# cmakedefine HAS_UNISTD_H
+#cmakedefine HAS_UNISTD_H
 #endif
 
 #ifndef OSI_LOGGING
-# cmakedefine OSI_LOGGING
+#cmakedefine OSI_LOGGING
 #endif
 
 #ifndef OSI_THREADING
-# cmakedefine OSI_THREADING
+#cmakedefine OSI_THREADING
 #endif
 
 #ifdef OSI_THREADING
