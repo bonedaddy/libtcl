@@ -212,7 +212,7 @@ __api__ bool list_contains(list_t *list, head_t *entry);
 #define list_remove(...) //TODO TEMPOW
 //#define list_front(...) NULL
 //#define list_foreach(...) NULL
-#define list_prepend(...)
+//#define list_prepend(...)
 #include <assert.h>
 
 struct list_node_t {
@@ -245,13 +245,25 @@ static inline bool list_append(list_t *list, void *data) {
 		return false;
 	node->data = data;
 	list_unshift(list, &node->list);
-	++list->len;
+	return true;
+}
+
+static inline bool list_prepend(list_t *list, void *data) {
+	assert(list != NULL);
+	assert(data != NULL);
+
+	list_node_t *node;
+
+	if (!(node = (list_node_t *)malloc(sizeof(list_node_t))))
+		return false;
+	node->data = data;
+	list_push(list, &node->list);
 	return true;
 }
 
 static inline void list_clear(list_t *list) {
 	assert(list != NULL);
-	//TODO leaks here
+	//TODO TEMPOW leaks here
 //	for (list_node_t *node = list->next; node; )
 //		node = list_free_node_(list, node);
 	list_init(list);
