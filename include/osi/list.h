@@ -196,26 +196,66 @@ __api__ bool list_contains(list_t *list, head_t *entry);
     ((app_type *) (((char *) (list_ptr)) - offsetof(app_type, list_member)))
 
 
-#define list_new(x) ({(void)x;NULL;})
-#define list_append(...) false
-#define list_clear(x) (void)x
-#define list_begin(x) ({(void)x;NULL;})
+
+/*
+ * Here it's fluoride compat only :
+ */
+
+//#define list_new(x) ({(void)x;NULL;})
+//#define list_append(...) false
+//#define list_clear(x) (void)x
+//#define list_begin(x) ({(void)x;NULL;})
 #define list_end(x) ({(void)x;NULL;})
-#define list_node(x) NULL
-#define list_next(x) NULL
-#define list_free(x) (void)x
-#define list_remove(...)
-#define list_front(...) NULL
-#define list_foreach(...) NULL
+//#define list_node(x) NULL
+//#define list_next(x) NULL
+//#define list_free(x) (void)x
+#define list_remove(...) //TODO TEMPOW
+//#define list_front(...) NULL
+//#define list_foreach(...) NULL
 #define list_prepend(...)
 #include <assert.h>
 
 struct list_node_t {
-	struct list_node_t *next;
+	head_t list;
+//	struct list_node_t *next;
 	void *data;
 };
 
 typedef struct list_node_t list_node_t;
+
+typedef void (*list_free_cb)(void *data);
+
+static inline list_t *list_new(list_free_cb callback) {
+	(void) callback;
+	list_t *list;
+
+	if (!(list = (list_t *)malloc(sizeof(list_t))))
+		return NULL;
+	list_init(list);
+	return list;
+}
+
+static inline bool list_append(list_t *list, void *data) {
+	assert(list != NULL);
+	assert(data != NULL);
+
+	list_node_t *node;
+
+	if (!(node = (list_node_t *)malloc(sizeof(list_node_t))))
+		return false;
+	node->data = data;
+	list_unshift(list, &node->list);
+	++list->len;
+	return true;
+}
+
+static inline void list_clear(list_t *list) {
+	assert(list != NULL);
+	//TODO leaks here
+//	for (list_node_t *node = list->next; node; )
+//		node = list_free_node_(list, node);
+	list_init(list);
+}
 
 static inline size_t list_length(list_t *list) {
 	assert(list != NULL);
@@ -227,6 +267,49 @@ static inline bool list_is_empty(const list_t *list) {
 	return (list->len == 0);
 }
 
+static inline void list_free(list_t *list) {
+	if (!list)
+		return;
+	list_clear(list);
+	free(list);
+}
+
+static inline list_node_t *list_begin(const list_t *list) {
+	assert(list != NULL);
+	return (list_node_t *)list->next;
+}
+
+static inline void *list_node(const list_node_t *node) {
+	assert(node != NULL);
+	return node->data;
+}
+
+static inline list_node_t *list_next(const list_node_t *node) {
+	assert(node != NULL);
+	return (list_node_t *)node->list.next;
+}
+
+typedef bool (*list_iter_cb)(void *data, void *context);
+
+static inline list_node_t *list_foreach(const list_t *list, list_iter_cb callback, void *context) {
+	assert(list != NULL);
+	assert(callback != NULL);
+
+	for (list_node_t *node = (list_node_t *)list->next; node != (list_node_t *)list;) {
+		list_node_t *next = (list_node_t *)node->list.next;
+		if (!callback(node->data, context))
+			return node;
+		node = next;
+	}
+	return NULL;
+}
+
+static inline void *list_front(const list_t *list) {
+	assert(list != NULL);
+	assert(!list_is_empty(list));
+
+	return ((list_node_t *)list->next)->data;
+}
 
 #endif /* __OSI_LIST_H */
 /*!@} */
