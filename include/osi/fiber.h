@@ -26,8 +26,8 @@
 #ifndef __OSI_FIBER_H
 # define __OSI_FIBER_H
 
-#include <osi/conf.h>
-#include <osi/list.h>
+#include "osi/conf.h"
+#include "osi/list.h"
 
 #if defined(USE_CORO)
 # include <coro.h>

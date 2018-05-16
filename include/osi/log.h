@@ -26,7 +26,7 @@
 #ifndef __OSI_LOG_H
 #define __OSI_LOG_H
 
-#include <osi/conf.h>
+#include "osi/conf.h"
 #include <stdio.h>
 
 #if defined(OSI_LOGGING)

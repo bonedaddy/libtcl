@@ -21,8 +21,8 @@
 #ifndef __OSI_TEST_H
 # define __OSI_TEST_H
 
-#include <osi/conf.h>
-#include <osi/string.h>
+#include "osi/conf.h"
+#include "osi/string.h"
 
 #include <assert.h>
 #include <stdio.h>

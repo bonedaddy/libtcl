@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-#include <osi/sched.h>
-#include <osi/string.h>
+#include "osi/sched.h"
+#include "osi/string.h"
 
 #include <errno.h>
 

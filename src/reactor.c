@@ -18,9 +18,9 @@
 
 #define LOG_TAG "osi_reactor"
 
-#include <osi/reactor.h>
-#include <osi/string.h>
-#include <osi/log.h>
+#include "osi/reactor.h"
+#include "osi/string.h"
+#include "osi/log.h"
 
 #ifdef OSI_THREADING
 # ifndef EFD_SEMAPHORE

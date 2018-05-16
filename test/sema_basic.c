@@ -20,8 +20,8 @@
 
 #include "test.h"
 
-#include <osi/thread.h>
-#include <osi/log.h>
+#include "osi/thread.h"
+#include "osi/log.h"
 
 static sema_t sema;
 static int counter;

@@ -18,7 +18,7 @@
 
 #include "test.h"
 
-#include <osi/mutex.h>
+#include "osi/mutex.h"
 
 int main(void)
 {

@@ -26,8 +26,8 @@
 #ifndef __OSI_SEMA_H
 # define __OSI_SEMA_H
 
-#include <osi/conf.h>
-#include <osi/list.h>
+#include "osi/conf.h"
+#include "osi/list.h"
 
 /*!@public
  *

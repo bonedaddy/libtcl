@@ -18,7 +18,7 @@
 
 #include "test.h"
 
-#include <osi/blocking_queue.h>
+#include "osi/blocking_queue.h"
 
 static const char *DUMMY_DATA_STRING = "Dummy data string";
 

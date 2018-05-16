@@ -26,8 +26,8 @@
 #ifndef __OSI_REACTOR_H
 # define __OSI_REACTOR_H
 
-#include <osi/fiber.h>
-#include <osi/list.h>
+#include "osi/fiber.h"
+#include "osi/list.h"
 
 /*!@brief
  * The reactor pattern, which is described here

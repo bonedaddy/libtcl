@@ -18,7 +18,7 @@
 
 #include "test.h"
 
-#include <osi/blocking_queue.h>
+#include "osi/blocking_queue.h"
 
 #define TEST_QUEUE_SIZE 10
 

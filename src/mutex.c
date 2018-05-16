@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-#include <osi/mutex.h>
-#include <osi/fiber.h>
+#include "osi/mutex.h"
+#include "osi/fiber.h"
 
 int mutex_init(mutex_t *mutex)
 {

@@ -18,7 +18,7 @@
 
 #include "test.h"
 
-#include <osi/sched.h>
+#include "osi/sched.h"
 
 static int counter = 0;
 

@@ -26,7 +26,7 @@
 #ifndef __OSI_SCHED_H
 # define __OSI_SCHED_H
 
-#include <osi/fiber/pool.h>
+#include "osi/fiber/pool.h"
 
 /*!@public
  *

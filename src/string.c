@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-#include <osi/string.h>
+#include "osi/string.h"
 
 #ifndef HAS_BZERO
 

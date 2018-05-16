@@ -26,7 +26,7 @@
 #ifndef __OSI_LIST_H
 # define __OSI_LIST_H
 
-#include <osi/conf.h>
+#include "osi/conf.h"
 #include <stdint.h>
 #include <stddef.h>
 

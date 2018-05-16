@@ -18,7 +18,7 @@
 
 #include "test.h"
 
-#include <osi/reactor.h>
+#include "osi/reactor.h"
 
 int main(void)
 {

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-#include <osi/future.h>
+#include "osi/future.h"
 
 static void __future_free(future_t *future)
 {

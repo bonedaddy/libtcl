@@ -18,7 +18,7 @@
 
 #include "test.h"
 
-#include <osi/sema.h>
+#include "osi/sema.h"
 
 int main(void)
 {

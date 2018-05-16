@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-#include <osi/sema.h>
-#include <osi/fiber.h>
+#include "osi/sema.h"
+#include "osi/fiber.h"
 
 int sema_init(sema_t *sema, unsigned value)
 {

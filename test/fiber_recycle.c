@@ -18,7 +18,7 @@
 
 #include "test.h"
 
-#include <osi/fiber.h>
+#include "osi/fiber.h"
 
 static char *result[] = { "a", "b" };
 

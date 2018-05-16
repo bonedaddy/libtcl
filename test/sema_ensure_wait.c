@@ -21,7 +21,7 @@
 #ifdef OS_PROVENCORE
 #include <unistd.h>
 #endif
-#include <osi/thread.h>
+#include "osi/thread.h"
 
 typedef struct {
 	sema_t *sema;

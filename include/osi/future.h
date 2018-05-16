@@ -26,7 +26,7 @@
 #ifndef __OSI_FUTURE_H
 # define __OSI_FUTURE_H
 
-#include <osi/sema.h>
+#include "osi/sema.h"
 
 /*!@public
  *

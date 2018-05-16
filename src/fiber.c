@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-#include <osi/fiber.h>
-#include <osi/string.h>
+#include "osi/fiber.h"
+#include "osi/string.h"
 
 #include <errno.h>
 

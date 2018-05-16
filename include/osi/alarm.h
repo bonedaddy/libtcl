@@ -27,7 +27,7 @@
 # define __OSI_ALARM_H
 
 #include "osi/blocking_queue.h"
-#include <osi/thread.h>
+#include "osi/thread.h"
 
 /*!@public
  *

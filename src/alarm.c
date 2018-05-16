@@ -16,5 +16,5 @@
  * limitations under the License.
  */
 
-#include <osi/alarm.h>
+#include "osi/alarm.h"
 

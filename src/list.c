@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-#include <osi/list.h>
+#include "osi/list.h"
 
 #include <stddef.h>
 

@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-#include <osi/blocking_queue.h>
-#include <osi/thread.h>
-#include <osi/string.h>
+#include "osi/blocking_queue.h"
+#include "osi/thread.h"
+#include "osi/string.h"
 
 int blocking_queue_init(blocking_queue_t *queue, unsigned capacity)
 {
@@ -30,7 +30,7 @@ int blocking_queue_init(blocking_queue_t *queue, unsigned capacity)
 		return -1;
 	list_init(&queue->list);
 #ifdef OSI_THREADING
-	pthread_mutex_init(&blocking_queue->lock, NULL);
+	pthread_mutex_init(&queue->lock, NULL);
 #endif
 	return 0;
 }
@@ -42,7 +42,7 @@ void blocking_queue_destroy(blocking_queue_t *queue, head_dtor_t *dtor)
 	sema_destroy(&queue->enqueue_sem);
 	sema_destroy(&queue->dequeue_sem);
 #ifdef OSI_THREADING
-	pthread_mutex_destroy(&blocking_queue->lock);
+	pthread_mutex_destroy(&queue->lock);
 #endif
 }
 
@@ -51,11 +51,11 @@ bool blocking_queue_empty(blocking_queue_t *queue)
 	bool empty;
 
 #ifdef OSI_THREADING
-	pthread_mutex_lock(&blocking_queue->lock);
+	pthread_mutex_lock(&queue->lock);
 #endif
 	empty = list_empty(&queue->list);
 #ifdef OSI_THREADING
-	pthread_mutex_unlock(&blocking_queue->lock);
+	pthread_mutex_unlock(&queue->lock);
 #endif
 	return empty;
 }
@@ -65,11 +65,11 @@ unsigned blocking_queue_length(blocking_queue_t *queue)
 	unsigned len;
 
 #ifdef OSI_THREADING
-	pthread_mutex_lock(&blocking_queue->lock);
+	pthread_mutex_lock(&queue->lock);
 #endif
 	len = (unsigned)queue->list.len;
 #ifdef OSI_THREADING
-	pthread_mutex_unlock(&blocking_queue->lock);
+	pthread_mutex_unlock(&queue->lock);
 #endif
 	return len;
 }
@@ -84,11 +84,11 @@ void blocking_queue_push(blocking_queue_t *queue, head_t *ev)
 	sema_wait(&queue->enqueue_sem);
 
 #ifdef OSI_THREADING
-	pthread_mutex_lock(&blocking_queue->lock);
+	pthread_mutex_lock(&queue->lock);
 #endif
 	list_push(&queue->list, ev);
 #ifdef OSI_THREADING
-	pthread_mutex_unlock(&blocking_queue->lock);
+	pthread_mutex_unlock(&queue->lock);
 #else
 	if (queue->listener) {
 		sched_spawn(stdsched, (work_t *)queue->listener, 32, queue, 1);
@@ -105,11 +105,11 @@ head_t *blocking_queue_pop(blocking_queue_t *queue)
 	sema_wait(&queue->dequeue_sem);
 
 #ifdef OSI_THREADING
-	pthread_mutex_lock(&blocking_queue->lock);
+	pthread_mutex_lock(&queue->lock);
 #endif
 	ev = list_shift(&queue->list);
 #ifdef OSI_THREADING
-	pthread_mutex_unlock(&blocking_queue->lock);
+	pthread_mutex_unlock(&queue->lock);
 #endif
 	sema_post(&queue->enqueue_sem);
 	return ev;
@@ -121,11 +121,11 @@ bool blocking_queue_trypush(blocking_queue_t *queue, head_t *node)
 		return false;
 
 #ifdef OSI_THREADING
-	pthread_mutex_lock(&blocking_queue->lock);
+	pthread_mutex_lock(&queue->lock);
 #endif
 	list_push(&queue->list, node);
 #ifdef OSI_THREADING
-	pthread_mutex_unlock(&blocking_queue->lock);
+	pthread_mutex_unlock(&queue->lock);
 #else
 	if (queue->listener) {
 		sched_spawn(stdsched, (work_t *)queue->listener, 32, queue, 1);
@@ -144,11 +144,11 @@ head_t *blocking_queue_trypop(blocking_queue_t *queue)
 		return false;
 
 #ifdef OSI_THREADING
-	pthread_mutex_lock(&blocking_queue->lock);
+	pthread_mutex_lock(&queue->lock);
 #endif
 	ev = list_shift(&queue->list);
 #ifdef OSI_THREADING
-	pthread_mutex_unlock(&blocking_queue->lock);
+	pthread_mutex_unlock(&queue->lock);
 #endif
 	sema_post(&queue->enqueue_sem);
 	return ev;
@@ -158,9 +158,9 @@ void blocking_queue_listen(blocking_queue_t *queue, thread_t *thread, listener_t
 {
 	queue->listener = listener;
 #ifdef OSI_THREADING
-	blocking_queue_unlisten(blocking_queue);
-	blocking_queue->reactor_object = reactor_register(
-		&thread->reactor, blocking_queue->dequeue_sem.handle, blocking_queue,
+	blocking_queue_unlisten(queue);
+	queue->reactor_object = reactor_register(
+		&thread->reactor, queue->dequeue_sem.handle, queue,
 		(reactor_ready_t *)listener, NULL);
 #else
 	queue->thread = thread;
@@ -170,9 +170,9 @@ void blocking_queue_listen(blocking_queue_t *queue, thread_t *thread, listener_t
 void blocking_queue_unlisten(blocking_queue_t *queue)
 {
 #ifdef OSI_THREADING
-	if (blocking_queue->reactor_object) {
-		reactor_unregister(blocking_queue->reactor_object);
-		blocking_queue->reactor_object = NULL;
+	if (queue->reactor_object) {
+		reactor_unregister(queue->reactor_object);
+		queue->reactor_object = NULL;
 	}
 #else
 	queue->listener = NULL;

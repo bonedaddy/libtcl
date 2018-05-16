@@ -18,10 +18,10 @@
 
 #define LOG_TAG "osi_thread"
 
-#include <osi/log.h>
-#include <osi/thread.h>
-#include <osi/sema.h>
-#include <osi/string.h>
+#include "osi/log.h"
+#include "osi/thread.h"
+#include "osi/sema.h"
+#include "osi/string.h"
 
 #define DEFAULT_WORK_QUEUE_CAPACITY 128
 

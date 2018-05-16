@@ -18,7 +18,7 @@
 
 #include "test.h"
 
-#include <osi/thread.h>
+#include "osi/thread.h"
 
 #ifndef OSI_THREADING
 static sema_t full;

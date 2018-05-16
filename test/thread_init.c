@@ -18,7 +18,7 @@
 
 #include "test.h"
 
-#include <osi/thread.h>
+#include "osi/thread.h"
 
 int main(void)
 {

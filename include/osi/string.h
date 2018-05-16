@@ -26,7 +26,7 @@
 #ifndef __OSI_STRING_H
 # define __OSI_STRING_H
 
-#include <osi/conf.h>
+#include "osi/conf.h"
 
 #ifdef OS_PROVENCORE
 # include <string.h>

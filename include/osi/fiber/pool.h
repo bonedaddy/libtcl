@@ -26,7 +26,7 @@
 #ifndef __OSI_FIBER_POOL_H
 # define __OSI_FIBER_POOL_H
 
-#include <osi/fiber.h>
+#include "osi/fiber.h"
 
 /*!@public
  *

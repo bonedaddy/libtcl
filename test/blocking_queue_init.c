@@ -18,7 +18,7 @@
 
 #include "test.h"
 
-#include <osi/blocking_queue.h>
+#include "osi/blocking_queue.h"
 
 int main(void)
 {
