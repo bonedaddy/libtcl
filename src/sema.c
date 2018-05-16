@@ -26,6 +26,7 @@ int sema_init(sema_t *sema, unsigned value)
 		return sema->handle;
 #else
 	sema->handle = value;
+	fiber_ev_init(&sema->ev, FIBER_EV_AUTO);
 #endif /* OSI_THREADING */
 	return 0;
 }
@@ -35,6 +36,8 @@ void sema_destroy(sema_t *sema)
 #ifdef OSI_THREADING
 	if (sema->handle >= 0)
     	close(sema->handle);
+#else
+	fiber_ev_destroy(&sema->ev);
 #endif /* OSI_THREADING */
 	sema->handle = INVALID_FD;
 }
@@ -46,8 +49,10 @@ void sema_wait(sema_t *sema)
 
 	eventfd_read(sema->handle, &value);
 #else
-	while (!sema->handle) fiber_yield(NULL);
-	--sema->handle;
+	while (!sema->handle)
+		fiber_ev_wait(&sema->ev);
+	if (--sema->handle > 0)
+		fiber_ev_set(&sema->ev);
 #endif /* OSI_THREADING */
 }
 
@@ -69,8 +74,12 @@ bool sema_trywait(sema_t *sema)
 
 	return rc;
 #else
-	if (!sema->handle) return false;
-	--sema->handle;
+	if (!sema->handle)
+		fiber_ev_wait(&sema->ev);
+	if (!sema->handle)
+		return false;
+	if (--sema->handle > 0)
+		fiber_ev_set(&sema->ev);
 	return true;
 #endif /* OSI_THREADING */
 }
@@ -80,6 +89,7 @@ void sema_post(sema_t *sema)
 #ifdef OSI_THREADING
 	eventfd_write(sema->handle, 1ULL);
 #else
-	++sema->handle;
+	if (++sema->handle == 1)
+		fiber_ev_set(&sema->ev);
 #endif /* OSI_THREADING */
 }

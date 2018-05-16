@@ -74,7 +74,7 @@ void fiber_pool_ready(fiber_pool_t *pool, fiber_t *fiber)
 	head_t *entry;
 	fiber_t *fib;
 
-	fiber->status = OSI_FIB_READY;
+	fiber->status = FIBER_READY;
 	head = pool->ready.next;
 	entry = &fiber->hold;
 	while (head != (head_t *)&pool->ready) {
@@ -95,7 +95,7 @@ void fiber_pool_ready(fiber_pool_t *pool, fiber_t *fiber)
 
 void fiber_pool_dead(fiber_pool_t *pool, fiber_t *fiber)
 {
-	fiber->status = OSI_FIB_EXITING;
+	fiber->status = FIBER_EXITING;
 	list_unshift(&pool->dead, &fiber->hold);
 }
 

@@ -39,12 +39,12 @@ typedef struct {
 
 static void __work_ready(void *context)
 {
-	equeue_t *queue;
+	bqueue_t *queue;
 	head_t *head;
 	work_item_t *item;
 
-	queue = (equeue_t *)context;
-	head = equeue_pop(queue);
+	queue = (bqueue_t *)context;
+	head = bqueue_pop(queue);
 	item = LIST_ENTRY(head, work_item_t, hold);
 	item->func(item->context);
 	free(item);
@@ -79,7 +79,7 @@ static void *__run_thread(void *context)
 
 
 #ifdef OSI_THREADING
-	fd = thread->work_queue.dequeue_sem.handle;
+	fd = thread->work_queue.dbqueue_sem.handle;
 	if (!(reactor_object = reactor_register(
 		&thread->reactor, fd, &thread->work_queue, __work_ready, NULL))) {
 		LOG_ERROR("unable to register reactor: %m");
@@ -90,14 +90,12 @@ static void *__run_thread(void *context)
 	reactor_start(&thread->reactor);
 	reactor_unregister(reactor_object);
 #else
-	while (thread->fiber.status == OSI_FIB_RUNNING) {
-		if ((head = equeue_trypop(&thread->work_queue))) {
-			item = LIST_ENTRY(head, work_item_t, hold);
-			item->func(item->context);
-			free(item);
-		}
-		fiber_yield(NULL);
-	}
+	/*
+	 * We don't need to use the reactor pattern here, the combination of fiber
+	 * and fiber events perfectly reproduce it on one core architecture.
+	 */
+	while (thread->fiber.status == FIBER_RUNNING)
+		__work_ready(&thread->work_queue);
 #endif
 
 	/*
@@ -106,15 +104,15 @@ static void *__run_thread(void *context)
      * work item and then joining the thread.
 	 */
 	count = 0;
-	while ((head = equeue_trypop(&thread->work_queue))
-		&& count <= equeue_capacity(&thread->work_queue)) {
+	while ((head = bqueue_trypop(&thread->work_queue))
+		&& count <= bqueue_capacity(&thread->work_queue)) {
 		item = LIST_ENTRY(head, work_item_t, hold);
 		item->func(item->context);
 		free(item);
 		++count;
 	}
 
-	if (count > equeue_capacity(&thread->work_queue))
+	if (count > bqueue_capacity(&thread->work_queue))
 		LOG_DEBUG(LOG_TAG, "Growing event queue on shutdown.");
 
 	LOG_INFO(LOG_TAG, "thread name %s exited", thread->name);
@@ -140,12 +138,10 @@ int thread_init(thread_t *thread, char const *name)
 	start.thread = thread;
 	start.error = 0;
 	strncpy(thread->name, name, THREAD_NAME_MAX);
-	equeue_init(&thread->work_queue, DEFAULT_WORK_QUEUE_CAPACITY);
+	bqueue_init(&thread->work_queue, DEFAULT_WORK_QUEUE_CAPACITY);
 #ifdef OSI_THREADING
 	reactor_init(&thread->reactor);
 	pthread_create(&thread->pthread, NULL, __run_thread, &start);
-	sema_wait(&start.start_sem);
-	sema_destroy(&start.start_sem);
 #else
 	fiber_init(&thread->fiber, __run_thread, 4096, FIBER_NONE);
 	fiber_call(&thread->fiber, &start);
@@ -153,7 +149,7 @@ int thread_init(thread_t *thread, char const *name)
 	sema_wait(&start.start_sem);
 	sema_destroy(&start.start_sem);
 	if (start.error) {
-		equeue_destroy(&thread->work_queue, __work_dtor);
+		bqueue_destroy(&thread->work_queue, __work_dtor);
 #ifdef OSI_THREADING
 		reactor_destroy(&thread->reactor);
 #endif /* OSI_THREADING */
@@ -165,8 +161,8 @@ void thread_destroy(thread_t *thread)
 {
 	thread_stop(thread);
 	thread_join(thread);
+	bqueue_destroy(&thread->work_queue, __work_dtor);
 #ifdef OSI_THREADING
-	equeue_destroy(&thread->work_queue, __work_dtor);
 	reactor_destroy(&thread->reactor);
 #else
 	fiber_destroy(&thread->fiber);
@@ -180,8 +176,7 @@ void thread_join(thread_t *thread)
 #ifdef OSI_THREADING
 		pthread_join(thread->pthread, NULL);
 #else
-		while (!fiber_isdone(&thread->fiber))
-			fiber_call(&thread->fiber, NULL);
+		fiber_join(&thread->fiber);
 #endif /* OSI_THREADING */
 	}
 }
@@ -194,10 +189,7 @@ bool thread_post(thread_t *thread, work_t *work, void *context)
 	item->func = work;
 	item->context = context;
 	head_init(&item->hold);
-	equeue_push(&thread->work_queue, &item->hold);
-#ifndef OSI_THREADING
-	fiber_call(&thread->fiber, NULL);
-#endif /* !OSI_THREADING */
+	bqueue_push(&thread->work_queue, &item->hold);
 	return true;
 }
 
@@ -206,6 +198,6 @@ void thread_stop(thread_t *thread)
 #ifdef OSI_THREADING
 	reactor_stop(&thread->reactor);
 #else
-	thread->fiber.status = OSI_FIB_EXITING;
+	thread->fiber.status = FIBER_EXITING;
 #endif /* OSI_THREADING */
 }

@@ -18,13 +18,13 @@
 
 #pragma once
 
-/*!@file osi/equeue.h
+/*!@file osi/bqueue.h
  * @author uael
  *
- * @addtogroup osi.equeue @{
+ * @addtogroup osi.bqueue @{
  */
-#ifndef __OSI_EQUEUE_H
-# define __OSI_EQUEUE_H
+#ifndef __OSI_BQUEUE_H
+# define __OSI_BQUEUE_H
 
 #include <osi/sched.h>
 #include <osi/reactor.h>
@@ -35,23 +35,23 @@ struct thread;
 /*!@public
  *
  * @brief
- * The event queue structure declaration.
+ * The blocking queue structure declaration.
  */
-typedef struct equeue equeue_t;
+typedef struct bqueue bqueue_t;
 
 /*!@public
  *
  * @brief
- * The event queue listener function callback.
+ * The blocking queue listener function callback.
  */
-typedef void (listener_t)(equeue_t *equeue);
+typedef void (listener_t)(bqueue_t *bqueue);
 
 /*!@public
  *
  * @brief
- * The event queue structure definition.
+ * The blocking queue structure definition.
  */
-struct equeue {
+struct bqueue {
 
 	list_t list;
 
@@ -61,7 +61,7 @@ struct equeue {
 
 	sema_t enqueue_sem;
 
-	sema_t dequeue_sem;
+	sema_t dbqueue_sem;
 
 #ifdef OSI_THREADING
 
@@ -79,103 +79,103 @@ struct equeue {
  * @brief
  * TODO
  *
- * @param equeue
+ * @param bqueue
  * @param capacity
  * @return
  */
-__api__ int equeue_init(equeue_t *equeue, unsigned capacity);
+__api__ int bqueue_init(bqueue_t *bqueue, unsigned capacity);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param equeue
+ * @param bqueue
  * @param dtor
  */
-__api__ void equeue_destroy(equeue_t *equeue, head_dtor_t *dtor);
+__api__ void bqueue_destroy(bqueue_t *bqueue, head_dtor_t *dtor);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param equeue
+ * @param bqueue
  * @return
  */
-__api__ bool equeue_empty(equeue_t *equeue);
+__api__ bool bqueue_empty(bqueue_t *bqueue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param equeue
+ * @param bqueue
  * @return
  */
-__api__ unsigned equeue_length(equeue_t *equeue);
+__api__ unsigned bqueue_length(bqueue_t *bqueue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param equeue
+ * @param bqueue
  * @return
  */
-__api__ unsigned equeue_capacity(equeue_t *equeue);
+__api__ unsigned bqueue_capacity(bqueue_t *bqueue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param equeue
+ * @param bqueue
  * @param ev
  */
-__api__ void equeue_push(equeue_t *equeue, head_t *ev);
+__api__ void bqueue_push(bqueue_t *bqueue, head_t *ev);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param equeue
+ * @param bqueue
  * @return
  */
-__api__ head_t *equeue_pop(equeue_t *equeue);
+__api__ head_t *bqueue_pop(bqueue_t *bqueue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param equeue
+ * @param bqueue
  * @param ev
  * @return
  */
-__api__ bool equeue_trypush(equeue_t *equeue, head_t *ev);
+__api__ bool bqueue_trypush(bqueue_t *bqueue, head_t *ev);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param equeue
+ * @param bqueue
  * @return
  */
-__api__ head_t *equeue_trypop(equeue_t *equeue);
+__api__ head_t *bqueue_trypop(bqueue_t *bqueue);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param equeue
+ * @param bqueue
  * @param thread
  * @param listener
  */
-__api__ void equeue_listen(equeue_t *equeue, struct thread *thread,
+__api__ void bqueue_listen(bqueue_t *bqueue, struct thread *thread,
 	listener_t *listener);
 
 /*!@public
@@ -183,9 +183,9 @@ __api__ void equeue_listen(equeue_t *equeue, struct thread *thread,
  * @brief
  * TODO
  *
- * @param equeue
+ * @param bqueue
  */
-__api__ void equeue_unlisten(equeue_t *equeue);
+__api__ void bqueue_unlisten(bqueue_t *bqueue);
 
-#endif /* __OSI_EQUEUE_H */
+#endif /* __OSI_BQUEUE_H */
 /*!@} */

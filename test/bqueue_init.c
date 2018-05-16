@@ -18,35 +18,20 @@
 
 #include "test.h"
 
-#include <osi/equeue.h>
-
-static const char *DUMMY_DATA_STRING = "Dummy data string";
-
-typedef struct {
-	head_t hold;
-	char const *data;
-} dummy_t;
+#include <osi/bqueue.h>
 
 int main(void)
 {
-	equeue_t equeue;
-	dummy_t dummy, *entry;
-	head_t *head;
+	bqueue_t bqueue;
 
-	ASSERT_EQ(0, equeue_init(&equeue, 1));
-	ASSERT_EQ(0, equeue_length(&equeue));
-	ASSERT_TRUE(equeue_empty(&equeue));
+	ASSERT_EQ(0, bqueue_init(&bqueue, 0));
+	ASSERT_EQ(0, bqueue_length(&bqueue));
+	ASSERT_TRUE(bqueue_empty(&bqueue));
+	bqueue_destroy(&bqueue, NULL);
 
-	head_init(&dummy.hold);
-	dummy.data = DUMMY_DATA_STRING;
-
-	ASSERT_TRUE(equeue_trypush(&equeue, &dummy.hold));
-	ASSERT_FALSE(equeue_empty(&equeue));
-
-	ASSERT(head = equeue_trypop(&equeue));
-	entry = LIST_ENTRY(head, dummy_t, hold);
-	ASSERT_STREQ(DUMMY_DATA_STRING, entry->data);
-
-	equeue_destroy(&equeue, NULL);
+	ASSERT_EQ(0, bqueue_init(&bqueue, 1));
+	ASSERT_EQ(0, bqueue_length(&bqueue));
+	ASSERT_TRUE(bqueue_empty(&bqueue));
+	bqueue_destroy(&bqueue, NULL);
 	return 0;
 }

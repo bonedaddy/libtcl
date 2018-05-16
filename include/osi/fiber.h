@@ -26,7 +26,7 @@
 #ifndef __OSI_FIBER_H
 # define __OSI_FIBER_H
 
-#include <osi/list.h>
+#include <osi/fiber/ev.h>
 
 #if defined(USE_CORO)
 # include <coro.h>
@@ -41,7 +41,7 @@
 /*!@public
  *
  * @brief
- * The fiber structure.
+ * The fiber structure declaration.
  */
 typedef struct fiber fiber_t;
 
@@ -68,13 +68,13 @@ typedef void *(work_t)(void *arg);
 enum fiber_st {
 
 	/*! The fiber was just created so ready */
-	OSI_FIB_READY,
+	FIBER_READY,
 
 	/*! The fiber is running in it's own context until it finish or yield */
-	OSI_FIB_RUNNING,
+	FIBER_RUNNING,
 
 	/*! The fiber is terminated but still exists */
-	OSI_FIB_EXITING
+	FIBER_EXITING
 };
 
 /*!@public
@@ -94,7 +94,7 @@ enum fiber_flags {
 /*!@public
  *
  * @brief
- * The fiber structure definition
+ * The fiber structure definition.
  */
 struct fiber {
 
@@ -118,6 +118,9 @@ struct fiber {
 
 	/*! The priority used by scheduler */
 	int priority;
+
+	/*! The event, which is used by `fiber_join' */
+	fiber_ev_t stopev;
 
 #if defined(USE_CORO)
 
@@ -152,11 +155,12 @@ struct fiber {
  * If it is set to 0, then the stack size will be set automatically.
  *
  * @param fiber The fiber to initialize.
- * @param fn    The fiber function.
+ * @param work  The fiber function.
  * @param ss    The stack size of the new fiber.
  * @param flags The flags which define this fiber.
  */
-__api__ void fiber_init(fiber_t *fiber, work_t *fn, uint16_t ss, uint8_t flags);
+__api__ void fiber_init(fiber_t *fiber, work_t *work, uint16_t ss,
+	uint8_t flags);
 
 /*!@public
  *
@@ -172,11 +176,11 @@ __api__ void fiber_destroy(fiber_t *fiber);
  * @brief
  * TODO
  *
- * @param fib
+ * @param fiber
  * @param fn
  * @return
  */
-__api__ int fiber_reuse(fiber_t *fib, work_t *fn, uint8_t flags);
+__api__ int fiber_reuse(fiber_t *fiber, work_t *fn, uint8_t flags);
 
 /*!@public
  *
@@ -192,6 +196,20 @@ __api__ int fiber_reuse(fiber_t *fib, work_t *fn, uint8_t flags);
  * @return      The yielded argument of the final result of the fiber callback.
  */
 __api__ void *fiber_call(fiber_t *fiber, void *arg);
+
+/*!@public
+ *
+ * @brief
+ * Waits while the given fiber will be finished,
+ * i.e. it will exit the `work', which was passed to the `fiber_init'.
+ * This function returns immediately in two cases:
+ *   1) if the fiber was created but wasn't yet started by calling the
+ *     `fiber_call';
+ *   2) if the fiber was already finished by leaving the `work'.
+ *
+ * @param fiber The fiber to join.
+ */
+__api__ void fiber_join(fiber_t *fiber);
 
 /*!@public
  *
@@ -220,7 +238,7 @@ __api__ bool fiber_isdone(fiber_t *fiber);
  */
 __api__ void *fiber_yield(void *arg);
 
-/*!@public
+/*!@private
  *
  * @brief
  * TODO

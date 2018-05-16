@@ -27,7 +27,7 @@
 # define __OSI_THREAD_H
 
 #include <osi/reactor.h>
-#include <osi/equeue.h>
+#include "bqueue.h"
 
 #define THREAD_NAME_MAX 16
 
@@ -49,7 +49,7 @@ struct thread {
 
 	bool is_joined;
 
-	equeue_t work_queue;
+	bqueue_t work_queue;
 
 #ifdef OSI_THREADING
 
@@ -73,10 +73,10 @@ __api__ bool thread_post(thread_t *thread, work_t *work, void *context);
 __api__ void thread_stop(thread_t *thread);
 
 //TODO TEMPOW
-#ifdef OS_PROVENCORE
-typedef struct reactor_t reactor_t;
-#endif
-reactor_t *thread_get_reactor(const thread_t *thread);
+struct reactor;
+
+struct reactor *thread_get_reactor(const thread_t *thread);
+
 bool thread_set_priority(thread_t *thread, int priority);
 thread_t *thread_new(const char *name);
 void thread_free(thread_t *thread);

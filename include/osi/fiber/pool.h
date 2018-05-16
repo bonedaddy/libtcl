@@ -21,7 +21,7 @@
 /*!@file osi/fiber/pool.h
  * @author uael
  *
- * @addtogroup osi.fiber.pool @{
+ * @addtogroup osi.fiber @{
  */
 #ifndef __OSI_FIBER_POOL_H
 # define __OSI_FIBER_POOL_H

@@ -43,7 +43,7 @@ static fiber_t *__spawn(sched_t *sched, work_t *work, uint16_t ss, void *arg,
 	fiber_t *fib;
 
 	fib = fiber_pool_new(&sched->pool);
-	if (!(fib->status == OSI_FIB_EXITING))
+	if (!(fib->status == FIBER_EXITING))
 		fiber_init(fib, work, ss, flags);
 	else {
 #ifdef USE_CORO
@@ -86,9 +86,9 @@ void sched_start(sched_t *sched)
 	while (sched->scheduled) {
 		if (!(fiber = fiber_pool_pop(&sched->pool)))
 			break;
-		fiber->status = OSI_FIB_RUNNING;
+		fiber->status = FIBER_RUNNING;
 		fiber_call(fiber, fiber->arg);
-		if (fiber->status == OSI_FIB_EXITING)
+		if (fiber->status == FIBER_EXITING)
 			fiber_pool_dead(&sched->pool, fiber);
 		else
 			fiber_pool_ready(&sched->pool, fiber);

@@ -27,7 +27,7 @@
 # define __OSI_SEMA_H
 
 #include <osi/conf.h>
-#include <osi/fiber.h>
+#include <osi/fiber/ev.h>
 
 /*!@public
  *
@@ -43,11 +43,13 @@ typedef struct sema sema_t;
  */
 struct sema {
 
-	/*! fd when `OSI_THREAD_MOD', counter otherwise */
+	/*! fd when `OSI_THREADING', counter otherwise */
 	int handle;
 
 #ifndef OSI_THREADING
-	fiber_t *fiber;
+
+	/*! On fiber fiber mode, we use an event to delegate work. */
+	fiber_ev_t ev;
 #endif
 };
 

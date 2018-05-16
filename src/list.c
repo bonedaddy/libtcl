@@ -35,8 +35,10 @@ void list_destroy(list_t *list, head_dtor_t *dtor)
 {
 	head_t *head;
 
-	while ((head = list_pop(list)))
-		if (dtor) dtor(head);
+	if (dtor)
+		while ((head = list_pop(list)))
+			dtor(head);
+	list_init(list);
 }
 
 bool list_empty(list_t *list)

@@ -36,9 +36,9 @@ if (OSI_THREADING)
   osi_register_test(reactor_unregister_from_thread)
 endif ()
 
-osi_register_test(equeue_init)
-osi_register_test(equeue_empty)
-osi_register_test(equeue_length)
-osi_register_test(equeue_push_pop)
+osi_register_test(bqueue_init)
+osi_register_test(bqueue_empty)
+osi_register_test(bqueue_length)
+osi_register_test(bqueue_push_pop)
 
 osi_register_test(thread_init)

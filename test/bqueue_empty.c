@@ -18,7 +18,7 @@
 
 #include "test.h"
 
-#include <osi/equeue.h>
+#include <osi/bqueue.h>
 
 static const char *DUMMY_DATA_STRING = "Dummy data string";
 
@@ -29,24 +29,24 @@ typedef struct {
 
 int main(void)
 {
-	equeue_t equeue;
+	bqueue_t bqueue;
 	dummy_t dummy, *entry;
 	head_t *head;
 
-	ASSERT_EQ(0, equeue_init(&equeue, 1));
-	ASSERT_EQ(0, equeue_length(&equeue));
+	ASSERT_EQ(0, bqueue_init(&bqueue, 1));
+	ASSERT_EQ(0, bqueue_length(&bqueue));
+	ASSERT_TRUE(bqueue_empty(&bqueue));
 
 	head_init(&dummy.hold);
 	dummy.data = DUMMY_DATA_STRING;
 
-	ASSERT_TRUE(equeue_trypush(&equeue, &dummy.hold));
-	ASSERT_EQ(1, equeue_length(&equeue));
+	ASSERT_TRUE(bqueue_trypush(&bqueue, &dummy.hold));
+	ASSERT_FALSE(bqueue_empty(&bqueue));
 
-	ASSERT(head = equeue_trypop(&equeue));
+	ASSERT(head = bqueue_trypop(&bqueue));
 	entry = LIST_ENTRY(head, dummy_t, hold);
 	ASSERT_STREQ(DUMMY_DATA_STRING, entry->data);
-	ASSERT_EQ(0, equeue_length(&equeue));
 
-	equeue_destroy(&equeue, NULL);
+	bqueue_destroy(&bqueue, NULL);
 	return 0;
 }
