@@ -200,7 +200,7 @@ __api__ void *fiber_yield(void *arg);
  *
  * @return
  */
-__api__ fiber_t *fiber_current(void);
+__api__ fid_t fiber_getfid(void);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */

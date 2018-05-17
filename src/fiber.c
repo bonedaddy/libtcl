@@ -270,3 +270,8 @@ void *fiber_yield(void *arg)
 	return fiber->arg;
 #endif
 }
+
+fid_t fiber_getfid(void)
+{
+	return __fiber_current;
+}
