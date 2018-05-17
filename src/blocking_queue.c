@@ -89,11 +89,6 @@ void blocking_queue_push(blocking_queue_t *queue, head_t *ev)
 	list_push(&queue->list, ev);
 #ifdef OSI_THREADING
 	pthread_mutex_unlock(&queue->lock);
-#else
-	if (queue->listener) {
-		sched_spawn(stdsched, (work_t *)queue->listener, 32, queue, 1);
-		fiber_yield(NULL);
-	}
 #endif
 	sema_post(&queue->dequeue_sem);
 }
@@ -126,11 +121,6 @@ bool blocking_queue_trypush(blocking_queue_t *queue, head_t *node)
 	list_push(&queue->list, node);
 #ifdef OSI_THREADING
 	pthread_mutex_unlock(&queue->lock);
-#else
-	if (queue->listener) {
-		sched_spawn(stdsched, (work_t *)queue->listener, 32, queue, 1);
-		fiber_yield(NULL);
-	}
 #endif
 	sema_post(&queue->dequeue_sem);
 	return true;

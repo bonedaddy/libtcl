@@ -63,7 +63,7 @@ static void *__run_thread(void *context)
 	int fd;
 	reactor_object_t *reactor_object;
 #else
-	fiber_t *fiber;
+	//fiber_t *fiber;
 #endif
 
 	arg = (start_arg_t *)context;
@@ -96,7 +96,7 @@ static void *__run_thread(void *context)
 
 	thread->running = true;
 	while (thread->running) {
-		if (!(head = blocking_queue_trypop(&thread->work_queue)))
+		/*if (!(head = blocking_queue_trypop(&thread->work_queue)))
 			fiber = fiber_pool_pop(&thread->pool);
 		else {
 			item = LIST_ENTRY(head, work_item_t, hold);
@@ -111,7 +111,7 @@ static void *__run_thread(void *context)
 				fiber_pool_dead(&thread->pool, fiber);
 			else
 				fiber_pool_ready(&thread->pool, fiber);
-		}
+		}*/
 	}
 #endif
 
@@ -160,7 +160,7 @@ int thread_init(thread_t *thread, char const *name)
 	reactor_init(&thread->reactor);
 	pthread_create(&thread->pthread, NULL, __run_thread, &start);
 #else
-	fiber_pool_init(&thread->pool);
+//	fiber_pool_init(&thread->pool);
 	fiber_init(&thread->fiber, __run_thread, 4096, FIBER_NONE);
 	fiber_call(&thread->fiber, &start);
 #endif /* OSI_THREADING */
@@ -184,7 +184,7 @@ void thread_destroy(thread_t *thread)
 	reactor_destroy(&thread->reactor);
 #else
 	fiber_destroy(&thread->fiber);
-	fiber_pool_destroy(&thread->pool);
+//	fiber_pool_destroy(&thread->pool);
 #endif /* OSI_THREADING */
 }
 

@@ -28,7 +28,6 @@
 
 #include "osi/reactor.h"
 #include "osi/blocking_queue.h"
-#include "osi/fiber/pool.h"
 
 #define THREAD_NAME_MAX 16
 
@@ -62,8 +61,6 @@ struct thread {
 	bool running;
 
 	fiber_t fiber;
-
-	fiber_pool_t pool;
 #endif
 };
 
