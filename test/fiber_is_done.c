@@ -35,20 +35,20 @@ void *call(void *arg)
 
 int main(void)
 {
-	fiber_t fiber;
+	fid_t fiber;
 
 	fiber_init(&fiber, call, 32, FIBER_NONE);
-	ASSERT(!fiber_isdone(&fiber));
+	ASSERT(!fiber_isdone(fiber));
 	++counter;
 	ASSERT(counter == 1);
-	fiber_call(&fiber, NULL);
+	fiber_call(fiber, NULL);
 	++counter;
 	ASSERT(counter == 3);
-	ASSERT(!fiber_isdone(&fiber));
-	fiber_call(&fiber, NULL);
+	ASSERT(!fiber_isdone(fiber));
+	fiber_call(fiber, NULL);
 	++counter;
 	ASSERT(counter == 5);
-	ASSERT(fiber_isdone(&fiber));
-	fiber_destroy(&fiber);
+	ASSERT(fiber_isdone(fiber));
+	fiber_destroy(fiber);
 	return 0;
 }

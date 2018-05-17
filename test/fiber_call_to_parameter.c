@@ -29,12 +29,12 @@ void *call_to_return_parameter(void *arg)
 
 int main(void)
 {
-	fiber_t fiber;
+	fid_t fiber;
 	char *result;
 
 	fiber_init(&fiber, call_to_return_parameter, 32, FIBER_NONE);
-	(void)(result = fiber_call(&fiber, "result"));
+	(void)(result = fiber_call(fiber, "result"));
 	ASSERT(!result);
-	fiber_destroy(&fiber);
+	fiber_destroy(fiber);
 	return 0;
 }

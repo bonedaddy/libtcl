@@ -60,7 +60,7 @@ struct thread {
 
 	bool running;
 
-	fiber_t fiber;
+	fid_t fiber;
 #endif
 };
 

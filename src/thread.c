@@ -63,7 +63,7 @@ static void *__run_thread(void *context)
 	int fd;
 	reactor_object_t *reactor_object;
 #else
-	//fiber_t *fiber;
+	fid_t fiber;
 #endif
 
 	arg = (start_arg_t *)context;
@@ -96,22 +96,11 @@ static void *__run_thread(void *context)
 
 	thread->running = true;
 	while (thread->running) {
-		/*if (!(head = blocking_queue_trypop(&thread->work_queue)))
-			fiber = fiber_pool_pop(&thread->pool);
-		else {
-			item = LIST_ENTRY(head, work_item_t, hold);
-			fiber = fiber_pool_new(&thread->pool);
-			fiber_init(fiber, item->func, 4096, FIBER_NONE);
-			fiber->arg = item->context;
-			free(item);
-		}
-		if (fiber) {
-			fiber_call(fiber, fiber->arg);
-			if (fiber->status == FIBER_DONE)
-				fiber_pool_dead(&thread->pool, fiber);
-			else
-				fiber_pool_ready(&thread->pool, fiber);
-		}*/
+		head = blocking_queue_pop(&thread->work_queue);
+		item = LIST_ENTRY(head, work_item_t, hold);
+		fiber_init(&fiber, item->func, 4096, FIBER_NONE);
+		fiber_setcontext(fiber, item->context);
+		free(item);
 	}
 #endif
 
@@ -162,7 +151,7 @@ int thread_init(thread_t *thread, char const *name)
 #else
 //	fiber_pool_init(&thread->pool);
 	fiber_init(&thread->fiber, __run_thread, 4096, FIBER_NONE);
-	fiber_call(&thread->fiber, &start);
+	fiber_call(thread->fiber, &start);
 #endif /* OSI_THREADING */
 	sema_wait(&start.start_sem);
 	sema_destroy(&start.start_sem);
@@ -183,7 +172,7 @@ void thread_destroy(thread_t *thread)
 #ifdef OSI_THREADING
 	reactor_destroy(&thread->reactor);
 #else
-	fiber_destroy(&thread->fiber);
+	fiber_destroy(thread->fiber);
 //	fiber_pool_destroy(&thread->pool);
 #endif /* OSI_THREADING */
 }
@@ -195,7 +184,7 @@ void thread_join(thread_t *thread)
 #ifdef OSI_THREADING
 		pthread_join(thread->pthread, NULL);
 #else
-		fiber_join(&thread->fiber);
+		fiber_join(thread->fiber);
 #endif /* OSI_THREADING */
 	}
 }

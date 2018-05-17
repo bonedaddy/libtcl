@@ -159,28 +159,27 @@ static void *__coro(uint8_t flags)
 	return __fn;
 }
 
-void fiber_init(fiber_t *fiber, work_t *work, uint16_t ss, uint8_t flags)
+void fiber_init(fid_t *fid, work_t *work, uint16_t ss, uint8_t flags)
 {
 #ifdef OS_PROVENCORE
 	static int init = 0;
 #endif
 	fiber_impl_t *impl;
 
-	fiber->fid = __createfiber();
-	impl = __getfiber(fiber->fid);
+	*fid = __createfiber();
+	impl = __getfiber(*fid);
 #ifdef OS_PROVENCORE
 	if (!init) {
 		init = 1;
 		if (init_threads()) return -1;
 	}
-	impl->context = create_context(ss, 0, 0, 0, __coro(flags),
-		&fiber->fid);
+	impl->context = create_context(ss, 0, 0, 0, __coro(flags), fid);
 #elif defined(USE_CORO)
 	if (impl->ss < ss) {
 		coro_stack_free(&impl->stack);
 		coro_stack_alloc(&impl->stack, ss);
 	}
-	coro_create(&impl->context, __coro(flags), &fiber->fid,
+	coro_create(&impl->context, __coro(flags), fid,
 		impl->stack.sptr, impl->stack.ssze);
 #else
 	impl->context = coroutine(__coro(flags));
@@ -191,31 +190,40 @@ void fiber_init(fiber_t *fiber, work_t *work, uint16_t ss, uint8_t flags)
 	impl->status = FIBER_PENDING;
 }
 
-void fiber_destroy(fiber_t *fiber)
+void fiber_destroy(fid_t fid)
 {
 	fiber_impl_t *impl;
 
-	impl = __getfiber(fiber->fid);
+	impl = __getfiber(fid);
 	assert(impl->status == FIBER_DONE);
 #ifdef USE_CORO
 	(void)coro_destroy(&impl->context);
 	coro_stack_free(&impl->stack);
 #endif
 	bzero(impl, sizeof(fiber_impl_t));
-	impl->fid = fiber->fid;
+	impl->fid = fid;
 	impl->status = FIBER_DESTROYED;
 }
 
-void *fiber_call(fiber_t *fiber, void *ctx)
+void fiber_setcontext(fid_t fid, void *ctx)
 {
 	fiber_impl_t *impl;
 
-	assert(__fiber_current != fiber->fid);
-	impl = __getfiber(fiber->fid);
+	impl = __getfiber(fid);
+	impl->arg = ctx;
+}
+
+void *fiber_call(fid_t fid, void *ctx)
+{
+	fiber_impl_t *impl;
+
+	impl = __getfiber(fid);
+	assert(__fiber_current != fid);
+	assert(impl->status == FIBER_PENDING);
 	impl->arg = ctx;
 	impl->status = FIBER_RUNNING;
 #ifdef USE_PICORO
-	impl->result = resume(impl->context, &fiber->fid);
+	impl->result = resume(impl->context, &fid);
 #else
 	impl->caller = __fiber_current;
 	__fiber_current = impl->fid;
@@ -231,26 +239,32 @@ void *fiber_call(fiber_t *fiber, void *ctx)
 	return impl->result;
 }
 
-bool fiber_isdone(fiber_t *fiber)
+bool fiber_isdone(fid_t fid)
 {
-	return __getfiber(fiber->fid)->status == FIBER_DONE;
+	return __getfiber(fid)->status == FIBER_DONE;
 }
 
-void fiber_join(fiber_t *fiber)
+void fiber_join(fid_t fid)
 {
-	while (!fiber_isdone(fiber))
-		fiber_call(fiber, NULL);
+	while (!fiber_isdone(fid))
+		fiber_call(fid, NULL);
 }
 
 void *fiber_yield(void *arg)
 {
+	fiber_impl_t *fiber;
+
+	fiber = __getfiber(__fiber_current);
+	assert(fiber->status == FIBER_RUNNING
+		|| fiber->status == FIBER_DONE
+		|| fiber->status == FIBER_BLOCKING);
+	if (fiber->status == FIBER_RUNNING)
+		fiber->status = FIBER_PENDING;
 #ifdef USE_PICORO
 	return yield(arg);
 #else
 	fiber_impl_t *caller;
-	fiber_impl_t *fiber;
 
-	fiber = __getfiber(__fiber_current);
 	fiber->result = arg;
 	caller = __getfiber(fiber->caller);
 	__fiber_current = caller->fid;
@@ -274,4 +288,52 @@ void *fiber_yield(void *arg)
 fid_t fiber_getfid(void)
 {
 	return __fiber_current;
+}
+
+void fiber_schedule(void)
+{
+	fid_t i;
+	fiber_impl_t *fiber;
+
+	for (i = 1; i < __fibers.len; ++i) {
+		fiber = __getfiber(i);
+		if (fiber->status == FIBER_PENDING)
+			goto got_one;
+	}
+	if (__fiber_current)
+		fiber_yield(NULL);
+	return;
+got_one:
+	fiber = __getfiber(i);
+	fiber_call(fiber->fid, fiber->arg);
+}
+
+void fiber_lock(void)
+{
+	fid_t fid;
+	fiber_impl_t *fiber;
+
+	fid = fiber_getfid();
+	fiber = __getfiber(fid);
+	if (!fid) {
+		fiber_schedule();
+	} else {
+		assert(fiber->status == FIBER_RUNNING);
+		fiber->status = FIBER_BLOCKING;
+		fiber_yield(NULL);
+	}
+}
+
+void fiber_unlock(fid_t fid)
+{
+	fiber_impl_t *fiber;
+
+	fiber = __getfiber(fid);
+	if (!fid) {
+		fiber_schedule();
+	} else {
+		assert(fiber->status == FIBER_BLOCKING);
+		fiber->status = FIBER_PENDING;
+		fiber_call(fid, fiber->arg);
+	}
 }

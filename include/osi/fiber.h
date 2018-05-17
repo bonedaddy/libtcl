@@ -42,13 +42,6 @@
 /*!@public
  *
  * @brief
- * The fiber structure declaration.
- */
-typedef struct fiber fiber_t;
-
-/*!@public
- *
- * @brief
  * Represent a fiber unique id.
  */
 typedef uint16_t fid_t;
@@ -80,6 +73,9 @@ enum fiber_st {
 
 	/*! The fiber is running in it's own context until it finish or yield */
 	FIBER_RUNNING,
+
+	/*! TODO */
+	FIBER_BLOCKING,
 
 	/*! The fiber is terminated but still exists */
 	FIBER_DONE,
@@ -120,12 +116,12 @@ struct fiber {
  * ss (stack size) is the size of the stack for the given fiber.
  * If it is set to 0, then the stack size will be set automatically.
  *
- * @param fiber The fiber to initialize.
+ * @param fid The fiber to initialize.
  * @param work  The fiber function.
  * @param ss    The stack size of the new fiber.
  * @param flags The flags which define this fiber.
  */
-__api__ void fiber_init(fiber_t *fiber, work_t *work, uint16_t ss,
+__api__ void fiber_init(fid_t *fid, work_t *work, uint16_t ss,
 	uint8_t flags);
 
 /*!@public
@@ -133,9 +129,9 @@ __api__ void fiber_init(fiber_t *fiber, work_t *work, uint16_t ss,
  * @brief
  * Delete the fiber `fiber' and its context.
  *
- * @param fiber The fiber to delete.
+ * @param fid The fiber to delete.
  */
-__api__ void fiber_destroy(fiber_t *fiber);
+__api__ void fiber_destroy(fid_t fid);
 
 /*!@public
  *
@@ -146,11 +142,11 @@ __api__ void fiber_destroy(fiber_t *fiber);
  * `arg' is the callback argument on the first fiber call, then it come the
  * result of `fiber_yield'.
  *
- * @param fiber The fiber to resume.
+ * @param fid The fiber to resume.
  * @param arg   The argument to send to `fiber'.
  * @return      The yielded argument of the final result of the fiber callback.
  */
-__api__ void *fiber_call(fiber_t *fiber, void *arg);
+__api__ void *fiber_call(fid_t fid, void *arg);
 
 /*!@public
  *
@@ -164,7 +160,7 @@ __api__ void *fiber_call(fiber_t *fiber, void *arg);
  *
  * @param fiber The fiber to join.
  */
-__api__ void fiber_join(fiber_t *fiber);
+__api__ void fiber_join(fid_t fiber);
 
 /*!@public
  *
@@ -174,7 +170,7 @@ __api__ void fiber_join(fiber_t *fiber);
  * @param fiber The fiber to check for done.
  * @return      If the fiber is done.
  */
-__api__ bool fiber_isdone(fiber_t *fiber);
+__api__ bool fiber_isdone(fid_t fiber);
 
 /*!@public
  *
@@ -201,6 +197,14 @@ __api__ void *fiber_yield(void *arg);
  * @return
  */
 __api__ fid_t fiber_getfid(void);
+
+__api__ void fiber_setcontext(fid_t fid, void *ctx);
+
+__api__ void fiber_schedule();
+
+__api__ void fiber_lock(void);
+
+__api__ void fiber_unlock(fid_t fid);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */
