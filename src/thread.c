@@ -107,7 +107,7 @@ static void *__run_thread(void *context)
 		}
 		if (fiber) {
 			fiber_call(fiber, fiber->arg);
-			if (fiber->status == FIBER_EXITING)
+			if (fiber->status == FIBER_DONE)
 				fiber_pool_dead(&thread->pool, fiber);
 			else
 				fiber_pool_ready(&thread->pool, fiber);

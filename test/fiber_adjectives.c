@@ -39,7 +39,7 @@ int main(void)
 
 	fiber_init(&fiber, call_fiber, 32, FIBER_NONE);
 	while (!fiber_isdone(&fiber))
-		printf("%s\n", (char *) fiber_call(&fiber, NULL));
+		printf("%s\n", (char *)fiber_call(&fiber, NULL));
 	fiber_destroy(&fiber);
 	return 0;
 }

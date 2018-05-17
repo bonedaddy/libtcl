@@ -46,6 +46,13 @@
  */
 typedef struct fiber fiber_t;
 
+/*!@public
+ *
+ * @brief
+ * Represent a fiber unique id.
+ */
+typedef uint16_t fid_t;
+
 /*!@private
  *
  * @brief
@@ -69,13 +76,16 @@ typedef void *(work_t)(void *arg);
 enum fiber_st {
 
 	/*! The fiber was just created so ready */
-	FIBER_READY,
+	FIBER_PENDING,
 
 	/*! The fiber is running in it's own context until it finish or yield */
 	FIBER_RUNNING,
 
 	/*! The fiber is terminated but still exists */
-	FIBER_EXITING
+	FIBER_DONE,
+
+	/*! TODO */
+	FIBER_DESTROYED
 };
 
 /*!@public
@@ -99,49 +109,7 @@ enum fiber_flags {
  */
 struct fiber {
 
-	/*! The fiber status */
-	fiber_st_t status;
-
-	/*! The fiber core function */
-	work_t *fn;
-
-	/*! The fiber core function argument */
-	void *arg;
-
-	/*! The fiber result */
-	void *result;
-
-	/*! The fiber caller */
-	fiber_t *caller;
-
-	/*! Fiber list hold */
-	head_t hold;
-
-	/*! The priority used by scheduler */
-	int priority;
-
-#if defined(USE_CORO)
-
-	/** Coroutine context */
-	coro_context context;
-
-	/** Coroutine stack */
-	struct coro_stack stack;
-#elif defined(USE_PICORO)
-
-	/** Picoro coroutine context */
-	coro context;
-
-	/** Picoro coroutine stack size */
-	size_t ss;
-#elif defined(OS_PROVENCORE)
-
-	/** ProveNCore coroutine context */
-	struct context *context;
-
-	/** ProveNCore coroutine stack size */
-	uint16_t ss;
-#endif
+	fid_t fid;
 };
 
 /*!@public
@@ -168,17 +136,6 @@ __api__ void fiber_init(fiber_t *fiber, work_t *work, uint16_t ss,
  * @param fiber The fiber to delete.
  */
 __api__ void fiber_destroy(fiber_t *fiber);
-
-/*!@public
- *
- * @brief
- * TODO
- *
- * @param fiber
- * @param fn
- * @return
- */
-__api__ int fiber_reuse(fiber_t *fiber, work_t *fn, uint8_t flags);
 
 /*!@public
  *
