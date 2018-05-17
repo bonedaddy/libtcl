@@ -33,9 +33,18 @@
 # include <strings.h>
 #endif
 
-//TODO TEMPOW
+#ifndef HAS_BZERO
+void bzero(void *ptr, size_t n);
+#endif
+#ifndef HAS_STRNLEN
+size_t strnlen(const char *s, size_t n);
+#endif
+#ifndef HAS_STRLCPY
 size_t strlcpy(char * restrict dst, const	char * restrict	src, size_t dstsize);
+#endif
+#ifndef HAS_STRNCPY
 char *strncpy(char *dest, const char *src, size_t n);
+#endif
 
 #endif /* __OSI_STRING_H */
 /*!@} */
