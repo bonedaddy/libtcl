@@ -287,6 +287,11 @@ void *fiber_yield(void *arg)
 	assert(fiber->status == FIBER_RUNNING
 		|| fiber->status == FIBER_DONE
 		|| fiber->status == FIBER_BLOCKING);
+	assert(caller->status == FIBER_PENDING
+		|| caller->status == FIBER_DONE);
+	while (caller && caller->status == FIBER_DONE)
+		caller = __getfiber(caller->caller);
+	assert(caller);
 	assert(caller->status == FIBER_PENDING);
 	__fiber_current = caller->fid;
 	fiber->caller = 0;
