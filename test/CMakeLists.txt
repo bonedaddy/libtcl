@@ -18,6 +18,10 @@ macro (osi_register_test name)
   add_dependencies(test_osi_${name} osi)
 endmacro ()
 
+osi_register_suite(vector)
+osi_register_test(vector_init)
+osi_register_test(vector_push_pop)
+
 osi_register_suite(fiber)
 osi_register_test(fiber_adjectives)
 osi_register_test(fiber_call)
