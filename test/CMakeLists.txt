@@ -26,6 +26,10 @@ osi_register_suite(queue)
 osi_register_test(queue_init)
 osi_register_test(queue_basic)
 
+osi_register_suite(stack)
+osi_register_test(stack_init)
+osi_register_test(stack_basic)
+
 osi_register_suite(fiber)
 osi_register_test(fiber_adjectives)
 osi_register_test(fiber_call)

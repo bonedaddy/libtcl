@@ -66,7 +66,9 @@ union queue {
 		/*! The queue capacity, or size of the allocated `buffer'. */
 		size_t capacity;
 
-		/*! The queue length, represent the number of items stored in `buffer'. */
+		/*! The queue length, represent the number of items stored in
+		 * `buffer'.
+		 */
 		size_t length;
 	};
 };
