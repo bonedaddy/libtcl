@@ -19,6 +19,13 @@
 #include "osi/sema.h"
 #include "osi/fiber.h"
 
+#ifndef OSI_THREADING
+typedef struct {
+	fid_t fid;
+	head_t hold;
+} item_t;
+#endif /* !OSI_THREADING */
+
 int sema_init(sema_t *sema, unsigned value)
 {
 #ifdef OSI_THREADING
@@ -50,17 +57,22 @@ void sema_wait(sema_t *sema)
 	eventfd_read(sema->handle, &value);
 #else
 	head_t *head;
-	fiber_t *fiber;
+	item_t *item;
+	fid_t fid;
 
-	while (!sema->handle) {
-		fiber = fiber_current();
-		list_push(&sema->queue, &fiber->hold);
-		fiber_yield(NULL);
+	if (!sema->handle) {
+		item = malloc(sizeof(item_t));
+		head_init(&item->hold);
+		item->fid = fiber_getfid();
+		list_push(&sema->queue, &item->hold);
+		fiber_lock();
+		assert(sema->handle);
 	}
 	if (--sema->handle > 0 && (head = list_shift(&sema->queue))) {
-		fiber = LIST_ENTRY(head, fiber_t, hold);
-		if (!fiber_isdone(fiber))
-			fiber_call(fiber, NULL);
+		item = LIST_ENTRY(head, item_t, hold);
+		fid = item->fid;
+		free(item);
+		fiber_unlock(fid);
 	}
 #endif /* OSI_THREADING */
 }
@@ -84,19 +96,16 @@ bool sema_trywait(sema_t *sema)
 	return rc;
 #else
 	head_t *head;
-	fiber_t *fiber;
+	item_t *item;
+	fid_t fid;
 
-	if (!sema->handle) {
-		fiber = fiber_current();
-		list_push(&sema->queue, &fiber->hold);
-		fiber_yield(NULL);
-	}
 	if (!sema->handle)
 		return false;
 	if (--sema->handle > 0 && (head = list_shift(&sema->queue))) {
-		fiber = LIST_ENTRY(head, fiber_t, hold);
-		if (!fiber_isdone(fiber))
-			fiber_call(fiber, NULL);
+		item = LIST_ENTRY(head, item_t, hold);
+		fid = item->fid;
+		free(item);
+		fiber_unlock(fid);
 	}
 	return true;
 #endif /* OSI_THREADING */
@@ -108,12 +117,15 @@ void sema_post(sema_t *sema)
 	eventfd_write(sema->handle, 1ULL);
 #else
 	head_t *head;
-	fiber_t *fiber;
+	item_t *item;
+	fid_t fid;
 
-	if (++sema->handle == 1 && (head = list_shift(&sema->queue))) {
-		fiber = LIST_ENTRY(head, fiber_t, hold);
-		if (!fiber_isdone(fiber))
-			fiber_call(fiber, NULL);
-	}
+	if (++sema->handle == 1)
+		if ((head = list_shift(&sema->queue))) {
+			item = LIST_ENTRY(head, item_t, hold);
+			fid = item->fid;
+			free(item);
+			fiber_unlock(fid);
+		}
 #endif /* OSI_THREADING */
 }

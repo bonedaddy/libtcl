@@ -42,9 +42,9 @@
 /*!@public
  *
  * @brief
- * The fiber structure declaration.
+ * Represent a fiber unique id.
  */
-typedef struct fiber fiber_t;
+typedef uint16_t fid_t;
 
 /*!@private
  *
@@ -69,13 +69,19 @@ typedef void *(work_t)(void *arg);
 enum fiber_st {
 
 	/*! The fiber was just created so ready */
-	FIBER_READY,
+	FIBER_PENDING,
 
 	/*! The fiber is running in it's own context until it finish or yield */
 	FIBER_RUNNING,
 
+	/*! TODO */
+	FIBER_BLOCKING,
+
 	/*! The fiber is terminated but still exists */
-	FIBER_EXITING
+	FIBER_DONE,
+
+	/*! TODO */
+	FIBER_DESTROYED
 };
 
 /*!@public
@@ -86,62 +92,10 @@ enum fiber_st {
 enum fiber_flags {
 
 	/*! Act normally */
-	FIBER_NONE = 1 << 0,
+	FIBER_FL_NONE = 1 << 0,
 
 	/*! Loop through the fiber work without ending context */
-	FIBER_LOOP = 1 << 1
-};
-
-/*!@public
- *
- * @brief
- * The fiber structure definition.
- */
-struct fiber {
-
-	/*! The fiber status */
-	fiber_st_t status;
-
-	/*! The fiber core function */
-	work_t *fn;
-
-	/*! The fiber core function argument */
-	void *arg;
-
-	/*! The fiber result */
-	void *result;
-
-	/*! The fiber caller */
-	fiber_t *caller;
-
-	/*! Fiber list hold */
-	head_t hold;
-
-	/*! The priority used by scheduler */
-	int priority;
-
-#if defined(USE_CORO)
-
-	/** Coroutine context */
-	coro_context context;
-
-	/** Coroutine stack */
-	struct coro_stack stack;
-#elif defined(USE_PICORO)
-
-	/** Picoro coroutine context */
-	coro context;
-
-	/** Picoro coroutine stack size */
-	size_t ss;
-#elif defined(OS_PROVENCORE)
-
-	/** ProveNCore coroutine context */
-	struct context *context;
-
-	/** ProveNCore coroutine stack size */
-	uint16_t ss;
-#endif
+	FIBER_FL_LOOP = 1 << 1
 };
 
 /*!@public
@@ -152,12 +106,12 @@ struct fiber {
  * ss (stack size) is the size of the stack for the given fiber.
  * If it is set to 0, then the stack size will be set automatically.
  *
- * @param fiber The fiber to initialize.
+ * @param fid The fiber to initialize.
  * @param work  The fiber function.
  * @param ss    The stack size of the new fiber.
  * @param flags The flags which define this fiber.
  */
-__api__ void fiber_init(fiber_t *fiber, work_t *work, uint16_t ss,
+__api__ void fiber_init(fid_t *fid, work_t *work, uint16_t ss,
 	uint8_t flags);
 
 /*!@public
@@ -165,20 +119,19 @@ __api__ void fiber_init(fiber_t *fiber, work_t *work, uint16_t ss,
  * @brief
  * Delete the fiber `fiber' and its context.
  *
- * @param fiber The fiber to delete.
+ * @param fid The fiber to delete.
  */
-__api__ void fiber_destroy(fiber_t *fiber);
+__api__ void fiber_destroy(fid_t fid);
 
 /*!@public
  *
  * @brief
  * TODO
  *
- * @param fiber
- * @param fn
- * @return
+ * @param fid
+ * @param ctx
  */
-__api__ int fiber_reuse(fiber_t *fiber, work_t *fn, uint8_t flags);
+__api__ void fiber_setcontext(fid_t fid, void *ctx);
 
 /*!@public
  *
@@ -189,11 +142,11 @@ __api__ int fiber_reuse(fiber_t *fiber, work_t *fn, uint8_t flags);
  * `arg' is the callback argument on the first fiber call, then it come the
  * result of `fiber_yield'.
  *
- * @param fiber The fiber to resume.
+ * @param fid The fiber to resume.
  * @param arg   The argument to send to `fiber'.
  * @return      The yielded argument of the final result of the fiber callback.
  */
-__api__ void *fiber_call(fiber_t *fiber, void *arg);
+__api__ void *fiber_call(fid_t fid, void *arg);
 
 /*!@public
  *
@@ -207,7 +160,16 @@ __api__ void *fiber_call(fiber_t *fiber, void *arg);
  *
  * @param fiber The fiber to join.
  */
-__api__ void fiber_join(fiber_t *fiber);
+__api__ void fiber_join(fid_t fiber);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param fid
+ */
+__api__ void fiber_unlock(fid_t fid);
 
 /*!@public
  *
@@ -217,7 +179,7 @@ __api__ void fiber_join(fiber_t *fiber);
  * @param fiber The fiber to check for done.
  * @return      If the fiber is done.
  */
-__api__ bool fiber_isdone(fiber_t *fiber);
+__api__ bool fiber_isdone(fid_t fiber);
 
 /*!@public
  *
@@ -243,7 +205,21 @@ __api__ void *fiber_yield(void *arg);
  *
  * @return
  */
-__api__ fiber_t *fiber_current(void);
+__api__ fid_t fiber_getfid(void);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ */
+__api__ void fiber_lock(void);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ */
+__api__ void fiber_cleanup(void);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */

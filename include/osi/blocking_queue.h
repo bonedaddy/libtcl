@@ -26,7 +26,6 @@
 #ifndef __OSI_BLOCKING_QUEUE_H
 # define __OSI_BLOCKING_QUEUE_H
 
-#include "osi/sched.h"
 #include "osi/reactor.h"
 #include "osi/sema.h"
 

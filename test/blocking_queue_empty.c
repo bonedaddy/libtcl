@@ -48,5 +48,6 @@ int main(void)
 	ASSERT_STREQ(DUMMY_DATA_STRING, entry->data);
 
 	blocking_queue_destroy(&blocking_queue, NULL);
+	fiber_cleanup();
 	return 0;
 }

@@ -30,7 +30,6 @@
 #include "osi/log.h"
 #include "osi/mutex.h"
 #include "osi/reactor.h"
-#include "osi/sched.h"
 #include "osi/sema.h"
 #include "osi/string.h"
 #include "osi/thread.h"

@@ -1,14 +1,24 @@
-add_custom_target(check_osi COMMAND ${CMAKE_CTEST_COMMAND})
+add_custom_target(check_osi COMMAND ${CMAKE_CTEST_COMMAND} -R '^test_osi_.*')
+
+macro (osi_register_suite suite)
+  add_custom_target(check_osi_${suite}
+    COMMAND ${CMAKE_CTEST_COMMAND} -R '^test_osi_${suite}.*')
+endmacro ()
 
 macro (osi_register_test name)
+  string(REPLACE "_" ";" parts ${name})
+  list(GET parts 0 suite)
+
   add_executable(test_osi_${name} ${name}.c test.h)
   target_link_libraries(test_osi_${name} osi)
   add_test(test_osi_${name} test_osi_${name})
   add_dependencies(check test_osi_${name})
   add_dependencies(check_osi test_osi_${name})
+  add_dependencies(check_osi_${suite} test_osi_${name})
   add_dependencies(test_osi_${name} osi)
-endmacro ()  
+endmacro ()
 
+osi_register_suite(fiber)
 osi_register_test(fiber_adjectives)
 osi_register_test(fiber_call)
 osi_register_test(fiber_call_return_value)
@@ -16,11 +26,8 @@ osi_register_test(fiber_call_to_parameter)
 osi_register_test(fiber_is_done)
 osi_register_test(fiber_resume_caller)
 osi_register_test(fiber_yield_return_value)
-osi_register_test(fiber_recycle)
 
-osi_register_test(sched_yield_no_arg)
-osi_register_test(sched_loop)
-
+osi_register_suite(sema)
 osi_register_test(sema_init)
 osi_register_test(sema_init_value)
 osi_register_test(sema_trywait)
@@ -29,14 +36,17 @@ osi_register_test(sema_ensure_wait)
 osi_register_test(sema_basic)
 osi_register_test(sema_rw)
 
+osi_register_suite(mutex)
 osi_register_test(mutex_init)
 
+osi_register_suite(future)
 osi_register_test(future_init)
 osi_register_test(future_init_imediate)
 
 osi_register_test(fiber_pool_init)
 
 if (OSI_THREADING)
+  osi_register_suite(reactor)
   osi_register_test(reactor_init)
   osi_register_test(reactor_stop_start)
   osi_register_test(reactor_stop_start_repeat)
@@ -45,9 +55,11 @@ if (OSI_THREADING)
   osi_register_test(reactor_unregister_from_thread)
 endif ()
 
+osi_register_suite(blocking)
 osi_register_test(blocking_queue_init)
 osi_register_test(blocking_queue_empty)
 osi_register_test(blocking_queue_length)
 osi_register_test(blocking_queue_push_pop)
 
+osi_register_suite(thread)
 osi_register_test(thread_init)

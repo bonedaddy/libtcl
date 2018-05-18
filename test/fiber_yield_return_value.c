@@ -31,11 +31,12 @@ void *yield_return_value(void *arg)
 
 int main(void)
 {
-	fiber_t fiber;
+	fid_t fiber;
 
-	fiber_init(&fiber, yield_return_value, 32, FIBER_NONE);
-	printf("%s\n", (char *) fiber_call(&fiber, result[0]));
-	printf("%s\n", (char *) fiber_call(&fiber, result[2]));
-	fiber_destroy(&fiber);
+	fiber_init(&fiber, yield_return_value, 32, FIBER_FL_NONE);
+	printf("%s\n", (char *) fiber_call(fiber, result[0]));
+	printf("%s\n", (char *) fiber_call(fiber, result[2]));
+	fiber_destroy(fiber);
+	fiber_cleanup();
 	return 0;
 }

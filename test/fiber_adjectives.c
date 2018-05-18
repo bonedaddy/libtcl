@@ -35,11 +35,12 @@ void *call_fiber(void *arg)
 
 int main(void)
 {
-	fiber_t fiber;
+	fid_t fiber;
 
-	fiber_init(&fiber, call_fiber, 32, FIBER_NONE);
-	while (!fiber_isdone(&fiber))
-		printf("%s\n", (char *) fiber_call(&fiber, NULL));
-	fiber_destroy(&fiber);
+	fiber_init(&fiber, call_fiber, 32, FIBER_FL_NONE);
+	while (!fiber_isdone(fiber))
+		printf("%s\n", (char *)fiber_call(fiber, NULL));
+	fiber_destroy(fiber);
+	fiber_cleanup();
 	return 0;
 }

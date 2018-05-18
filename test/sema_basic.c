@@ -58,5 +58,6 @@ int main(void)
 	thread_destroy(&thread);
 	ASSERT_EQ(2, counter);
 	sema_destroy(&sema);
+	fiber_cleanup();
 	return 0;
 }
