@@ -42,10 +42,13 @@ typedef struct future future_t;
  */
 struct future {
 
+	/*! TODO. */
 	bool awaitable;
 
+	/*! TODO. */
 	sema_t sema;
 
+	/*! TODO. */
 	void const *result;
 };
 
