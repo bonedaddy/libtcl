@@ -27,6 +27,7 @@
 # define __OSI_MUTEX_H
 
 #include "osi/conf.h"
+#include "osi/list.h"
 #include "osi/fiber.h"
 
 /*!@public

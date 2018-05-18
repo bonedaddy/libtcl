@@ -35,7 +35,7 @@ int main(void)
 	fid_t fiber;
 	char *result;
 
-	fiber_init(&fiber, call, 32, FIBER_FL_NONE);
+	fiber_init(&fiber, call, (fiber_attr_t){ });
 	++counter;
 	ASSERT(counter == 1);
 	(void)(result = fiber_call(fiber, NULL));

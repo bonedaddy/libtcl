@@ -41,8 +41,8 @@ void *call_a(void *arg)
 
 int main(void)
 {
-	fiber_init(&a, call_a, 32, FIBER_FL_NONE);
-	fiber_init(&b, call_b, 32, FIBER_FL_NONE);
+	fiber_init(&a, call_a, (fiber_attr_t){ });
+	fiber_init(&b, call_b, (fiber_attr_t){ });
 	printf("begin main\n");
 	fiber_call(a, NULL);
 	printf("end main\n");

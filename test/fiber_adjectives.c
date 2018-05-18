@@ -37,7 +37,7 @@ int main(void)
 {
 	fid_t fiber;
 
-	fiber_init(&fiber, call_fiber, 32, FIBER_FL_NONE);
+	fiber_init(&fiber, call_fiber, (fiber_attr_t){ });
 	while (!fiber_isdone(fiber))
 		printf("%s\n", (char *)fiber_call(fiber, NULL));
 	fiber_destroy(fiber);

@@ -21,8 +21,44 @@
 #include "osi/log.h"
 #include "osi/fiber.h"
 #include "osi/string.h"
+#include "osi/vector.h"
 
 #include <errno.h>
+
+#if defined(USE_CORO)
+# include <coro.h>
+#elif defined(USE_PICORO)
+# include <picoro.h>
+#elif defined(OS_PROVENCORE)
+# include <threads/threads.h>
+#else
+# error "Unable to implement software coroutines"
+#endif
+
+#define DEFAULT_FIBER_STACK_SIZE (1024)
+#ifdef OS_PROVENCORE
+# define CALLBACK_RETURN_TY int
+#else
+# define CALLBACK_RETURN_TY void
+#endif
+
+typedef enum {
+
+	/*! The fiber was just created so ready */
+	FIBER_PENDING,
+
+	/*! The fiber is running in it's own context until it finish or yield */
+	FIBER_RUNNING,
+
+	/*! TODO */
+	FIBER_BLOCKING,
+
+	/*! The fiber is terminated but still exists */
+	FIBER_DONE,
+
+	/*! TODO */
+	FIBER_DESTROYED
+} fiber_st_t;
 
 typedef struct {
 
@@ -41,14 +77,16 @@ typedef struct {
 	/*! The fiber caller */
 	fid_t caller;
 
-	/*! Fiber list hold */
-	head_t hold;
-
 	/*! The priority used by scheduler */
 	int priority;
 
+	/*! The index in the __fibers.queue buffer. */
+	uint16_t priority_idx;
+
+	/*! Fiber unique id. */
 	fid_t fid;
 
+	/*! Fiber stack size. */
 	uint16_t ss;
 
 #if defined(USE_CORO)
@@ -70,18 +108,36 @@ typedef struct {
 } fiber_t;
 
 static fid_t __fiber_current = 0;
+static uint16_t __fiber_idx = 0;
 static struct {
 	fiber_t *buffer;
+	fid_t *queue;
 	uint16_t len;
 	uint16_t cap;
 } __fibers = {NULL, 0, 0};
 
-static fiber_t *__getfiber(fid_t fid)
+static __always_inline int __lazyinit(void)
 {
-	if (fid >= __fibers.len) {
-		errno = EINVAL;
-		return NULL;
+	static int init = 0;
+
+	if (!init) {
+		init = 1;
+		__fibers.buffer = calloc(32, sizeof(fiber_t));
+		__fibers.queue = calloc(32, sizeof(fid_t));
+		__fibers.len = 1;
+		__fibers.cap = 32;
+		__fibers.buffer[0].status = FIBER_RUNNING;
+		__fibers.queue[0] = 0;
+#ifdef OS_PROVENCORE
+		if (init_threads()) return -1;
+#endif
 	}
+	return 0;
+}
+
+static __always_inline fiber_t *__getfiber(fid_t fid)
+{
+	assert(fid < __fibers.len);
 	return __fibers.buffer + fid;
 }
 
@@ -101,18 +157,15 @@ static fid_t __createfiber(void)
 		__fibers.buffer = realloc(__fibers.buffer, cap * sizeof(fiber_t));
 		bzero(__fibers.buffer + __fibers.cap, (cap - __fibers.cap) *
 			sizeof(fiber_t));
+		__fibers.queue = realloc(__fibers.queue, cap * sizeof(fid_t));
+		bzero(__fibers.queue + __fibers.cap, (cap - __fibers.cap) *
+			sizeof(fid_t));
 		__fibers.cap = cap;
 	}
 	got_one:
 	__fibers.buffer[i].fid = i;
 	return i;
 }
-
-#ifdef OS_PROVENCORE
-# define CALLBACK_RETURN_TY int
-#else
-# define CALLBACK_RETURN_TY void
-#endif
 
 static CALLBACK_RETURN_TY __fn(fid_t *fid)
 {
@@ -141,46 +194,70 @@ static CALLBACK_RETURN_TY __fn_loop(fid_t *fid)
 #endif
 }
 
-static void *__coro(uint8_t flags)
+static __always_inline void __setpriority(fid_t fid)
 {
-	if ((flags & FIBER_FL_LOOP))
-		return __fn_loop;
-	return __fn;
+	fid_t i;
+	fiber_t *a, *b;
+
+	a = __getfiber(fid);
+	for (i = 1; i < __fibers.len; ++i) {
+		if (!__fibers.queue[i])
+			break;
+		b = __getfiber(__fibers.queue[i]);
+		if (b->priority < a->priority)
+			break;
+	}
+	if (i < __fibers.len - 1)
+		memmove(__fibers.queue + i + 1, __fibers.queue + i,
+			(__fibers.len - 1 - i) * sizeof(fid_t));
+	__fibers.queue[i] = fid;
+	a->priority_idx = i;
 }
 
-void fiber_init(fid_t *fid, work_t *work, uint16_t ss, uint8_t flags)
+static __always_inline void __updatepriority(fid_t fid)
 {
-	static int init = 0;
-	fiber_t *fiber;
+	fid_t i;
+	fiber_t *b;
 
-	if (!init) {
-		init = 1;
-		__fibers.buffer = calloc(32, sizeof(fiber_t));
-		__fibers.len = 1;
-		__fibers.cap = 32;
-		__fibers.buffer[0].status = FIBER_RUNNING;
-#ifdef OS_PROVENCORE
-		if (init_threads()) return -1;
-#endif
+	for (i = 1; i < __fibers.len; ++i) {
+		b = __getfiber(__fibers.queue[i]);
+		if (b->fid == fid)
+			break;
 	}
+	memmove(__fibers.queue + i, __fibers.queue + i + 1,
+		(__fibers.len - 1 - i) * sizeof(fid_t));
+	__fibers.queue[i] = 0;
+	__setpriority(fid);
+}
+
+void fiber_init(fid_t *fid, work_t *work, fiber_attr_t attr)
+{
+	fiber_t *fiber;
+	void *fn;
+
+	assert(!__lazyinit()); /* TODO: log an error and return if fail */
 	*fid = __createfiber();
 	fiber = __getfiber(*fid);
+	if (!attr.stack_size)
+		attr.stack_size = (uint16_t)DEFAULT_FIBER_STACK_SIZE;
+	fn = (attr.flags & FIBER_FL_LOOP) ? __fn_loop : __fn;
 #ifdef OS_PROVENCORE
-	fiber->context = create_context(ss, 0, 0, 0, __coro(flags), fid);
+	fiber->context = create_context(ss, 0, 0, 0, fn, fid);
 #elif defined(USE_CORO)
-	if (fiber->ss < ss) {
+	if (fiber->ss < attr.stack_size) {
 		coro_stack_free(&fiber->stack);
-		coro_stack_alloc(&fiber->stack, ss);
+		coro_stack_alloc(&fiber->stack, attr.stack_size);
 	}
-	coro_create(&fiber->context, __coro(flags), fid,
-		fiber->stack.sptr, fiber->stack.ssze);
+	coro_create(&fiber->context, fn, fid, fiber->stack.sptr, fiber->stack.ssze);
 #else
-	fiber->context = coroutine(__coro(flags));
+	fiber->context = coroutine(fn);
 #endif
-	head_init(&fiber->hold);
-	fiber->ss = ss;
 	fiber->fn = work;
 	fiber->status = FIBER_PENDING;
+	fiber->arg = attr.context;
+	fiber->ss = attr.stack_size;
+	fiber->priority = attr.priority;
+	(fiber->priority_idx ? __updatepriority : __setpriority)(*fid);
 }
 
 void fiber_destroy(fid_t fid)
@@ -214,14 +291,6 @@ void fiber_cleanup(void)
 	}
 }
 
-void fiber_setcontext(fid_t fid, void *ctx)
-{
-	fiber_t *fiber;
-
-	fiber = __getfiber(fid);
-	fiber->arg = ctx;
-}
-
 void *fiber_call(fid_t fid, void *ctx)
 {
 	fiber_t *fiber;
@@ -236,6 +305,7 @@ void *fiber_call(fid_t fid, void *ctx)
 	fiber->arg = ctx;
 	fiber->caller = __fiber_current;
 	__fiber_current = fiber->fid;
+	__fiber_idx = fiber->priority_idx;
 	fiber->status = FIBER_RUNNING;
 	if (current->status == FIBER_RUNNING)
 		current->status = FIBER_PENDING;
@@ -252,26 +322,31 @@ void *fiber_call(fid_t fid, void *ctx)
 	return fiber->result;
 }
 
-bool fiber_isdone(fid_t fid)
+__always_inline bool fiber_isdone(fid_t fid)
 {
-	return __getfiber(fid)->status == FIBER_DONE;
+	return __getfiber(fid)->status >= FIBER_DONE;
 }
 
-static void __schedule(void)
+static __always_inline void __schedule(void)
 {
-	fid_t fid;
+	uint16_t begin;
 	fiber_t *fiber;
 
-	if ((fid = (fid_t)(__fiber_current + 1)) >= __fibers.len)
-		fid = 0;
-	while ((fiber = __getfiber(fid))->status != FIBER_PENDING) {
-		if (++fid >= __fibers.len)
-			fid = 0;
+	begin = __fiber_idx;
+	if (__fiber_idx + 1 >= __fibers.len)
+		__fiber_idx = 0;
+	else
+		++__fiber_idx;
+	while ((fiber = __getfiber(__fibers.queue[__fiber_idx]))->status
+		!= FIBER_PENDING) {
+		assert(begin != __fiber_idx);
+		if (++__fiber_idx >= __fibers.len)
+			__fiber_idx = 0;
 	}
-	fiber_call(fid, fiber->arg);
+	fiber_call(fiber->fid, fiber->arg);
 }
 
-void fiber_join(fid_t fid)
+__always_inline void fiber_join(fid_t fid)
 {
 	while (!fiber_isdone(fid))
 		__schedule();
@@ -294,6 +369,7 @@ void *fiber_yield(void *arg)
 	assert(caller);
 	assert(caller->status == FIBER_PENDING);
 	__fiber_current = caller->fid;
+	__fiber_idx = caller->priority_idx;
 	fiber->caller = 0;
 	if (fiber->status == FIBER_RUNNING)
 		fiber->status = FIBER_PENDING;
@@ -318,7 +394,7 @@ void *fiber_yield(void *arg)
 #endif
 }
 
-fid_t fiber_getfid(void)
+__always_inline fid_t fiber_getfid(void)
 {
 	return __fiber_current;
 }
@@ -333,7 +409,7 @@ void fiber_lock(void)
 	__schedule();
 }
 
-void fiber_unlock(fid_t fid)
+__always_inline void fiber_unlock(fid_t fid)
 {
 	fiber_t *fiber;
 

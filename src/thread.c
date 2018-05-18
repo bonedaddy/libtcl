@@ -181,8 +181,7 @@ bool thread_post(thread_t *thread, work_t *work, void *context)
 	item->context = context;
 	blocking_queue_push(&thread->work_queue, &item->hold);
 #else
-	fiber_init(&item->fid, work, 4096, FIBER_FL_NONE);
-	fiber_setcontext(item->fid, context);
+	fiber_init(&item->fid, work, (fiber_attr_t){.context = context});
 	list_push(&thread->fibers, &item->hold);
 #endif /* OSI_THREADING */
 	return true;

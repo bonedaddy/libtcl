@@ -27,17 +27,6 @@
 # define __OSI_FIBER_H
 
 #include "osi/conf.h"
-#include "osi/list.h"
-
-#if defined(USE_CORO)
-# include <coro.h>
-#elif defined(USE_PICORO)
-# include <picoro.h>
-#elif defined(OS_PROVENCORE)
-# include <threads/threads.h>
-#else
-# error "Unable to implement software coroutines"
-#endif
 
 /*!@public
  *
@@ -46,12 +35,12 @@
  */
 typedef uint16_t fid_t;
 
-/*!@private
+/*!@public
  *
  * @brief
- * Fiber status.
+ * Fiber creation attributes.
  */
-typedef enum fiber_st fiber_st_t;
+typedef struct fiber_attr fiber_attr_t;
 
 /*!@public
  *
@@ -60,29 +49,6 @@ typedef enum fiber_st fiber_st_t;
  * `fiber_new'.
  */
 typedef void *(work_t)(void *arg);
-
-/*!@public
- *
- * @brief
- * The fiber status definition
- */
-enum fiber_st {
-
-	/*! The fiber was just created so ready */
-	FIBER_PENDING,
-
-	/*! The fiber is running in it's own context until it finish or yield */
-	FIBER_RUNNING,
-
-	/*! TODO */
-	FIBER_BLOCKING,
-
-	/*! The fiber is terminated but still exists */
-	FIBER_DONE,
-
-	/*! TODO */
-	FIBER_DESTROYED
-};
 
 /*!@public
  *
@@ -101,18 +67,37 @@ enum fiber_flags {
 /*!@public
  *
  * @brief
+ * Fiber creation attributes structure definition.
+ */
+struct fiber_attr {
+
+	/*! The argument which is used on the first call of the fiber. */
+	void *context;
+
+	/*! The fiber priority. */
+	int priority;
+
+	/*! Can be `FIBER_FL_LOOP' or 0. */
+	uint8_t flags;
+
+	/*! Desired stack size, 1024 by default. */
+	uint16_t stack_size;
+};
+
+/*!@public
+ *
+ * @brief
  * Creates the new fiber, which will execute the given fn after
  * calling the `fiber_call'.
  * ss (stack size) is the size of the stack for the given fiber.
  * If it is set to 0, then the stack size will be set automatically.
  *
- * @param fid The fiber to initialize.
- * @param work  The fiber function.
- * @param ss    The stack size of the new fiber.
- * @param flags The flags which define this fiber.
+ * @param fid  The fiber to initialize.
+ * @param work The fiber function.
+ * @param ss   The stack size of the new fiber.
+ * @param attr The fiber creation attributes.
  */
-__api__ void fiber_init(fid_t *fid, work_t *work, uint16_t ss,
-	uint8_t flags);
+__api__ void fiber_init(fid_t *fid, work_t *work, fiber_attr_t attr);
 
 /*!@public
  *
@@ -123,15 +108,6 @@ __api__ void fiber_init(fid_t *fid, work_t *work, uint16_t ss,
  */
 __api__ void fiber_destroy(fid_t fid);
 
-/*!@public
- *
- * @brief
- * TODO
- *
- * @param fid
- * @param ctx
- */
-__api__ void fiber_setcontext(fid_t fid, void *ctx);
 
 /*!@public
  *

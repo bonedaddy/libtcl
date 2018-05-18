@@ -32,7 +32,7 @@ int main(void)
 	fid_t fiber;
 	char *result;
 
-	fiber_init(&fiber, call_to_return_parameter, 32, FIBER_FL_NONE);
+	fiber_init(&fiber, call_to_return_parameter, (fiber_attr_t){ });
 	(void)(result = fiber_call(fiber, "result"));
 	ASSERT(!result);
 	fiber_destroy(fiber);
