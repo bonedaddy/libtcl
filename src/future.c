@@ -18,11 +18,6 @@
 
 #include "osi/future.h"
 
-static void __future_free(future_t *future)
-{
-	sema_destroy(&future->sema);
-}
-
 int future_init(future_t *future)
 {
 	int st;
@@ -49,8 +44,9 @@ void future_ready(future_t *future, void *value)
 
 void *future_await(future_t *future)
 {
-	if (future->awaitable)
+	if (future->awaitable) {
 		sema_wait(&future->sema);
-	__future_free(future);
+		sema_destroy(&future->sema);
+	}
 	return (void *)future->result;
 }

@@ -27,7 +27,7 @@
 # define __OSI_SEMA_H
 
 #include "osi/conf.h"
-#include "osi/list.h"
+#include "osi/queue.h"
 
 /*!@public
  *
@@ -49,7 +49,7 @@ struct sema {
 #ifndef OSI_THREADING
 
 	/*! On fiber fiber mode, we use an event to delegate work. */
-	list_t queue;
+	queue_t queue;
 #endif
 };
 

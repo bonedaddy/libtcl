@@ -27,7 +27,7 @@
 # define __OSI_MUTEX_H
 
 #include "osi/conf.h"
-#include "osi/list.h"
+#include "osi/queue.h"
 #include "osi/fiber.h"
 
 /*!@public
@@ -49,7 +49,7 @@ struct mutex {
 	pthread_mutex_t mutex;
 #else
 
-	list_t queue;
+	queue_t queue;
 
 	bool islocked;
 #endif /* OSI_THREADING */

@@ -23,12 +23,12 @@ __always_inline void queue_init(queue_t *queue, size_t isize)
 	vector_init(&queue->base, isize);
 }
 
-__always_inline void queue_destroy(queue_t *queue, queue_dtor *idtor)
+__always_inline void queue_destroy(queue_t *queue, queue_dtor_t *idtor)
 {
 	vector_destroy(&queue->base, idtor);
 }
 
-__always_inline void queue_clear(queue_t *queue, queue_dtor *idtor)
+__always_inline void queue_clear(queue_t *queue, queue_dtor_t *idtor)
 {
 	vector_clear(&queue->base, idtor);
 }

@@ -19,13 +19,6 @@
 #include "osi/mutex.h"
 #include "osi/fiber.h"
 
-#ifndef OSI_THREADING
-typedef struct {
-	fid_t fid;
-	head_t hold;
-} item_t;
-#endif /* !OSI_THREADING */
-
 int mutex_init(mutex_t *mutex)
 {
 #ifdef OSI_THREADING
@@ -34,7 +27,7 @@ int mutex_init(mutex_t *mutex)
 	if ((st = pthread_mutex_init(&mutex->mutex, NULL)))
 		return st;
 #else
-	list_init(&mutex->queue);
+	queue_init(&mutex->queue, sizeof(fid_t));
 	mutex->islocked = false;
 #endif /* OSI_THREADING */
 	return 0;
@@ -46,7 +39,7 @@ void mutex_destroy(mutex_t *mutex)
 	pthread_mutex_destroy(&mutex->mutex);
 #else
 	assert(!mutex->islocked);
-	list_destroy(&mutex->queue, NULL);
+	queue_destroy(&mutex->queue, NULL);
 #endif /* OSI_THREADING */
 }
 
@@ -55,13 +48,8 @@ void mutex_lock(mutex_t *mutex)
 #ifdef OSI_THREADING
 	pthread_mutex_lock(&mutex->mutex);
 #else
-	item_t *item;
-
 	while (mutex->islocked) {
-		item = malloc(sizeof(item_t));
-		head_init(&item->hold);
-		item->fid = fiber_getfid();
-		list_push(&mutex->queue, &item->hold);
+		*(fid_t *)queue_push(&mutex->queue) = fiber_getfid();
 		fiber_lock();
 	}
 	mutex->islocked = true;
@@ -73,17 +61,11 @@ void mutex_unlock(mutex_t *mutex)
 #ifdef OSI_THREADING
 	pthread_mutex_unlock(&mutex->mutex);
 #else
-	head_t *head;
-	item_t *item;
 	fid_t fid;
 
 	assert(mutex->islocked);
-	while ((head = list_shift(&mutex->queue))) {
-		item = LIST_ENTRY(head, item_t, hold);
-		fid = item->fid;
-		free(item);
+	while (queue_pop(&mutex->queue, &fid))
 		fiber_unlock(fid);
-	}
 	mutex->islocked = false;
 #endif /* OSI_THREADING */
 }

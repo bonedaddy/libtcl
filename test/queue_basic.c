@@ -48,6 +48,7 @@ int main(void)
 	ASSERT_EQ(0, queue_length(&queue));
 
 	ASSERT_FALSE(queue_pop(&queue, &i));
+	ASSERT_NULL(queue_peek(&queue));
 
 	queue_destroy(&queue, NULL);
 	return 0;

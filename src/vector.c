@@ -58,6 +58,8 @@ __always_inline size_t vector_length(vector_t *vector)
 
 __always_inline void *vector_begin(vector_t *vector)
 {
+	if (!vector->length)
+		return NULL;
 	return vector->buffer;
 }
 
@@ -70,10 +72,8 @@ __always_inline void *vector_end(vector_t *vector)
 
 __always_inline void *vector_back(vector_t *vector)
 {
-	if (!vector->capacity)
+	if (!vector->capacity || !vector->length)
 		return NULL;
-	if (!vector->length)
-		return vector->buffer;
 	return (char *)vector->buffer + ((vector->length - 1) * vector->isize);
 }
 

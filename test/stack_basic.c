@@ -48,6 +48,7 @@ int main(void)
 	ASSERT_EQ(0, stack_length(&stack));
 
 	ASSERT_FALSE(stack_pop(&stack, &i));
+	ASSERT_NULL(stack_peek(&stack));
 
 	stack_destroy(&stack, NULL);
 	return 0;

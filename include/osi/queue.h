@@ -41,7 +41,7 @@ typedef union queue queue_t;
  * QUEUE item destruction callback, passed to `queue_destroy' to destroy every
  * item before freed.
  */
-typedef void (queue_dtor)(void *item);
+typedef void (queue_dtor_t)(void *item);
 
 /*!@public
  *
@@ -75,9 +75,9 @@ union queue {
 
 __api__ void queue_init(queue_t *queue, size_t isize);
 
-__api__ void queue_destroy(queue_t *queue, queue_dtor *idtor);
+__api__ void queue_destroy(queue_t *queue, queue_dtor_t *idtor);
 
-__api__ void queue_clear(queue_t *queue, queue_dtor *idtor);
+__api__ void queue_clear(queue_t *queue, queue_dtor_t *idtor);
 
 __api__ size_t queue_length(queue_t *queue);
 
