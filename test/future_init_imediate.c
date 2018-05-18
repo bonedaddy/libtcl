@@ -30,5 +30,6 @@ int main(void)
 
 	future_immediate(&future, pass_back_data1);
 	ASSERT_STREQ(pass_back_data1, future_await(&future));
+	fiber_cleanup();
 	return 0;
 }

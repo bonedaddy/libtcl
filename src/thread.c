@@ -25,6 +25,7 @@
 
 #define DEFAULT_WORK_QUEUE_CAPACITY 128
 
+#ifdef OSI_THREADING
 typedef struct {
 	thread_t *thread;
 	sema_t start_sem;
@@ -37,20 +38,16 @@ typedef struct {
 	head_t hold;
 } work_item_t;
 
-#ifdef OSI_THREADING
-static void __work_ready(void *context)
+static void __work_ready(blocking_queue_t *queue)
 {
-	blocking_queue_t *queue;
 	head_t *head;
 	work_item_t *item;
 
-	queue = (blocking_queue_t *)context;
 	head = blocking_queue_pop(queue);
 	item = LIST_ENTRY(head, work_item_t, hold);
 	item->func(item->context);
 	free(item);
 }
-#endif
 
 static void *__run_thread(void *context)
 {
@@ -59,50 +56,20 @@ static void *__run_thread(void *context)
 	head_t *head;
 	work_item_t *item;
 	unsigned count;
-#ifdef OSI_THREADING
-	int fd;
-	reactor_object_t *reactor_object;
-#else
-	fid_t fiber;
-#endif
 
 	arg = (start_arg_t *)context;
 	thread = arg->thread;
-
-#ifdef OSI_THREADING
 	if (prctl(PR_SET_NAME, (unsigned long)thread->name) == -1) {
 		LOG_ERROR("unable to set thread name: %m");
 		arg->error = errno;
 		sema_post(&arg->start_sem);
 		return NULL;
 	}
-
-	fd = thread->work_queue.dequeue_sem.handle;
-	if (!(reactor_object = reactor_register(
-		&thread->reactor, fd, &thread->work_queue, __work_ready, NULL))) {
-		LOG_ERROR("unable to register reactor: %m");
-		arg->error = errno;
-		sema_post(&arg->start_sem);
-		return NULL;
-	}
+	blocking_queue_listen(&thread->work_queue, thread, __work_ready);
 	sema_post(&arg->start_sem);
 	LOG_INFO("thread name %s started", thread->name);
-
 	reactor_start(&thread->reactor);
-	reactor_unregister(reactor_object);
-#else
-	sema_post(&arg->start_sem);
-	LOG_INFO("thread name %s started", thread->name);
-
-	thread->running = true;
-	while (thread->running) {
-		head = blocking_queue_pop(&thread->work_queue);
-		item = LIST_ENTRY(head, work_item_t, hold);
-		fiber_init(&fiber, item->func, 4096, FIBER_NONE);
-		fiber_setcontext(fiber, item->context);
-		free(item);
-	}
-#endif
+	blocking_queue_unlisten(&thread->work_queue);
 
 	/*
 	 * Make sure we dispatch all queued work items before exiting the thread.
@@ -132,35 +99,39 @@ static void __work_dtor(head_t *head)
 	work = LIST_ENTRY(head, work_item_t, hold);
 	free(work);
 }
-
+#else
+typedef struct {
+	fid_t fid;
+	head_t hold;
+} work_item_t;
+#endif
 
 int thread_init(thread_t *thread, char const *name)
 {
+
+#ifdef OSI_THREADING
 	start_arg_t start;
 
 	if (sema_init(&start.start_sem, 0))
 		return -1;
-	thread->is_joined = false;
 	start.thread = thread;
 	start.error = 0;
+	thread->is_joined = false;
 	strncpy(thread->name, name, THREAD_NAME_MAX);
 	blocking_queue_init(&thread->work_queue, DEFAULT_WORK_QUEUE_CAPACITY);
-#ifdef OSI_THREADING
 	reactor_init(&thread->reactor);
 	pthread_create(&thread->pthread, NULL, __run_thread, &start);
-#else
-//	fiber_pool_init(&thread->pool);
-	fiber_init(&thread->fiber, __run_thread, 4096, FIBER_NONE);
-	fiber_call(thread->fiber, &start);
-#endif /* OSI_THREADING */
 	sema_wait(&start.start_sem);
 	sema_destroy(&start.start_sem);
 	if (start.error) {
 		blocking_queue_destroy(&thread->work_queue, __work_dtor);
-#ifdef OSI_THREADING
 		reactor_destroy(&thread->reactor);
-#endif /* OSI_THREADING */
 	}
+#else
+	thread->is_joined = false;
+	strncpy(thread->name, name, THREAD_NAME_MAX);
+	list_init(&thread->fibers);
+#endif /* OSI_THREADING */
 	return 0;
 }
 
@@ -168,23 +139,33 @@ void thread_destroy(thread_t *thread)
 {
 	thread_stop(thread);
 	thread_join(thread);
-	blocking_queue_destroy(&thread->work_queue, __work_dtor);
+
 #ifdef OSI_THREADING
+	blocking_queue_destroy(&thread->work_queue, __work_dtor);
 	reactor_destroy(&thread->reactor);
 #else
-	fiber_destroy(thread->fiber);
-//	fiber_pool_destroy(&thread->pool);
+	list_destroy(&thread->fibers, NULL);
 #endif /* OSI_THREADING */
 }
 
 void thread_join(thread_t *thread)
 {
+#ifndef OSI_THREADING
+	head_t *head;
+	work_item_t *item;
+
+#endif
 	if (!thread->is_joined) {
 		thread->is_joined = true;
 #ifdef OSI_THREADING
 		pthread_join(thread->pthread, NULL);
 #else
-		fiber_join(thread->fiber);
+		while (thread->running || (head = list_pop(&thread->fibers))) {
+			if (!head)
+				continue;
+			item = LIST_ENTRY(head, work_item_t, hold);
+			fiber_join(item->fid);
+		}
 #endif /* OSI_THREADING */
 	}
 }
@@ -194,10 +175,16 @@ bool thread_post(thread_t *thread, work_t *work, void *context)
 	work_item_t *item;
 
 	item = (work_item_t *)malloc(sizeof(work_item_t));
+	head_init(&item->hold);
+#ifdef OSI_THREADING
 	item->func = work;
 	item->context = context;
-	head_init(&item->hold);
 	blocking_queue_push(&thread->work_queue, &item->hold);
+#else
+	fiber_init(&item->fid, work, 4096, FIBER_FL_NONE);
+	fiber_setcontext(item->fid, context);
+	list_push(&thread->fibers, &item->hold);
+#endif /* OSI_THREADING */
 	return true;
 }
 

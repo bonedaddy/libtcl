@@ -41,12 +41,13 @@ void *call_a(void *arg)
 
 int main(void)
 {
-	fiber_init(&a, call_a, 32, FIBER_NONE);
-	fiber_init(&b, call_b, 32, FIBER_NONE);
+	fiber_init(&a, call_a, 32, FIBER_FL_NONE);
+	fiber_init(&b, call_b, 32, FIBER_FL_NONE);
 	printf("begin main\n");
 	fiber_call(a, NULL);
 	printf("end main\n");
 	fiber_destroy(a);
 	fiber_destroy(b);
+	fiber_cleanup();
 	return 0;
 }

@@ -37,7 +37,7 @@ int main(void)
 {
 	fid_t fiber;
 
-	fiber_init(&fiber, call, 32, FIBER_NONE);
+	fiber_init(&fiber, call, 32, FIBER_FL_NONE);
 	ASSERT(!fiber_isdone(fiber));
 	++counter;
 	ASSERT(counter == 1);
@@ -50,5 +50,6 @@ int main(void)
 	ASSERT(counter == 5);
 	ASSERT(fiber_isdone(fiber));
 	fiber_destroy(fiber);
+	fiber_cleanup();
 	return 0;
 }

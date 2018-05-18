@@ -61,6 +61,8 @@ struct thread {
 	bool running;
 
 	fid_t fiber;
+
+	list_t fibers;
 #endif
 };
 

@@ -19,6 +19,7 @@
 #include "test.h"
 
 #include "osi/sema.h"
+#include "osi/fiber.h"
 
 int main(void)
 {
@@ -31,5 +32,6 @@ int main(void)
 	ASSERT_FALSE(sema_trywait(&sema));
 	sema_destroy(&sema);
 	ASSERT_EQ(INVALID_FD, sema.handle);
+	fiber_cleanup();
 	return 0;
 }

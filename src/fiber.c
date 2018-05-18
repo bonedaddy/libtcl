@@ -16,6 +16,9 @@
  * limitations under the License.
  */
 
+#define LOG_TAG "osi_fiber"
+
+#include "osi/log.h"
 #include "osi/fiber.h"
 #include "osi/string.h"
 
@@ -64,22 +67,17 @@ typedef struct {
 	/** ProveNCore coroutine context */
 	struct context *context;
 #endif
-} fiber_impl_t;
+} fiber_t;
 
 static fid_t __fiber_current = 0;
 static struct {
-	fiber_impl_t *buffer;
+	fiber_t *buffer;
 	uint16_t len;
 	uint16_t cap;
-} __fibers = { NULL, 0, 0 };
+} __fibers = {NULL, 0, 0};
 
-static fiber_impl_t *__getfiber(fid_t fid)
+static fiber_t *__getfiber(fid_t fid)
 {
-	if (!__fibers.len) {
-		__fibers.buffer = calloc(32, sizeof(fiber_impl_t));
-		__fibers.len = 1;
-		__fibers.cap = 32;
-	}
 	if (fid >= __fibers.len) {
 		errno = EINVAL;
 		return NULL;
@@ -90,7 +88,7 @@ static fiber_impl_t *__getfiber(fid_t fid)
 static fid_t __createfiber(void)
 {
 	fid_t i;
-	fiber_impl_t *fiber;
+	fiber_t *fiber;
 	uint16_t cap;
 
 	for (i = 1; i < __fibers.len; ++i) {
@@ -98,31 +96,27 @@ static fid_t __createfiber(void)
 		if (fiber->status == FIBER_DONE || fiber->status == FIBER_DESTROYED)
 			goto got_one;
 	}
-	if (!__fibers.len) {
-		__fibers.buffer = calloc(32, sizeof(fiber_impl_t));
-		__fibers.len = 1;
-		__fibers.cap = 32;
-	}
 	if ((i = __fibers.len++) + 1 >= __fibers.cap) {
 		cap = (uint16_t)(__fibers.cap * 2);
-		__fibers.buffer = realloc(__fibers.buffer, cap * sizeof(fiber_impl_t));
+		__fibers.buffer = realloc(__fibers.buffer, cap * sizeof(fiber_t));
 		bzero(__fibers.buffer + __fibers.cap, (cap - __fibers.cap) *
-			sizeof(fiber_impl_t));
+			sizeof(fiber_t));
 		__fibers.cap = cap;
 	}
-got_one:
+	got_one:
 	__fibers.buffer[i].fid = i;
 	return i;
 }
 
 #ifdef OS_PROVENCORE
-static int
+# define CALLBACK_RETURN_TY int
 #else
-static void
+# define CALLBACK_RETURN_TY void
 #endif
-__fn(fid_t *fid)
+
+static CALLBACK_RETURN_TY __fn(fid_t *fid)
 {
-	fiber_impl_t *fiber;
+	fiber_t *fiber;
 
 	fiber = __getfiber(*fid);
 	fiber->result = fiber->fn(fiber->arg);
@@ -133,14 +127,9 @@ __fn(fid_t *fid)
 #endif
 }
 
-#ifdef OS_PROVENCORE
-static int
-#else
-static void
-#endif
-__fn_loop(fid_t *fid)
+static CALLBACK_RETURN_TY __fn_loop(fid_t *fid)
 {
-	fiber_impl_t *fiber;
+	fiber_t *fiber;
 
 	fiber = __getfiber(*fid);
 	while (fiber->status == FIBER_RUNNING)
@@ -154,89 +143,113 @@ __fn_loop(fid_t *fid)
 
 static void *__coro(uint8_t flags)
 {
-	if ((flags & FIBER_LOOP))
+	if ((flags & FIBER_FL_LOOP))
 		return __fn_loop;
 	return __fn;
 }
 
 void fiber_init(fid_t *fid, work_t *work, uint16_t ss, uint8_t flags)
 {
-#ifdef OS_PROVENCORE
 	static int init = 0;
-#endif
-	fiber_impl_t *impl;
+	fiber_t *fiber;
 
-	*fid = __createfiber();
-	impl = __getfiber(*fid);
-#ifdef OS_PROVENCORE
 	if (!init) {
 		init = 1;
+		__fibers.buffer = calloc(32, sizeof(fiber_t));
+		__fibers.len = 1;
+		__fibers.cap = 32;
+		__fibers.buffer[0].status = FIBER_RUNNING;
+#ifdef OS_PROVENCORE
 		if (init_threads()) return -1;
-	}
-	impl->context = create_context(ss, 0, 0, 0, __coro(flags), fid);
-#elif defined(USE_CORO)
-	if (impl->ss < ss) {
-		coro_stack_free(&impl->stack);
-		coro_stack_alloc(&impl->stack, ss);
-	}
-	coro_create(&impl->context, __coro(flags), fid,
-		impl->stack.sptr, impl->stack.ssze);
-#else
-	impl->context = coroutine(__coro(flags));
 #endif
-	head_init(&impl->hold);
-	impl->ss = ss;
-	impl->fn = work;
-	impl->status = FIBER_PENDING;
+	}
+	*fid = __createfiber();
+	fiber = __getfiber(*fid);
+#ifdef OS_PROVENCORE
+	fiber->context = create_context(ss, 0, 0, 0, __coro(flags), fid);
+#elif defined(USE_CORO)
+	if (fiber->ss < ss) {
+		coro_stack_free(&fiber->stack);
+		coro_stack_alloc(&fiber->stack, ss);
+	}
+	coro_create(&fiber->context, __coro(flags), fid,
+		fiber->stack.sptr, fiber->stack.ssze);
+#else
+	fiber->context = coroutine(__coro(flags));
+#endif
+	head_init(&fiber->hold);
+	fiber->ss = ss;
+	fiber->fn = work;
+	fiber->status = FIBER_PENDING;
 }
 
 void fiber_destroy(fid_t fid)
 {
-	fiber_impl_t *impl;
+	fiber_t *fiber;
 
-	impl = __getfiber(fid);
-	assert(impl->status == FIBER_DONE);
+	fiber = __getfiber(fid);
+	assert(fiber->status == FIBER_DONE);
 #ifdef USE_CORO
-	(void)coro_destroy(&impl->context);
-	coro_stack_free(&impl->stack);
+	(void)coro_destroy(&fiber->context);
+	coro_stack_free(&fiber->stack);
 #endif
-	bzero(impl, sizeof(fiber_impl_t));
-	impl->fid = fid;
-	impl->status = FIBER_DESTROYED;
+	bzero(fiber, sizeof(fiber_t));
+	fiber->fid = fid;
+	fiber->status = FIBER_DESTROYED;
+}
+
+void fiber_cleanup(void)
+{
+	fid_t i;
+	fiber_t *fiber;
+
+	for (i = 1; i < __fibers.len; ++i) {
+		fiber = __getfiber(i);
+		if (fiber->status != FIBER_DESTROYED)
+			fiber_destroy(i);
+	}
+	if (__fibers.len) {
+		free(__fibers.buffer);
+		bzero(&__fibers, sizeof(__fibers));
+	}
 }
 
 void fiber_setcontext(fid_t fid, void *ctx)
 {
-	fiber_impl_t *impl;
+	fiber_t *fiber;
 
-	impl = __getfiber(fid);
-	impl->arg = ctx;
+	fiber = __getfiber(fid);
+	fiber->arg = ctx;
 }
 
 void *fiber_call(fid_t fid, void *ctx)
 {
-	fiber_impl_t *impl;
+	fiber_t *fiber;
+	fiber_t *current;
 
-	impl = __getfiber(fid);
+	current = __getfiber(__fiber_current);
+	if (current->caller == fid)
+		return fiber_yield(ctx);
+	fiber = __getfiber(fid);
 	assert(__fiber_current != fid);
-	assert(impl->status == FIBER_PENDING);
-	impl->arg = ctx;
-	impl->status = FIBER_RUNNING;
+	assert(fiber->status == FIBER_PENDING);
+	fiber->arg = ctx;
+	fiber->caller = __fiber_current;
+	__fiber_current = fiber->fid;
+	fiber->status = FIBER_RUNNING;
+	if (current->status == FIBER_RUNNING)
+		current->status = FIBER_PENDING;
 #ifdef USE_PICORO
-	impl->result = resume(impl->context, &fid);
-#else
-	impl->caller = __fiber_current;
-	__fiber_current = impl->fid;
-# ifdef OS_PROVENCORE
+	fiber->result = resume(fiber->context, &fid);
+#elif defined(OS_PROVENCORE)
 	int dummy;
 
-	if (resume(impl->context, &dummy))
-		impl->status = FIBER_DONE;
-# else
-	coro_transfer(&__getfiber(impl->caller)->context, &impl->context);
-# endif
+	if (resume(fiber->context, &dummy))
+		fiber->status = FIBER_DONE;
+#else
+	coro_transfer(&__getfiber(fiber->caller)->context, &fiber->context);
 #endif
-	return impl->result;
+	return fiber->result;
 }
 
 bool fiber_isdone(fid_t fid)
@@ -244,31 +257,46 @@ bool fiber_isdone(fid_t fid)
 	return __getfiber(fid)->status == FIBER_DONE;
 }
 
+static void __schedule(void)
+{
+	fid_t fid;
+	fiber_t *fiber;
+
+	if ((fid = (fid_t)(__fiber_current + 1)))
+		fid = 0;
+	while ((fiber = __getfiber(fid))->status != FIBER_PENDING) {
+		if (++fid >= __fibers.len)
+			fid = 0;
+	}
+	fiber_call(fid, fiber->arg);
+}
+
 void fiber_join(fid_t fid)
 {
 	while (!fiber_isdone(fid))
-		fiber_call(fid, NULL);
+		__schedule();
 }
 
 void *fiber_yield(void *arg)
 {
-	fiber_impl_t *fiber;
+	fiber_t *fiber;
+	fiber_t *caller;
 
 	fiber = __getfiber(__fiber_current);
+	caller = __getfiber(fiber->caller);
 	assert(fiber->status == FIBER_RUNNING
 		|| fiber->status == FIBER_DONE
 		|| fiber->status == FIBER_BLOCKING);
+	assert(caller->status == FIBER_PENDING);
+	__fiber_current = caller->fid;
+	fiber->caller = 0;
 	if (fiber->status == FIBER_RUNNING)
 		fiber->status = FIBER_PENDING;
+	caller->status = FIBER_RUNNING;
 #ifdef USE_PICORO
 	return yield(arg);
 #else
-	fiber_impl_t *caller;
-
 	fiber->result = arg;
-	caller = __getfiber(fiber->caller);
-	__fiber_current = caller->fid;
-	fiber->caller = 0;
 # ifdef OS_PROVENCORE
 	if (caller) {
 		int dummy;
@@ -290,50 +318,21 @@ fid_t fiber_getfid(void)
 	return __fiber_current;
 }
 
-void fiber_schedule(void)
-{
-	fid_t i;
-	fiber_impl_t *fiber;
-
-	for (i = 1; i < __fibers.len; ++i) {
-		fiber = __getfiber(i);
-		if (fiber->status == FIBER_PENDING)
-			goto got_one;
-	}
-	if (__fiber_current)
-		fiber_yield(NULL);
-	return;
-got_one:
-	fiber = __getfiber(i);
-	fiber_call(fiber->fid, fiber->arg);
-}
-
 void fiber_lock(void)
 {
-	fid_t fid;
-	fiber_impl_t *fiber;
+	fiber_t *fiber;
 
-	fid = fiber_getfid();
-	fiber = __getfiber(fid);
-	if (!fid) {
-		fiber_schedule();
-	} else {
-		assert(fiber->status == FIBER_RUNNING);
-		fiber->status = FIBER_BLOCKING;
-		fiber_yield(NULL);
-	}
+	fiber = __getfiber(__fiber_current);
+	assert(fiber->status == FIBER_RUNNING);
+	fiber->status = FIBER_BLOCKING;
+	__schedule();
 }
 
 void fiber_unlock(fid_t fid)
 {
-	fiber_impl_t *fiber;
+	fiber_t *fiber;
 
 	fiber = __getfiber(fid);
-	if (!fid) {
-		fiber_schedule();
-	} else {
-		assert(fiber->status == FIBER_BLOCKING);
-		fiber->status = FIBER_PENDING;
-		fiber_call(fid, fiber->arg);
-	}
+	assert(fiber->status == FIBER_BLOCKING);
+	fiber->status = FIBER_PENDING;
 }

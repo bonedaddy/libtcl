@@ -48,7 +48,7 @@ struct mutex {
 	pthread_mutex_t mutex;
 #else
 
-	list_t pending;
+	list_t queue;
 
 	bool islocked;
 #endif /* OSI_THREADING */

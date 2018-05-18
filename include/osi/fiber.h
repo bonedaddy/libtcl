@@ -92,20 +92,10 @@ enum fiber_st {
 enum fiber_flags {
 
 	/*! Act normally */
-	FIBER_NONE = 1 << 0,
+	FIBER_FL_NONE = 1 << 0,
 
 	/*! Loop through the fiber work without ending context */
-	FIBER_LOOP = 1 << 1
-};
-
-/*!@public
- *
- * @brief
- * The fiber structure definition.
- */
-struct fiber {
-
-	fid_t fid;
+	FIBER_FL_LOOP = 1 << 1
 };
 
 /*!@public
@@ -136,6 +126,16 @@ __api__ void fiber_destroy(fid_t fid);
 /*!@public
  *
  * @brief
+ * TODO
+ *
+ * @param fid
+ * @param ctx
+ */
+__api__ void fiber_setcontext(fid_t fid, void *ctx);
+
+/*!@public
+ *
+ * @brief
  * This suspends the current fiber and executes the called one until it reaches
  * the end of its body or until it passes control to yet another fiber.
  * If it reaches the end of its body, it is considered done.
@@ -161,6 +161,15 @@ __api__ void *fiber_call(fid_t fid, void *arg);
  * @param fiber The fiber to join.
  */
 __api__ void fiber_join(fid_t fiber);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param fid
+ */
+__api__ void fiber_unlock(fid_t fid);
 
 /*!@public
  *
@@ -198,13 +207,19 @@ __api__ void *fiber_yield(void *arg);
  */
 __api__ fid_t fiber_getfid(void);
 
-__api__ void fiber_setcontext(fid_t fid, void *ctx);
-
-__api__ void fiber_schedule();
-
+/*!@public
+ *
+ * @brief
+ * TODO
+ */
 __api__ void fiber_lock(void);
 
-__api__ void fiber_unlock(fid_t fid);
+/*!@public
+ *
+ * @brief
+ * TODO
+ */
+__api__ void fiber_cleanup(void);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */

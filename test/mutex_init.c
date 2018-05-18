@@ -26,5 +26,6 @@ int main(void)
 
 	ASSERT_EQ(0, mutex_init(&mutex));
 	mutex_destroy(&mutex);
+	fiber_cleanup();
 	return 0;
 }

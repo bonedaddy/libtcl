@@ -19,10 +19,12 @@
 #include "osi/sema.h"
 #include "osi/fiber.h"
 
+#ifndef OSI_THREADING
 typedef struct {
 	fid_t fid;
 	head_t hold;
 } item_t;
+#endif /* !OSI_THREADING */
 
 int sema_init(sema_t *sema, unsigned value)
 {

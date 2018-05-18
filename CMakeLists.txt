@@ -77,24 +77,10 @@ elseif (USE_PICORO)
   add_dependencies(osi picoro)
 endif ()
 
-if (MSVC)
-  target_compile_options(osi
-    PUBLIC /MT$<$<CONFIG:Debug>:d> /Oy /Za /W3
-    PUBLIC /D_CRT_SECURE_NO_WARNINGS
-    PUBLIC /O$<$<CONFIG:Debug>:d>$<$<CONFIG:Release>:x>)
-else ()
-  target_compile_options(osi
-    PUBLIC -Wall -Werror -Wextra -fomit-frame-pointer
-    PUBLIC -Wno-missing-field-initializers
-    PUBLIC -Wno-unused-function -Wno-format
-    PUBLIC -O$<$<CONFIG:Debug>:0 -g3>$<$<CONFIG:Release>:2>)
-  if(CMAKE_C_FLAGS_RELEASE MATCHES "-O3")
-    string(REPLACE "-O3" "-O2" CMAKE_C_FLAGS_RELEASE
-      "${CMAKE_C_FLAGS_RELEASE}")
-  endif()
-  if (CMAKE_BUILD_TYPE MATCHES San)
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address")
-  endif ()
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads)
+if (Threads_FOUND)
+  target_link_libraries(osi PUBLIC Threads::Threads)
 endif ()
 
 if (ENABLE_TEST)
