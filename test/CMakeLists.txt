@@ -30,6 +30,7 @@ osi_register_test(fiber_call_to_parameter)
 osi_register_test(fiber_is_done)
 osi_register_test(fiber_resume_caller)
 osi_register_test(fiber_yield_return_value)
+osi_register_test(fiber_priority)
 
 osi_register_suite(sema)
 osi_register_test(sema_init)
