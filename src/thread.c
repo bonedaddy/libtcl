@@ -130,6 +130,7 @@ int thread_init(thread_t *thread, char const *name)
 #else
 	thread->is_joined = false;
 	strncpy(thread->name, name, THREAD_NAME_MAX);
+	/* TODO: use queue_t */
 	list_init(&thread->fibers);
 #endif /* OSI_THREADING */
 	return 0;

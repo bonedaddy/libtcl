@@ -28,6 +28,7 @@ int blocking_queue_init(blocking_queue_t *queue, unsigned capacity)
 		return -1;
 	if (sema_init(&queue->dequeue_sem, 0))
 		return -1;
+	/* TODO: use queue_t */
 	list_init(&queue->list);
 #ifdef OSI_THREADING
 	pthread_mutex_init(&queue->lock, NULL);
