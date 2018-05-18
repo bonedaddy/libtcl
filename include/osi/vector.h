@@ -63,14 +63,39 @@ struct vector {
 	size_t length;
 };
 
+/*!
+ *
+ * @param vector
+ * @param isize
+ */
 __api__ void vector_init(vector_t *vector, size_t isize);
 
+/*!
+ *
+ * @param vector
+ * @param idtor
+ */
 __api__ void vector_destroy(vector_t *vector, vector_dtor *idtor);
 
+/*!
+ *
+ * @param vector
+ * @param idtor
+ */
 __api__ void vector_clear(vector_t *vector, vector_dtor *idtor);
 
+/*!
+ *
+ * @param vector
+ * @return
+ */
 __api__ size_t vector_length(vector_t *vector);
 
+/*!
+ *
+ * @param vector
+ * @return
+ */
 __api__ void *vector_begin(vector_t *vector);
 
 __api__ void *vector_end(vector_t *vector);
@@ -79,33 +104,33 @@ __api__ void *vector_back(vector_t *vector);
 
 __api__ void *vector_at(vector_t *vector, size_t i);
 
-__api__ void vector_aver(vector_t *vector, size_t n);
+__api__ void vector_ensure(vector_t *vector, size_t n);
 
-__api__ void vector_grow(vector_t *vector, size_t i);
+__api__ void vector_grow(vector_t *vector, size_t n_added);
 
-__api__ void *vector_npush(vector_t *vector, size_t n);
+__api__ void *vector_npush_back(vector_t *vector, size_t n);
 
-__api__ void *vector_nunshift(vector_t *vector, size_t n);
+__api__ void *vector_npush_front(vector_t *vector, size_t n);
 
-__api__ void *vector_nput(vector_t *vector, size_t n, size_t i);
+__api__ void *vector_npush_at(vector_t *vector, size_t n, size_t i);
 
-__api__ size_t vector_npop(vector_t *vector, size_t n, void *out);
+__api__ size_t vector_npop_back(vector_t *vector, size_t n, void *out);
 
-__api__ size_t vector_nshift(vector_t *vector, size_t n, void *out);
+__api__ size_t vector_npop_front(vector_t *vector, size_t n, void *out);
 
-__api__ size_t vector_nremove(vector_t *vector, size_t n, size_t i, void *out);
+__api__ size_t vector_npop_at(vector_t *vector, size_t n, size_t i, void *out);
 
-__api__ void *vector_push(vector_t *vector);
+__api__ void *vector_push_back(vector_t *vector);
 
-__api__ void *vector_unshift(vector_t *vector);
+__api__ void *vector_push_front(vector_t *vector);
 
-__api__ void *vector_put(vector_t *vector, size_t i);
+__api__ void *vector_push_at(vector_t *vector, size_t i);
 
-__api__ bool vector_pop(vector_t *vector, void *out);
+__api__ bool vector_pop_back(vector_t *vector, void *out);
 
-__api__ bool vector_shift(vector_t *vector, void *out);
+__api__ bool vector_pop_front(vector_t *vector, void *out);
 
-__api__ bool vector_remove(vector_t *vector, size_t i, void *out);
+__api__ bool vector_pop_at(vector_t *vector, size_t i, void *out);
 
 #define vector_foreach(vector, item) \
 	for (item = vector_begin(vector); \

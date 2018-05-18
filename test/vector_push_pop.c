@@ -29,7 +29,7 @@ int main(void)
 
 	vector_init(&vector, sizeof(int));
 
-	memcpy(vector_npush(&vector, 5), values, 5 * sizeof(int));
+	memcpy(vector_npush_back(&vector, 5), values, 5 * sizeof(int));
 	ASSERT_EQ(5, vector_length(&vector));
 	ASSERT_EQ(32, vector.capacity);
 
@@ -38,24 +38,24 @@ int main(void)
 	ASSERT_EQ(5, i);
 	ASSERT_EQ(vector_end(&vector), item);
 
-	ASSERT_TRUE(vector_pop(&vector, &i));
+	ASSERT_TRUE(vector_pop_back(&vector, &i));
 	ASSERT_EQ(3, i);
 
-	ASSERT_TRUE(vector_pop(&vector, &i));
+	ASSERT_TRUE(vector_pop_back(&vector, &i));
 	ASSERT_EQ(4096, i);
 
-	*(int *)vector_push(&vector) = 12;
+	*(int *) vector_push_back(&vector) = 12;
 
-	ASSERT_TRUE(vector_pop(&vector, &i));
+	ASSERT_TRUE(vector_pop_back(&vector, &i));
 	ASSERT_EQ(12, i);
 
-	ASSERT_TRUE(vector_pop(&vector, &i));
+	ASSERT_TRUE(vector_pop_back(&vector, &i));
 	ASSERT_EQ(7, i);
 
-	ASSERT_TRUE(vector_pop(&vector, &i));
+	ASSERT_TRUE(vector_pop_back(&vector, &i));
 	ASSERT_EQ(21, i);
 
-	ASSERT_TRUE(vector_pop(&vector, &i));
+	ASSERT_TRUE(vector_pop_back(&vector, &i));
 	ASSERT_EQ(42, i);
 
 	vector_destroy(&vector, NULL);

@@ -262,7 +262,7 @@ static void __schedule(void)
 	fid_t fid;
 	fiber_t *fiber;
 
-	if ((fid = (fid_t)(__fiber_current + 1)))
+	if ((fid = (fid_t)(__fiber_current + 1)) >= __fibers.len)
 		fid = 0;
 	while ((fiber = __getfiber(fid))->status != FIBER_PENDING) {
 		if (++fid >= __fibers.len)

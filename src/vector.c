@@ -126,23 +126,25 @@ static __always_inline PURE CONST size_t __pow2_next(size_t n)
 	return (i < n) ? (size_t)SIZE_MAX : i;
 }
 
-__always_inline void vector_aver(vector_t *vector, size_t n)
+__always_inline void vector_ensure(vector_t *vector, size_t n)
 {
 	if (++n < 32 && 32 > vector->capacity)
 		__vector_alloc(vector, 32);
 	else if (n > vector->capacity)
-		__vector_alloc(vector, ISPOW2(n) ? n : __pow2_next(n));
+		__vector_alloc(vector, __pow2_next(n));
 }
 
-__always_inline void vector_grow(vector_t *vector, size_t n)
+__always_inline void vector_grow(vector_t *vector, size_t n_added)
 {
-	if ((n += vector->length + 1) < 32 && 32 > vector->capacity)
+	const size_t final_len = n_added + vector->length + 1;
+
+	if (final_len < 32 && 32 > vector->capacity)
 		__vector_alloc(vector, 32);
-	else if (n > vector->capacity)
-		__vector_alloc(vector, ISPOW2(n) ? n : __pow2_next(n));
+	else if (final_len > vector->capacity)
+		__vector_alloc(vector, __pow2_next(final_len));
 }
 
-__always_inline void *vector_npush(vector_t *vector, size_t n)
+__always_inline void *vector_npush_back(vector_t *vector, size_t n)
 {
 	char *it;
 
@@ -152,7 +154,7 @@ __always_inline void *vector_npush(vector_t *vector, size_t n)
 	return it;
 }
 
-__always_inline void *vector_nunshift(vector_t *vector, size_t n)
+__always_inline void *vector_npush_front(vector_t *vector, size_t n)
 {
 	size_t len;
 	char *it;
@@ -165,15 +167,15 @@ __always_inline void *vector_nunshift(vector_t *vector, size_t n)
 	return it;
 }
 
-__always_inline void *vector_nput(vector_t *vector, size_t n, size_t idx)
+__always_inline void *vector_npush_at(vector_t *vector, size_t n, size_t idx)
 {
 	size_t len;
 	void *it;
 
 	if (idx == 0)
-		return vector_nunshift(vector, n);
+		return vector_npush_front(vector, n);
 	if (idx == (len = vector_length(vector)))
-		return vector_npush(vector, n);
+		return vector_npush_back(vector, n);
 	if (n == 0 || idx > len)
 		return NULL;
 	vector_grow(vector, n);
@@ -184,7 +186,7 @@ __always_inline void *vector_nput(vector_t *vector, size_t n, size_t idx)
 	return it;
 }
 
-__always_inline size_t vector_npop(vector_t *vector, size_t n, void *out)
+__always_inline size_t vector_npop_back(vector_t *vector, size_t n, void *out)
 {
 	size_t len;
 
@@ -198,7 +200,7 @@ __always_inline size_t vector_npop(vector_t *vector, size_t n, void *out)
 	return n;
 }
 
-__always_inline size_t vector_nshift(vector_t *vector, size_t n, void *out)
+__always_inline size_t vector_npop_front(vector_t *vector, size_t n, void *out)
 {
 	size_t len;
 	char *it;
@@ -216,17 +218,18 @@ __always_inline size_t vector_nshift(vector_t *vector, size_t n, void *out)
 	return n;
 }
 
-__always_inline size_t vector_nremove(vector_t *s, size_t n, size_t i, void *out)
+__always_inline size_t vector_npop_at(vector_t *s, size_t n, size_t i,
+									  void *out)
 {
-	size_t	len;
-	char	*it;
+	size_t len;
+	char *it;
 
 	if (i >= (len = vector_length(s)))
 		return 0;
 	if (i == len - 1)
-		return vector_npop(s, n, out);
+		return vector_npop_back(s, n, out);
 	if (i == 0)
-		return vector_nshift(s, n, out);
+		return vector_npop_front(s, n, out);
 	if (n > len)
 		n = len;
 	it = vector_at(s, i);
@@ -238,32 +241,32 @@ __always_inline size_t vector_nremove(vector_t *s, size_t n, size_t i, void *out
 	return n;
 }
 
-__always_inline void *vector_push(vector_t *vector)
+__always_inline void *vector_push_back(vector_t *vector)
 {
-	return vector_npush(vector, 1);
+	return vector_npush_back(vector, 1);
 }
 
-__always_inline void *vector_unshift(vector_t *vector)
+__always_inline void *vector_push_front(vector_t *vector)
 {
-	return vector_nunshift(vector, 1);
+	return vector_npush_front(vector, 1);
 }
 
-__always_inline void *vector_put(vector_t *vector, size_t i)
+__always_inline void *vector_push_at(vector_t *vector, size_t i)
 {
-	return vector_nput(vector, 1, i);
+	return vector_npush_at(vector, 1, i);
 }
 
-__always_inline bool vector_pop(vector_t *vector, void *out)
+__always_inline bool vector_pop_back(vector_t *vector, void *out)
 {
-	return vector_npop(vector, 1, out) == 1;
+	return vector_npop_back(vector, 1, out) == 1;
 }
 
-__always_inline bool vector_shift(vector_t *vector, void *out)
+__always_inline bool vector_pop_front(vector_t *vector, void *out)
 {
-	return vector_nshift(vector, 1, out) == 1;
+	return vector_npop_front(vector, 1, out) == 1;
 }
 
-__always_inline bool vector_remove(vector_t *vector, size_t i, void *out)
+__always_inline bool vector_pop_at(vector_t *vector, size_t i, void *out)
 {
-	return vector_nremove(vector, 1, i, out) == 1;
+	return vector_npop_at(vector, 1, i, out) == 1;
 }
