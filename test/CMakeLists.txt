@@ -43,8 +43,6 @@ osi_register_suite(future)
 osi_register_test(future_init)
 osi_register_test(future_init_imediate)
 
-osi_register_test(fiber_pool_init)
-
 if (OSI_THREADING)
   osi_register_suite(reactor)
   osi_register_test(reactor_init)
