@@ -86,11 +86,6 @@ static void *__run_thread(void *context)
 	LOG_INFO("thread name %s exited", thread->name);
 	return NULL;
 }
-
-static void __work_dtor(void *item)
-{
-	free(item);
-}
 #endif
 
 int thread_init(thread_t *thread, char const *name)
@@ -110,7 +105,7 @@ int thread_init(thread_t *thread, char const *name)
 	sema_wait(&start.start_sem);
 	sema_destroy(&start.start_sem);
 	if (start.error) {
-		blocking_queue_destroy(&thread->work_queue, __work_dtor);
+		blocking_queue_destroy(&thread->work_queue, free);
 		reactor_destroy(&thread->reactor);
 	}
 #else
@@ -126,7 +121,7 @@ void thread_destroy(thread_t *thread)
 	thread_stop(thread);
 	thread_join(thread);
 #ifdef OSI_THREADING
-	blocking_queue_destroy(&thread->work_queue, __work_dtor);
+	blocking_queue_destroy(&thread->work_queue, free);
 	reactor_destroy(&thread->reactor);
 #else
 	stack_destroy(&thread->fibers, NULL);
