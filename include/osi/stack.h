@@ -58,18 +58,18 @@ union stack {
 	struct {
 
 		/*! Dynamic buffer to store items. */
-		void *buffer;
+		const void *buffer;
 
 		/*! Size of an item which is passed to `stack_init'. */
-		size_t isize;
+		const size_t isize;
 
 		/*! The stack capacity, or size of the allocated `buffer'. */
-		size_t capacity;
+		const size_t capacity;
 
 		/*! The stack length, represent the number of items stored in
 		 * `buffer'.
 		 */
-		size_t length;
+		const size_t length;
 	};
 };
 

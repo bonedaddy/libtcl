@@ -58,18 +58,18 @@ union queue {
 	struct {
 
 		/*! Dynamic buffer to store items. */
-		void *buffer;
+		const void *buffer;
 
 		/*! Size of an item which is passed to `queue_init'. */
-		size_t isize;
+		const size_t isize;
 
 		/*! The queue capacity, or size of the allocated `buffer'. */
-		size_t capacity;
+		const size_t capacity;
 
 		/*! The queue length, represent the number of items stored in
 		 * `buffer'.
 		 */
-		size_t length;
+		const size_t length;
 	};
 };
 
