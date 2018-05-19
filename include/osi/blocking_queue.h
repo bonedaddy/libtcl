@@ -58,9 +58,9 @@ struct blocking_queue {
 
 	listener_t *listener;
 
-	sema_t enqueue_sem;
+	sema_t producer;
 
-	sema_t dequeue_sem;
+	sema_t consumer;
 
 #ifdef OSI_THREADING
 
@@ -82,7 +82,7 @@ struct blocking_queue {
  * @param capacity
  * @return
  */
-__api__ int blocking_queue_init(blocking_queue_t *queue,unsigned capacity);
+__api__ int blocking_queue_init(blocking_queue_t *queue, unsigned capacity);
 
 /*!@public
  *
