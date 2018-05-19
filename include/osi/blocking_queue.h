@@ -26,8 +26,9 @@
 #ifndef __OSI_BLOCKING_QUEUE_H
 # define __OSI_BLOCKING_QUEUE_H
 
-#include "osi/reactor.h"
+#include "osi/queue.h"
 #include "osi/sema.h"
+#include "osi/reactor.h"
 
 struct thread;
 
@@ -52,7 +53,7 @@ typedef void (listener_t)(blocking_queue_t *blocking_queue);
  */
 struct blocking_queue {
 
-	list_t list;
+	queue_t base;
 
 	uint32_t capacity;
 
@@ -79,6 +80,7 @@ struct blocking_queue {
  * TODO
  *
  * @param queue
+ * @param isize
  * @param capacity
  * @return
  */
@@ -92,7 +94,8 @@ __api__ int blocking_queue_init(blocking_queue_t *queue, unsigned capacity);
  * @param queue
  * @param dtor
  */
-__api__ void blocking_queue_destroy(blocking_queue_t *queue, head_dtor_t *dtor);
+__api__ void blocking_queue_destroy(blocking_queue_t *queue,
+	queue_dtor_t *dtor);
 
 /*!@public
  *
@@ -132,7 +135,7 @@ __api__ unsigned blocking_queue_capacity(blocking_queue_t *queue);
  * @param queue
  * @param ev
  */
-__api__ void blocking_queue_push(blocking_queue_t *queue, head_t *ev);
+__api__ void blocking_queue_push(blocking_queue_t *queue, void const *item);
 
 /*!@public
  *
@@ -142,7 +145,7 @@ __api__ void blocking_queue_push(blocking_queue_t *queue, head_t *ev);
  * @param queue
  * @return
  */
-__api__ head_t *blocking_queue_pop(blocking_queue_t *queue);
+__api__ void *blocking_queue_pop(blocking_queue_t *queue);
 
 /*!@public
  *
@@ -153,7 +156,7 @@ __api__ head_t *blocking_queue_pop(blocking_queue_t *queue);
  * @param node
  * @return
  */
-__api__ bool blocking_queue_trypush(blocking_queue_t *queue, head_t *node);
+__api__ bool blocking_queue_trypush(blocking_queue_t *queue, void const *data);
 
 /*!@public
  *
@@ -163,7 +166,7 @@ __api__ bool blocking_queue_trypush(blocking_queue_t *queue, head_t *node);
  * @param queue
  * @return
  */
-__api__ head_t *blocking_queue_trypop(blocking_queue_t *queue);
+__api__ void *blocking_queue_trypop(blocking_queue_t *queue);
 
 /*!@public
  *

@@ -24,46 +24,29 @@
 
 static const char *DUMMY_DATA_STRING = "Dummy data string";
 
-typedef struct {
-	head_t hold;
-	char const *data;
-} dummy_t;
-
 int main(void)
 {
 	unsigned i;
 	blocking_queue_t blocking_queue;
-	dummy_t dummy, *entry, dummies[TEST_QUEUE_SIZE + 1];
-	head_t *head;
+	const char *str;
 
 	ASSERT_EQ(0, blocking_queue_init(&blocking_queue, TEST_QUEUE_SIZE));
 
-	head_init(&dummy.hold);
-	dummy.data = DUMMY_DATA_STRING;
+	blocking_queue_push(&blocking_queue, DUMMY_DATA_STRING);
+	ASSERT(str = blocking_queue_pop(&blocking_queue));
+	ASSERT_STREQ(DUMMY_DATA_STRING, str);
 
-	blocking_queue_push(&blocking_queue, &dummy.hold);
-	ASSERT(head = blocking_queue_pop(&blocking_queue));
-	entry = LIST_ENTRY(head, dummy_t, hold);
-	ASSERT_STREQ(DUMMY_DATA_STRING, entry->data);
+	ASSERT_TRUE(blocking_queue_trypush(&blocking_queue, DUMMY_DATA_STRING));
+	ASSERT(str = blocking_queue_trypop(&blocking_queue));
+	ASSERT_STREQ(DUMMY_DATA_STRING, str);
 
-	ASSERT_TRUE(blocking_queue_trypush(&blocking_queue, &dummy.hold));
-	ASSERT(head = blocking_queue_trypop(&blocking_queue));
-	entry = LIST_ENTRY(head, dummy_t, hold);
-	ASSERT_STREQ(DUMMY_DATA_STRING, entry->data);
-
-	for (i = 0; i < TEST_QUEUE_SIZE; ++i) {
-		head_init(&dummies[i].hold);
-		dummies[i].data = DUMMY_DATA_STRING;
-		ASSERT_TRUE(blocking_queue_trypush(&blocking_queue, &dummies[i].hold));
-	}
-	head_init(&dummies[i].hold);
-	dummies[i].data = DUMMY_DATA_STRING;
-	ASSERT_FALSE(blocking_queue_trypush(&blocking_queue, &dummies[i].hold));
+	for (i = 0; i < TEST_QUEUE_SIZE; ++i)
+		ASSERT_TRUE(blocking_queue_trypush(&blocking_queue, DUMMY_DATA_STRING));
+	ASSERT_FALSE(blocking_queue_trypush(&blocking_queue, DUMMY_DATA_STRING));
 
 	for (i = 0; i < TEST_QUEUE_SIZE; ++i) {
-		ASSERT(head = blocking_queue_trypop(&blocking_queue));
-		entry = LIST_ENTRY(head, dummy_t, hold);
-		ASSERT_STREQ(DUMMY_DATA_STRING, entry->data);
+		ASSERT(str = blocking_queue_trypop(&blocking_queue));
+		ASSERT_STREQ(DUMMY_DATA_STRING, str);
 	}
 
 	ASSERT_NULL(blocking_queue_trypop(&blocking_queue));

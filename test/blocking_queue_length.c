@@ -22,29 +22,19 @@
 
 static const char *DUMMY_DATA_STRING = "Dummy data string";
 
-typedef struct {
-	head_t hold;
-	char const *data;
-} dummy_t;
-
 int main(void)
 {
 	blocking_queue_t blocking_queue;
-	dummy_t dummy, *entry;
-	head_t *head;
+	const char *str;
 
 	ASSERT_EQ(0, blocking_queue_init(&blocking_queue, 1));
 	ASSERT_EQ(0, blocking_queue_length(&blocking_queue));
 
-	head_init(&dummy.hold);
-	dummy.data = DUMMY_DATA_STRING;
-
-	ASSERT_TRUE(blocking_queue_trypush(&blocking_queue, &dummy.hold));
+	ASSERT_TRUE(blocking_queue_trypush(&blocking_queue, DUMMY_DATA_STRING));
 	ASSERT_EQ(1, blocking_queue_length(&blocking_queue));
 
-	ASSERT(head = blocking_queue_trypop(&blocking_queue));
-	entry = LIST_ENTRY(head, dummy_t, hold);
-	ASSERT_STREQ(DUMMY_DATA_STRING, entry->data);
+	ASSERT(str = blocking_queue_trypop(&blocking_queue));
+	ASSERT_STREQ(DUMMY_DATA_STRING, str);
 	ASSERT_EQ(0, blocking_queue_length(&blocking_queue));
 
 	blocking_queue_destroy(&blocking_queue, NULL);

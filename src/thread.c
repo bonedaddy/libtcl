@@ -35,16 +35,13 @@ typedef struct {
 typedef struct {
 	work_t *func;
 	void *context;
-	head_t hold;
 } work_item_t;
 
 static void __work_ready(blocking_queue_t *queue)
 {
-	head_t *head;
 	work_item_t *item;
 
-	head = blocking_queue_pop(queue);
-	item = LIST_ENTRY(head, work_item_t, hold);
+	item = blocking_queue_pop(queue);
 	item->func(item->context);
 	free(item);
 }
@@ -53,7 +50,6 @@ static void *__run_thread(void *context)
 {
 	start_arg_t *arg;
 	thread_t *thread;
-	head_t *head;
 	work_item_t *item;
 	unsigned count;
 
@@ -77,9 +73,8 @@ static void *__run_thread(void *context)
      * work item and then joining the thread.
 	 */
 	count = 0;
-	while ((head = blocking_queue_trypop(&thread->work_queue))
+	while ((item = blocking_queue_trypop(&thread->work_queue))
 		   && count <= blocking_queue_capacity(&thread->work_queue)) {
-		item = LIST_ENTRY(head, work_item_t, hold);
 		item->func(item->context);
 		free(item);
 		++count;
@@ -92,12 +87,9 @@ static void *__run_thread(void *context)
 	return NULL;
 }
 
-static void __work_dtor(head_t *head)
+static void __work_dtor(void *item)
 {
-	work_item_t *work;
-
-	work = LIST_ENTRY(head, work_item_t, hold);
-	free(work);
+	free(item);
 }
 #endif
 
@@ -165,10 +157,9 @@ bool thread_post(thread_t *thread, work_t *work, void *context)
 	work_item_t *item;
 
 	item = (work_item_t *)malloc(sizeof(work_item_t));
-	head_init(&item->hold);
 	item->func = work;
 	item->context = context;
-	blocking_queue_push(&thread->work_queue, &item->hold);
+	blocking_queue_push(&thread->work_queue, item);
 #else
 	fid_t fid;
 

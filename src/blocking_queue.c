@@ -22,24 +22,23 @@
 
 int blocking_queue_init(blocking_queue_t *queue, unsigned capacity)
 {
-	bzero(queue, sizeof(blocking_queue_t));
-	queue->capacity = capacity;
 	if (sema_init(&queue->producer, capacity))
 		return -1;
 	if (sema_init(&queue->consumer, 0))
 		return -1;
-	/* TODO: use queue_t */
-	list_init(&queue->list);
+	queue->capacity = capacity;
+	queue_init(&queue->base, sizeof(void *));
 #ifdef OSI_THREADING
 	pthread_mutex_init(&queue->lock, NULL);
+	queue->reactor_object = NULL;
 #endif
 	return 0;
 }
 
-void blocking_queue_destroy(blocking_queue_t *queue, head_dtor_t *dtor)
+void blocking_queue_destroy(blocking_queue_t *queue, queue_dtor_t *dtor)
 {
 	blocking_queue_unlisten(queue);
-	list_destroy(&queue->list, dtor);
+	queue_destroy(&queue->base, dtor);
 	sema_destroy(&queue->producer);
 	sema_destroy(&queue->consumer);
 #ifdef OSI_THREADING
@@ -54,7 +53,7 @@ bool blocking_queue_empty(blocking_queue_t *queue)
 #ifdef OSI_THREADING
 	pthread_mutex_lock(&queue->lock);
 #endif
-	empty = list_empty(&queue->list);
+	empty = queue_length(&queue->base) == 0;
 #ifdef OSI_THREADING
 	pthread_mutex_unlock(&queue->lock);
 #endif
@@ -68,7 +67,7 @@ unsigned blocking_queue_length(blocking_queue_t *queue)
 #ifdef OSI_THREADING
 	pthread_mutex_lock(&queue->lock);
 #endif
-	len = (unsigned)queue->list.len;
+	len = (unsigned)queue_length(&queue->base);
 #ifdef OSI_THREADING
 	pthread_mutex_unlock(&queue->lock);
 #endif
@@ -80,46 +79,46 @@ unsigned blocking_queue_capacity(blocking_queue_t *queue)
 	return queue->capacity;
 }
 
-void blocking_queue_push(blocking_queue_t *queue, head_t *ev)
+void blocking_queue_push(blocking_queue_t *queue, void const *item)
 {
 	sema_wait(&queue->producer);
 
 #ifdef OSI_THREADING
 	pthread_mutex_lock(&queue->lock);
 #endif
-	list_push(&queue->list, ev);
+	*(void const **)queue_push(&queue->base) = item;
 #ifdef OSI_THREADING
 	pthread_mutex_unlock(&queue->lock);
 #endif
 	sema_post(&queue->consumer);
 }
 
-head_t *blocking_queue_pop(blocking_queue_t *queue)
+void *blocking_queue_pop(blocking_queue_t *queue)
 {
-	head_t *ev;
+	void *item;
 
 	sema_wait(&queue->consumer);
 
 #ifdef OSI_THREADING
 	pthread_mutex_lock(&queue->lock);
 #endif
-	ev = list_shift(&queue->list);
+	item = NULL;
+	queue_pop(&queue->base, &item);
 #ifdef OSI_THREADING
 	pthread_mutex_unlock(&queue->lock);
 #endif
 	sema_post(&queue->producer);
-	return ev;
+	return item;
 }
 
-bool blocking_queue_trypush(blocking_queue_t *queue, head_t *node)
+bool blocking_queue_trypush(blocking_queue_t *queue, const void *item)
 {
 	if (!sema_trywait(&queue->producer))
 		return false;
-
 #ifdef OSI_THREADING
 	pthread_mutex_lock(&queue->lock);
 #endif
-	list_push(&queue->list, node);
+	*(void const **)queue_push(&queue->base) = item;
 #ifdef OSI_THREADING
 	pthread_mutex_unlock(&queue->lock);
 #endif
@@ -127,25 +126,26 @@ bool blocking_queue_trypush(blocking_queue_t *queue, head_t *node)
 	return true;
 }
 
-head_t *blocking_queue_trypop(blocking_queue_t *queue)
+void *blocking_queue_trypop(blocking_queue_t *queue)
 {
-	head_t *ev;
+	void *item;
 
 	if (!sema_trywait(&queue->consumer))
 		return false;
-
 #ifdef OSI_THREADING
 	pthread_mutex_lock(&queue->lock);
 #endif
-	ev = list_shift(&queue->list);
+	item = NULL;
+	queue_pop(&queue->base, &item);
 #ifdef OSI_THREADING
 	pthread_mutex_unlock(&queue->lock);
 #endif
 	sema_post(&queue->producer);
-	return ev;
+	return item;
 }
 
-void blocking_queue_listen(blocking_queue_t *queue, thread_t *thread, listener_t *listener)
+void blocking_queue_listen(blocking_queue_t *queue, thread_t *thread,
+	listener_t *listener)
 {
 	queue->listener = listener;
 #ifdef OSI_THREADING

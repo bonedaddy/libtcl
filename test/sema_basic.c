@@ -52,8 +52,8 @@ int main(void)
 	ASSERT_EQ(0, thread_init(&thread, "SEMA_TEST"));
 
 	counter = 0;
-	thread_post(&thread, after, NULL);
 	thread_post(&thread, before, NULL);
+	thread_post(&thread, after, NULL);
 
 	thread_destroy(&thread);
 	ASSERT_EQ(2, counter);
