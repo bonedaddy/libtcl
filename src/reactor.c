@@ -51,19 +51,19 @@ int reactor_init(reactor_t *reactor)
 		LOG_ERROR("unable to register eventfd with epoll set: %m");
 		return -1;
 	}
-	pthread_mutex_init(&reactor->list_lock, NULL);
-	list_init(&reactor->invalidation_list);
+	pthread_mutex_init(&reactor->invalidation_lock, NULL);
+	set_init(&reactor->invalidation_set, NULL, NULL);
 	return 0;
 }
 
 void reactor_destroy(reactor_t *reactor)
 {
-	list_init(&reactor->invalidation_list);
+	set_destroy(&reactor->invalidation_set);
 	close(reactor->event_fd);
 	reactor->event_fd = INVALID_FD;
 	close(reactor->epoll_fd);
 	reactor->epoll_fd = INVALID_FD;
-	pthread_mutex_destroy(&reactor->list_lock);
+	pthread_mutex_destroy(&reactor->invalidation_lock);
 }
 
 reactor_st_t reactor_start(reactor_t *reactor)
@@ -119,9 +119,9 @@ void reactor_unregister(reactor_object_t *obj)
 		reactor->object_removed = true;
 		return;
 	}
-	pthread_mutex_lock(&reactor->list_lock);
-	list_push(&reactor->invalidation_list, &obj->hold);
-	pthread_mutex_unlock(&reactor->list_lock);
+	pthread_mutex_lock(&reactor->invalidation_lock);
+	set_put(&reactor->invalidation_set, obj);
+	pthread_mutex_unlock(&reactor->invalidation_lock);
 
 	pthread_mutex_lock(&obj->lock);
 	pthread_mutex_unlock(&obj->lock);
@@ -138,9 +138,9 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 	reactor->run_thread = pthread_self();
 	reactor->is_running = true;
 	for (i = 0; iterations == 0 || i < iterations; ++i) {
-		pthread_mutex_lock(&reactor->list_lock);
-		list_init(&reactor->invalidation_list);
-		pthread_mutex_unlock(&reactor->list_lock);
+		pthread_mutex_lock(&reactor->invalidation_lock);
+		set_clear(&reactor->invalidation_set);
+		pthread_mutex_unlock(&reactor->invalidation_lock);
 
 		do (ret = epoll_wait(reactor->epoll_fd, events, __max_events, -1));
 		while (ret < 0 && errno == EINTR);
@@ -164,15 +164,15 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 			}
 			object = (reactor_object_t *)events[j].data.ptr;
 
-			pthread_mutex_lock(&reactor->list_lock);
-			if (list_contains(&reactor->invalidation_list, &object->hold)) {
-				pthread_mutex_unlock(&reactor->list_lock);
+			pthread_mutex_lock(&reactor->invalidation_lock);
+			if (set_contains(&reactor->invalidation_set, object)) {
+				pthread_mutex_unlock(&reactor->invalidation_lock);
 				continue;
 			}
 
 			/* Downgrade the list lock to an object lock. */
 			pthread_mutex_lock(&object->lock);
-			pthread_mutex_unlock(&reactor->list_lock);
+			pthread_mutex_unlock(&reactor->invalidation_lock);
 			reactor->object_removed = false;
 			if ((events[j].events &
 				(EPOLLIN | EPOLLHUP | EPOLLRDHUP | EPOLLERR))

@@ -16,35 +16,29 @@
  * limitations under the License.
  */
 
-/*!@file osi.h
- * @author uael
- */
-#ifndef __OSI_H
-# define __OSI_H
+#include "test.h"
 
-#include "osi/conf.h"
-#include "osi/alarm.h"
-#include "osi/blocking_queue.h"
-#include "osi/fiber.h"
-#include "osi/log.h"
-#include "osi/mutex.h"
-#include "osi/reactor.h"
-#include "osi/sema.h"
-#include "osi/string.h"
-#include "osi/thread.h"
+#include "osi/map.h"
 
-/*!@public
- *
- * @brief
- * TODO
- */
-__api__ void osi_init(void);
+static size_t hash_map_fn00(const void *key)
+{
+	size_t hash_key = (size_t)key;
+	return hash_key;
+}
 
-/*!@public
- *
- * @brief
- * TODO
- */
-__api__ void osi_cleanup(void);
+int main(void)
+{
+	map_t map;
 
-#endif /* __OSI_H */
+	map_init(&map, hash_map_fn00, NULL);
+	ASSERT_EQ(0, map.length);
+	ASSERT_EQ(0, map.capacity);
+	ASSERT_EQ(0, map.occupied);
+	ASSERT_EQ(0, map.upbound);
+	ASSERT_NULL(map.flags);
+	ASSERT_NULL(map.keys);
+	ASSERT_NULL(map.values);
+	ASSERT(map.eq);
+	ASSERT_EQ(hash_map_fn00, map.hash);
+	return 0;
+}

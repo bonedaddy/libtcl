@@ -27,7 +27,7 @@
 # define __OSI_REACTOR_H
 
 #include "osi/fiber.h"
-#include "osi/list.h"
+#include "osi/set.h"
 
 /*!@brief
  * The reactor pattern, which is described here
@@ -79,10 +79,10 @@ struct reactor {
 	int event_fd;
 
 	/*! protects invalidation_list. */
-	pthread_mutex_t list_lock;
+	pthread_mutex_t invalidation_lock;
 
 	/*! reactor objects that have been unregistered. */
-	list_t invalidation_list;
+	set_t invalidation_set;
 
 	/*! the pthread on which reactor_run is executing. */
 	pthread_t run_thread;
@@ -113,9 +113,6 @@ struct reactor_object {
 
 	/*! function to call when the file descriptor becomes writeable. */
 	reactor_ready_t *write_ready;
-
-	/*! List head. */
-	head_t hold;
 };
 
 /*!@public

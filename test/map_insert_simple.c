@@ -18,17 +18,37 @@
 
 #include "test.h"
 
-#include "osi/reactor.h"
+#include "osi/map.h"
+
+static size_t hash_map_fn00(const void *key)
+{
+	size_t hash_key = (size_t)key;
+	return hash_key;
+}
 
 int main(void)
 {
-	reactor_t reactor;
+	map_t map;
+	struct { const char *key, *value; } data[] = {
+		{ "0", "zero" },
+		{ "1", "one" },
+		{ "2", "two" },
+		{ "3", "three" },
+	};
+	const char *value;
+	const size_t data_sz = sizeof(data) / sizeof(data[0]);
+	size_t i;
 
-	ASSERT(reactor_init(&reactor) == 0);
-	ASSERT(reactor.epoll_fd != INVALID_FD);
-	ASSERT(reactor.event_fd != INVALID_FD);
-	reactor_destroy(&reactor);
-	ASSERT(reactor.epoll_fd == INVALID_FD);
-	ASSERT(reactor.event_fd == INVALID_FD);
+	map_init(&map, hash_map_fn00, NULL);
+
+	for (i = 0; i < data_sz; i++) {
+		ASSERT_EQ(i, map_length(&map));
+		ASSERT_EQ(0, map_set(&map, data[i].key, data[i].value));
+		ASSERT(value = map_get(&map, data[i].key));
+		ASSERT_STREQ(data[i].value, value);
+		ASSERT_EQ(i + 1, map_length(&map));
+	}
+
+	map_destroy(&map, NULL);
 	return 0;
 }

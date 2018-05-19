@@ -30,6 +30,18 @@ osi_register_suite(stack)
 osi_register_test(stack_init)
 osi_register_test(stack_basic)
 
+osi_register_suite(set)
+osi_register_test(set_init)
+osi_register_test(set_insert_simple)
+osi_register_test(set_insert_same)
+osi_register_test(set_insert_remove)
+
+osi_register_suite(map)
+osi_register_test(map_init)
+osi_register_test(map_insert_simple)
+osi_register_test(map_insert_same)
+osi_register_test(map_insert_remove)
+
 osi_register_suite(fiber)
 osi_register_test(fiber_adjectives)
 osi_register_test(fiber_call)

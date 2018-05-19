@@ -119,10 +119,10 @@ __api__ void fiber_destroy(fid_t fid);
  * result of `fiber_yield'.
  *
  * @param fid The fiber to resume.
- * @param arg   The argument to send to `fiber'.
+ * @param context   The argument to send to `fiber'.
  * @return      The yielded argument of the final result of the fiber callback.
  */
-__api__ void *fiber_call(fid_t fid, void *arg);
+__api__ void *fiber_call(fid_t fid, void *context);
 
 /*!@public
  *
@@ -169,10 +169,10 @@ __api__ bool fiber_isdone(fid_t fiber);
  * back to the fiber that ran it, but remembers where it is. The next time the
  * fiber is called, it picks up right where it left off and keeps going.
  *
- * @param arg The argument which is the result of `fiber_call'.
+ * @param context The argument which is the result of `fiber_call'.
  * @return    The argument of `fiber_call' after yielding.
  */
-__api__ void *fiber_yield(void *arg);
+__api__ void *fiber_yield(void *context);
 
 /*!@private
  *

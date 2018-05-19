@@ -16,35 +16,28 @@
  * limitations under the License.
  */
 
-/*!@file osi.h
- * @author uael
- */
-#ifndef __OSI_H
-# define __OSI_H
+#include "test.h"
 
-#include "osi/conf.h"
-#include "osi/alarm.h"
-#include "osi/blocking_queue.h"
-#include "osi/fiber.h"
-#include "osi/log.h"
-#include "osi/mutex.h"
-#include "osi/reactor.h"
-#include "osi/sema.h"
-#include "osi/string.h"
-#include "osi/thread.h"
+#include "osi/set.h"
 
-/*!@public
- *
- * @brief
- * TODO
- */
-__api__ void osi_init(void);
+static size_t hash_set_fn00(const void *key)
+{
+	size_t hash_key = (size_t)key;
+	return hash_key;
+}
 
-/*!@public
- *
- * @brief
- * TODO
- */
-__api__ void osi_cleanup(void);
+int main(void)
+{
+	set_t set;
 
-#endif /* __OSI_H */
+	set_init(&set, hash_set_fn00, NULL);
+	ASSERT_EQ(0, set.length);
+	ASSERT_EQ(0, set.capacity);
+	ASSERT_EQ(0, set.occupied);
+	ASSERT_EQ(0, set.upbound);
+	ASSERT_NULL(set.flags);
+	ASSERT_NULL(set.keys);
+	ASSERT(set.eq);
+	ASSERT_EQ(hash_set_fn00, set.hash);
+	return 0;
+}

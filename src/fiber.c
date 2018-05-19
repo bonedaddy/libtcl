@@ -301,18 +301,18 @@ void fiber_cleanup(void)
 	}
 }
 
-void *fiber_call(fid_t fid, void *ctx)
+void *fiber_call(fid_t fid, void *context)
 {
 	fiber_t *fiber;
 	fiber_t *current;
 
 	current = __getfiber(__fiber_current);
 	if (current->caller == fid)
-		return fiber_yield(ctx);
+		return fiber_yield(context);
 	fiber = __getfiber(fid);
 	assert(__fiber_current != fid);
 	assert(fiber->status == FIBER_PENDING);
-	fiber->context = ctx;
+	fiber->context = context;
 	fiber->caller = __fiber_current;
 	__fiber_current = fiber->fid;
 	__fiber_idx = fiber->priority_idx;
@@ -362,7 +362,7 @@ __always_inline void fiber_join(fid_t fid)
 		__schedule();
 }
 
-void *fiber_yield(void *arg)
+void *fiber_yield(void *context)
 {
 	fiber_t *fiber;
 	fiber_t *caller;
@@ -387,7 +387,7 @@ void *fiber_yield(void *arg)
 #ifdef USE_PICORO
 	return yield(context);
 #else
-	fiber->result = arg;
+	fiber->result = context;
 # ifdef OS_PROVENCORE
 	if (caller) {
 		int dummy;
