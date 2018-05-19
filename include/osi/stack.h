@@ -41,7 +41,7 @@ typedef union stack stack_t;
  * STACK item destruction callback, passed to `stack_destroy' to destroy every
  * item before freed.
  */
-typedef void (stack_dtor)(void *item);
+typedef void (stack_dtor_t)(void *item);
 
 /*!@public
  *
@@ -73,26 +73,135 @@ union stack {
 	};
 };
 
+/*!@public
+ *
+ * @brief
+ * Initialize `stack' where `isize' represent the item size.
+ *
+ * @param stack The stack to initialize.
+ * @param isize The size of an item.
+ */
 __api__ void stack_init(stack_t *stack, size_t isize);
 
-__api__ void stack_destroy(stack_t *stack, stack_dtor *idtor);
+/*!@public
+ *
+ * @brief
+ * Destroy `stack'. An optional callback `idtor' will be called on
+ * each item before freed if present.
+ *
+ * @param stack The stack to destroy.
+ * @param idtor The item callback destructor.
+ */
+__api__ void stack_destroy(stack_t *stack, stack_dtor_t *idtor);
 
-__api__ void stack_clear(stack_t *stack, stack_dtor *idtor);
+/*!@public
+ *
+ * @brief
+ * Clear `stack' using the optional destructor `idtor'.
+ * The stack is still allocated and his capacity does not change, there is no
+ * truncation.
+ *
+ * @param stack The stack to clear.
+ * @param idtor The item callback destructor.
+ */
+__api__ void stack_clear(stack_t *stack, stack_dtor_t *idtor);
 
+/*!@public
+ *
+ * @brief
+ * Get `stack' actual length.
+ *
+ * @param stack The stack.
+ * @return      The stack length.
+ */
 __api__ size_t stack_length(stack_t *stack);
 
+/*!@public
+ *
+ * @brief
+ * Get a pointer that point to the last inserted item of `stack'.
+ * If there is no element in `stack', return `NULL'.
+ *
+ * @param stack The stack.
+ * @return      The stack begin pointer or `NULL'.
+ */
 __api__ void *stack_peek(stack_t *stack);
 
+/*!@public
+ *
+ * @brief
+ * Make sure `stack' is sufficiently allocated to store `n' number
+ * of items.
+ * If not reallocate it.
+ *
+ * @param stack The stack to ensure.
+ * @param n     The number of items to ensure.
+ */
 __api__ void stack_ensure(stack_t *stack, size_t n);
 
+/*!@public
+ *
+ * @brief
+ * Grow `stack' to make sure he is sufficiently allocated to store
+ * `stack_length' + `n' number of additional items.
+ * If not reallocate it.
+ *
+ * @param stack The stack to grow.
+ * @param n     The number of additional items to ensure.
+ */
 __api__ void stack_grow(stack_t *stack, size_t n_added);
 
+/*!@public
+ *
+ * @brief
+ * Make place to `n' number of items at the end of `stack' and
+ * return a pointer to the begin of this new space.
+ * A memory copy of `n' items can then be safely appliqued to this space.
+ *
+ * @param stack The stack where to push.
+ * @param n     The number of items in the new space.
+ * @return      A pointer to the begin of this new space.
+ */
 __api__ void *stack_npush(stack_t *stack, size_t n);
 
+/*!@public
+ *
+ * @brief
+ * Remove `n' number of items at the end of `stack'.
+ * `n' can be greater than the actual number of items in `stack'.
+ * Copy removed items to the optional pointer `out' if not `NULL'.
+ * Return the number of items which have been actually removed.
+ *
+ * @param stack The stack where to pop.
+ * @param n     The number of items to remove.
+ * @param out   Nullable pointer to receive removed items.
+ * @return      Return the number of items which have been actually removed.
+ */
 __api__ size_t stack_npop(stack_t *stack, size_t n, void *out);
 
+/*!@public
+ *
+ * @brief
+ * Make place to 1 items at the end of `stack' and
+ * return a pointer to the begin of the new item.
+ * A memory copy of 1 item can then be safely appliqued to this space.
+ *
+ * @param stack The stack where to push.
+ * @return      A pointer to the begin of the new item.
+ */
 __api__ void *stack_push(stack_t *stack);
 
+/*!@public
+ *
+ * @brief
+ * Remove 1 item at the end of `stack'.
+ * Copy removed item to the optional pointer `out' if not `NULL'.
+ * Return if an item have been actually removed.
+ *
+ * @param stack The stack where to pop.
+ * @param out   Nullable pointer to receive removed item.
+ * @return      Return if an item have been actually removed.
+ */
 __api__ bool stack_pop(stack_t *stack, void *out);
 
 #endif /* __OSI_STACK_H */

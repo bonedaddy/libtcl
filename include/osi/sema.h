@@ -48,7 +48,7 @@ struct sema {
 
 #ifndef OSI_THREADING
 
-	/*! On fiber fiber mode, we use an event to delegate work. */
+	/*! Pending fibers blocked by `sema_wait'. */
 	queue_t queue;
 #endif
 };

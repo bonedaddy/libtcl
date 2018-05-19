@@ -73,26 +73,135 @@ union queue {
 	};
 };
 
+/*!@public
+ *
+ * @brief
+ * Initialize `queue' where `isize' represent the item size.
+ *
+ * @param queue The queue to initialize.
+ * @param isize The size of an item.
+ */
 __api__ void queue_init(queue_t *queue, size_t isize);
 
+/*!@public
+ *
+ * @brief
+ * Destroy `queue'. An optional callback `idtor' will be called on
+ * each item before freed if present.
+ *
+ * @param queue The queue to destroy.
+ * @param idtor The item callback destructor.
+ */
 __api__ void queue_destroy(queue_t *queue, queue_dtor_t *idtor);
 
+/*!@public
+ *
+ * @brief
+ * Clear `queue' using the optional destructor `idtor'.
+ * The queue is still allocated and his capacity does not change, there is no
+ * truncation.
+ *
+ * @param queue The queue to clear.
+ * @param idtor The item callback destructor.
+ */
 __api__ void queue_clear(queue_t *queue, queue_dtor_t *idtor);
 
+/*!@public
+ *
+ * @brief
+ * Get `queue' actual length.
+ *
+ * @param queue The queue.
+ * @return      The queue length.
+ */
 __api__ size_t queue_length(queue_t *queue);
 
+/*!@public
+ *
+ * @brief
+ * Get a pointer that point to the first inserted item of `queue'.
+ * If there is no element in `queue', return `NULL'.
+ *
+ * @param queue The queue.
+ * @return      The queue begin pointer or `NULL'.
+ */
 __api__ void *queue_peek(queue_t *queue);
 
+/*!@public
+ *
+ * @brief
+ * Make sure `queue' is sufficiently allocated to store `n' number
+ * of items.
+ * If not reallocate it.
+ *
+ * @param queue The queue to ensure.
+ * @param n     The number of items to ensure.
+ */
 __api__ void queue_ensure(queue_t *queue, size_t n);
 
+/*!@public
+ *
+ * @brief
+ * Grow `queue' to make sure he is sufficiently allocated to store
+ * `queue_length' + `n' number of additional items.
+ * If not reallocate it.
+ *
+ * @param queue The queue to grow.
+ * @param n     The number of additional items to ensure.
+ */
 __api__ void queue_grow(queue_t *queue, size_t n_added);
 
+/*!@public
+ *
+ * @brief
+ * Make place to `n' number of items at the end of `queue' and
+ * return a pointer to the begin of this new space.
+ * A memory copy of `n' items can then be safely appliqued to this space.
+ *
+ * @param queue The queue where to push.
+ * @param n     The number of items in the new space.
+ * @return      A pointer to the begin of this new space.
+ */
 __api__ void *queue_npush(queue_t *queue, size_t n);
 
+/*!@public
+ *
+ * @brief
+ * Remove `n' number of items at the begin of `queue'.
+ * `n' can be greater than the actual number of items in `queue'.
+ * Copy removed items to the optional pointer `out' if not `NULL'.
+ * Return the number of items which have been actually removed.
+ *
+ * @param queue The queue where to pop.
+ * @param n     The number of items to remove.
+ * @param out   Nullable pointer to receive removed items.
+ * @return      Return the number of items which have been actually removed.
+ */
 __api__ size_t queue_npop(queue_t *queue, size_t n, void *out);
 
+/*!@public
+ *
+ * @brief
+ * Make place to 1 items at the end of `queue' and
+ * return a pointer to the begin of the new item.
+ * A memory copy of 1 item can then be safely appliqued to this space.
+ *
+ * @param queue The queue where to push.
+ * @return      A pointer to the begin of the new item.
+ */
 __api__ void *queue_push(queue_t *queue);
 
+/*!@public
+ *
+ * @brief
+ * Remove 1 item at the begin of `queue'.
+ * Copy removed item to the optional pointer `out' if not `NULL'.
+ * Return if an item have been actually removed.
+ *
+ * @param queue The queue where to pop.
+ * @param out   Nullable pointer to receive removed item.
+ * @return      Return if an item have been actually removed.
+ */
 __api__ bool queue_pop(queue_t *queue, void *out);
 
 #endif /* __OSI_QUEUE_H */
