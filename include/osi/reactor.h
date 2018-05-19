@@ -63,7 +63,7 @@ typedef enum reactor_st reactor_st_t;
  * @brief
  * TODO
  */
-typedef void (reactor_ready_t)(void *arg);
+typedef void (reactor_ready_t)(void *context);
 
 /*!@public
  *

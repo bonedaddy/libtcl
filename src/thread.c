@@ -99,16 +99,10 @@ static void __work_dtor(head_t *head)
 	work = LIST_ENTRY(head, work_item_t, hold);
 	free(work);
 }
-#else
-typedef struct {
-	fid_t fid;
-	head_t hold;
-} work_item_t;
 #endif
 
 int thread_init(thread_t *thread, char const *name)
 {
-
 #ifdef OSI_THREADING
 	start_arg_t start;
 
@@ -130,8 +124,7 @@ int thread_init(thread_t *thread, char const *name)
 #else
 	thread->is_joined = false;
 	strncpy(thread->name, name, THREAD_NAME_MAX);
-	/* TODO: use queue_t */
-	list_init(&thread->fibers);
+	stack_init(&thread->fibers, sizeof(fid_t));
 #endif /* OSI_THREADING */
 	return 0;
 }
@@ -140,20 +133,18 @@ void thread_destroy(thread_t *thread)
 {
 	thread_stop(thread);
 	thread_join(thread);
-
 #ifdef OSI_THREADING
 	blocking_queue_destroy(&thread->work_queue, __work_dtor);
 	reactor_destroy(&thread->reactor);
 #else
-	list_destroy(&thread->fibers, NULL);
+	stack_destroy(&thread->fibers, NULL);
 #endif /* OSI_THREADING */
 }
 
 void thread_join(thread_t *thread)
 {
 #ifndef OSI_THREADING
-	head_t *head;
-	work_item_t *item;
+	fid_t fid;
 
 #endif
 	if (!thread->is_joined) {
@@ -161,29 +152,28 @@ void thread_join(thread_t *thread)
 #ifdef OSI_THREADING
 		pthread_join(thread->pthread, NULL);
 #else
-		while (thread->running || (head = list_pop(&thread->fibers))) {
-			if (!head)
-				continue;
-			item = LIST_ENTRY(head, work_item_t, hold);
-			fiber_join(item->fid);
-		}
+		while (stack_pop(&thread->fibers, &fid))
+			fiber_join(fid);
+		while (thread->running);
 #endif /* OSI_THREADING */
 	}
 }
 
 bool thread_post(thread_t *thread, work_t *work, void *context)
 {
+#ifdef OSI_THREADING
 	work_item_t *item;
 
 	item = (work_item_t *)malloc(sizeof(work_item_t));
 	head_init(&item->hold);
-#ifdef OSI_THREADING
 	item->func = work;
 	item->context = context;
 	blocking_queue_push(&thread->work_queue, &item->hold);
 #else
-	fiber_init(&item->fid, work, (fiber_attr_t){.context = context});
-	list_push(&thread->fibers, &item->hold);
+	fid_t fid;
+
+	fiber_init(&fid, work, (fiber_attr_t){ .context = context });
+	*(fid_t *)stack_push(&thread->fibers) = fid;
 #endif /* OSI_THREADING */
 	return true;
 }

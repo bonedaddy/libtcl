@@ -27,6 +27,7 @@ int sema_init(sema_t *sema, unsigned value)
 #else
 	sema->handle = value;
 	queue_init(&sema->queue, sizeof(fid_t));
+	if (value) queue_ensure(&sema->queue, value);
 #endif /* OSI_THREADING */
 	return 0;
 }

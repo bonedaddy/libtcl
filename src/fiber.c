@@ -69,7 +69,7 @@ typedef struct {
 	work_t *fn;
 
 	/*! The fiber core function argument */
-	void *arg;
+	void *context;
 
 	/*! The fiber result */
 	void *result;
@@ -89,21 +89,24 @@ typedef struct {
 	/*! Fiber stack size. */
 	uint16_t ss;
 
+	/*! Used to pass fiber id to coroutine. */
+	fid_t *coroutine_ctx;
+
 #if defined(USE_CORO)
 
 	/** Coroutine context */
-	coro_context context;
+	coro_context coroutine;
 
 	/** Coroutine stack */
 	struct coro_stack stack;
 #elif defined(USE_PICORO)
 
-	/** Picoro coroutine context */
-	coro context;
+	/** Picoro coroutine */
+	coro coroutine;
 #elif defined(OS_PROVENCORE)
 
-	/** ProveNCore coroutine context */
-	struct context *context;
+	/** ProveNCore coroutine */
+	struct coroutine *coroutine;
 #endif
 } fiber_t;
 
@@ -116,7 +119,7 @@ static struct {
 	uint16_t cap;
 } __fibers = {NULL, 0, 0};
 
-static __always_inline int __lazyinit(void)
+static int __lazyinit(void)
 {
 	static int init = 0;
 
@@ -137,6 +140,7 @@ static __always_inline int __lazyinit(void)
 
 static __always_inline fiber_t *__getfiber(fid_t fid)
 {
+	__lazyinit();
 	assert(fid < __fibers.len);
 	return __fibers.buffer + fid;
 }
@@ -172,7 +176,7 @@ static CALLBACK_RETURN_TY __fn(fid_t *fid)
 	fiber_t *fiber;
 
 	fiber = __getfiber(*fid);
-	fiber->result = fiber->fn(fiber->arg);
+	fiber->result = fiber->fn(fiber->context);
 	fiber->status = FIBER_DONE;
 	fiber_yield(fiber->result);
 #ifdef OS_PROVENCORE
@@ -186,7 +190,7 @@ static CALLBACK_RETURN_TY __fn_loop(fid_t *fid)
 
 	fiber = __getfiber(*fid);
 	while (fiber->status == FIBER_RUNNING)
-		fiber_yield(fiber->result = fiber->fn(fiber->arg));
+		fiber_yield(fiber->result = fiber->fn(fiber->context));
 	fiber->status = FIBER_DONE;
 	fiber_yield(fiber->result);
 #ifdef OS_PROVENCORE
@@ -241,20 +245,24 @@ void fiber_init(fid_t *fid, work_t *work, fiber_attr_t attr)
 	if (!attr.stack_size)
 		attr.stack_size = (uint16_t)DEFAULT_FIBER_STACK_SIZE;
 	fn = (attr.flags & FIBER_FL_LOOP) ? __fn_loop : __fn;
+	if (!fiber->coroutine_ctx)
+		fiber->coroutine_ctx = malloc(sizeof(fid_t));
+	*fiber->coroutine_ctx = *fid;
 #ifdef OS_PROVENCORE
-	fiber->context = create_context(ss, 0, 0, 0, fn, fid);
+	fiber->coroutine = create_context(ss, 0, 0, 0, fn, fiber->coroutine_ctx);
 #elif defined(USE_CORO)
 	if (fiber->ss < attr.stack_size) {
 		coro_stack_free(&fiber->stack);
 		coro_stack_alloc(&fiber->stack, attr.stack_size);
 	}
-	coro_create(&fiber->context, fn, fid, fiber->stack.sptr, fiber->stack.ssze);
+	coro_create(&fiber->coroutine, fn, fiber->coroutine_ctx, fiber->stack.sptr,
+		fiber->stack.ssze);
 #else
-	fiber->context = coroutine(fn);
+	fiber->coroutine = coroutine(fn);
 #endif
 	fiber->fn = work;
 	fiber->status = FIBER_PENDING;
-	fiber->arg = attr.context;
+	fiber->context = attr.context;
 	fiber->ss = attr.stack_size;
 	fiber->priority = attr.priority;
 	(fiber->priority_idx ? __updatepriority : __setpriority)(*fid);
@@ -267,10 +275,12 @@ void fiber_destroy(fid_t fid)
 	fiber = __getfiber(fid);
 	assert(fiber->status == FIBER_DONE);
 #ifdef USE_CORO
-	(void)coro_destroy(&fiber->context);
+	(void)coro_destroy(&fiber->coroutine);
 	coro_stack_free(&fiber->stack);
 #endif
 	bzero(fiber, sizeof(fiber_t));
+	free(fiber->coroutine_ctx);
+	fiber->coroutine_ctx = NULL;
 	fiber->fid = fid;
 	fiber->status = FIBER_DESTROYED;
 }
@@ -302,7 +312,7 @@ void *fiber_call(fid_t fid, void *ctx)
 	fiber = __getfiber(fid);
 	assert(__fiber_current != fid);
 	assert(fiber->status == FIBER_PENDING);
-	fiber->arg = ctx;
+	fiber->context = ctx;
 	fiber->caller = __fiber_current;
 	__fiber_current = fiber->fid;
 	__fiber_idx = fiber->priority_idx;
@@ -310,14 +320,14 @@ void *fiber_call(fid_t fid, void *ctx)
 	if (current->status == FIBER_RUNNING)
 		current->status = FIBER_PENDING;
 #ifdef USE_PICORO
-	fiber->result = resume(fiber->context, &fid);
+	fiber->result = resume(fiber->coroutine, fiber->coroutine_ctx);
 #elif defined(OS_PROVENCORE)
 	int dummy;
 
-	if (resume(fiber->context, &dummy))
+	if (resume(fiber->coroutine, &dummy))
 		fiber->status = FIBER_DONE;
 #else
-	coro_transfer(&__getfiber(fiber->caller)->context, &fiber->context);
+	coro_transfer(&current->coroutine, &fiber->coroutine);
 #endif
 	return fiber->result;
 }
@@ -343,7 +353,7 @@ static __always_inline void __schedule(void)
 		if (++__fiber_idx >= __fibers.len)
 			__fiber_idx = 0;
 	}
-	fiber_call(fiber->fid, fiber->arg);
+	fiber_call(fiber->fid, fiber->context);
 }
 
 __always_inline void fiber_join(fid_t fid)
@@ -375,22 +385,22 @@ void *fiber_yield(void *arg)
 		fiber->status = FIBER_PENDING;
 	caller->status = FIBER_RUNNING;
 #ifdef USE_PICORO
-	return yield(arg);
+	return yield(context);
 #else
 	fiber->result = arg;
 # ifdef OS_PROVENCORE
 	if (caller) {
 		int dummy;
 
-		if (resume(caller->context, &dummy))
+		if (resume(caller->coroutine, &dummy))
 			caller->status = FIBER_DONE;
 	} else {
 		yield();
 	}
 # else
-	coro_transfer(&fiber->context, &caller->context);
+	coro_transfer(&fiber->coroutine, &caller->coroutine);
 # endif
-	return fiber->arg;
+	return fiber->context;
 #endif
 }
 

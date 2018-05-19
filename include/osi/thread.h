@@ -28,6 +28,7 @@
 
 #include "osi/reactor.h"
 #include "osi/blocking_queue.h"
+#include "osi/stack.h"
 
 #define THREAD_NAME_MAX 16
 
@@ -60,9 +61,7 @@ struct thread {
 
 	bool running;
 
-	fid_t fiber;
-
-	list_t fibers;
+	stack_t fibers;
 #endif
 };
 
