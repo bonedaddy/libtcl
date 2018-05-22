@@ -158,7 +158,8 @@ bool thread_post(thread_t *thread, work_t *work, void *context)
 #else
 	fid_t fid;
 
-	fiber_init(&fid, work, (fiber_attr_t){ .context = context });
+	fiber_init(&fid, work, (fiber_attr_t){ });
+	fiber_call(fid, context);
 	*(fid_t *)stack_push(&thread->fibers) = fid;
 #endif /* OSI_THREADING */
 	return true;

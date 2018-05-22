@@ -35,7 +35,7 @@
 # error "Unable to implement software coroutines"
 #endif
 
-#define DEFAULT_FIBER_STACK_SIZE (1024)
+#define DEFAULT_FIBER_STACK_SIZE (4096)
 #ifdef OS_PROVENCORE
 # define CALLBACK_RETURN_TY int
 #else
@@ -373,8 +373,9 @@ void *fiber_yield(void *context)
 		|| fiber->status == FIBER_DONE
 		|| fiber->status == FIBER_BLOCKING);
 	assert(caller->status == FIBER_PENDING
+		|| caller->status == FIBER_BLOCKING
 		|| caller->status == FIBER_DONE);
-	while (caller && caller->status == FIBER_DONE)
+	while (caller && caller->status != FIBER_PENDING)
 		caller = __getfiber(caller->caller);
 	assert(caller);
 	assert(caller->status == FIBER_PENDING);
@@ -426,4 +427,5 @@ __always_inline void fiber_unlock(fid_t fid)
 	fiber = __getfiber(fid);
 	assert(fiber->status == FIBER_BLOCKING);
 	fiber->status = FIBER_PENDING;
+	__schedule();
 }

@@ -57,8 +57,6 @@ struct blocking_queue {
 
 	uint32_t capacity;
 
-	listener_t *listener;
-
 	sema_t producer;
 
 	sema_t consumer;
@@ -69,6 +67,8 @@ struct blocking_queue {
 
 	reactor_object_t *reactor_object;
 #else
+
+	listener_t *listener;
 
 	struct thread *thread;
 #endif /* OSI_THREADING */

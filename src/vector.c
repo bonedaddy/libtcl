@@ -88,11 +88,18 @@ static __always_inline void __vector_alloc(vector_t *vector, size_t n)
 {
 	if (vector->capacity == n)
 		return;
-	vector->buffer = realloc(vector->buffer, n * vector->isize);
-	if (vector->length > (vector->capacity = n))
-		vector->length = n;
-	bzero(vector->buffer + (vector->length * vector->isize),
-		(vector->capacity - vector->length) * vector->isize);
+	if (!vector->buffer) {
+		vector->buffer = calloc(n, vector->isize);
+		vector->capacity = n;
+	}
+	else
+	{
+		vector->buffer = realloc(vector->buffer, n * vector->isize);
+		if (vector->length > (vector->capacity = n))
+			vector->length = n;
+		bzero(vector->buffer + (vector->length * vector->isize),
+			(vector->capacity - vector->length) * vector->isize);
+	}
 }
 
 #if __has_builtin__(__builtin_popcount)
