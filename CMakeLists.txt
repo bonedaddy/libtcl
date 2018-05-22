@@ -46,6 +46,7 @@ check_include_file(sys/eventfd.h HAS_SYS_EVENTFD_H)
 check_include_file(sys/epoll.h HAS_SYS_EPOLL_H)
 check_include_file(sys/time.h HAS_SYS_TIME_H)
 check_include_file(sys/prctl.h HAS_SYS_PRCTL_H)
+check_include_file(sys/_system_properties.h HAS_SYS__SYSTEM_PROPERTIES_H)
 check_include_file(pthread.h HAS_PTHREAD_H)
 check_include_file(unistd.h HAS_UNISTD_H)
 

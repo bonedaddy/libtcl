@@ -57,6 +57,9 @@
 #ifndef HAS_SYS_PRCTL_H
 #cmakedefine HAS_SYS_PRCTL_H
 #endif
+#ifndef HAS_SYS__SYSTEM_PROPERTIES_H
+#cmakedefine HAS_SYS__SYSTEM_PROPERTIES_H
+#endif
 #ifndef HAS_PTHREAD_H
 #cmakedefine HAS_PTHREAD_H
 #endif
