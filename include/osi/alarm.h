@@ -28,13 +28,31 @@
 
 #include "osi/blocking_queue.h"
 #include "osi/thread.h"
+#include "osi/time.h"
+
+typedef void (*alarm_callback_t)(void *data);
 
 /*!@public
  *
  * @brief
  * The alarm structure declaration.
  */
-typedef struct alarm alarm_t;
+typedef struct {
+	const char *name;
+	period_ms_t deadline;
+	alarm_callback_t callback;
+	period_ms_t creation_time;
+	period_ms_t period;
+	struct mutex callback_mutex;
+	void *data;
+	bool is_periodic;
+
+//	uint64_t last_exec;
+//	uint64_t interval;
+//	work_t *work;
+	blocking_queue_t* queue;  // The processing queue to add this alarm to
+	struct list_head list_alarm;
+} alarm_t;
 
 /*!@public
  *
@@ -51,8 +69,7 @@ struct alarm {
 };
 
 typedef void (*alarm_callback_t)(void *data);
-typedef uint64_t period_ms_t;
-typedef struct fixed_queue_t fixed_queue_t;
+//typedef struct fixed_queue_t fixed_queue_t;
 
 void alarm_cancel(alarm_t *alarm);
 void alarm_set(alarm_t *alarm, period_ms_t interval_ms,
