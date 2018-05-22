@@ -43,7 +43,7 @@
  * @param default_value
  * @return
  */
-int property_get(const char *key, char *value, const char *default_value);
+__api__ int property_get(const char *key, char *value, const char *dft_value);
 
 /*!@public
  *
@@ -55,7 +55,7 @@ int property_get(const char *key, char *value, const char *default_value);
  * @param value
  * @return
  */
-int property_set(const char *key, const char *value);
+__api__ int property_set(const char *key, const char *value);
 
 #endif /* !__OSI_PROPERTIES_H */
 /*!@} */
