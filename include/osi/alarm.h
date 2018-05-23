@@ -46,41 +46,32 @@ typedef struct {
 	struct mutex callback_mutex;
 	void *data;
 	bool is_periodic;
-
-//	uint64_t last_exec;
-//	uint64_t interval;
-//	work_t *work;
-	blocking_queue_t* queue;  // The processing queue to add this alarm to
+	blocking_queue_t *queue;  // The processing queue to add this alarm to
 	struct list_head list_alarm;
 } alarm_t;
 
-/*!@public
- *
- * @brief
- * The alarm structure definition.
- */
-struct alarm {
-	const char *name;
-	uint64_t last_exec;
-	uint64_t interval;
-	bool periodic;
-	void *data;
-	work_t *work;
-};
+bool alarm_init(alarm_t *alarm, const char *name);
 
-typedef void (*alarm_callback_t)(void *data);
-//typedef struct fixed_queue_t fixed_queue_t;
+bool alarm_init_periodic(alarm_t *alarm, const char *name);
+
+void alarm_destroy(alarm_t *alarm);
 
 void alarm_cancel(alarm_t *alarm);
-void alarm_set(alarm_t *alarm, period_ms_t interval_ms,
-			   alarm_callback_t cb, void *data);
+
+//this function use malloc
 alarm_t *alarm_new(const char *name);
+
+alarm_t *alarm_new_periodic(const char *name);
+
 void alarm_free(alarm_t *alarm);
+
 void alarm_set_on_queue(alarm_t *alarm, period_ms_t interval_ms,
 						alarm_callback_t cb, void *data,
-						fixed_queue_t *queue);
-void alarm_register_processing_queue(fixed_queue_t *queue, thread_t *thread);
-void alarm_unregister_processing_queue(fixed_queue_t *queue);
+						blocking_queue_t *queue);
+
+void alarm_set(alarm_t *alarm, period_ms_t interval_ms,
+			   alarm_callback_t cb, void *data);
+
 bool alarm_is_scheduled(const alarm_t *alarm);
 
 
