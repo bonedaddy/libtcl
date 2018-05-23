@@ -29,8 +29,8 @@
 #include "osi/blocking_queue.h"
 #include "osi/thread.h"
 #include "osi/time.h"
-
-typedef void (*alarm_callback_t)(void *data);
+#include "osi/mutex.h"
+#include "osi/list.h"
 
 /*!@public
  *
@@ -40,12 +40,12 @@ typedef void (*alarm_callback_t)(void *data);
 typedef struct {
 	const char *name;
 	period_ms_t deadline;
-	alarm_callback_t callback;
 	period_ms_t creation_time;
 	period_ms_t period;
-	struct mutex callback_mutex;
 	void *data;
 	bool is_periodic;
+	work_t *callback;
+	mutex_t callback_mutex;
 	blocking_queue_t *queue;  // The processing queue to add this alarm to
 	struct list_head list_alarm;
 } alarm_t;
@@ -66,14 +66,13 @@ alarm_t *alarm_new_periodic(const char *name);
 void alarm_free(alarm_t *alarm);
 
 void alarm_set_on_queue(alarm_t *alarm, period_ms_t interval_ms,
-						alarm_callback_t cb, void *data,
+						work_t cb, void *data,
 						blocking_queue_t *queue);
 
 void alarm_set(alarm_t *alarm, period_ms_t interval_ms,
-			   alarm_callback_t cb, void *data);
+			   work_t cb, void *data);
 
 bool alarm_is_scheduled(const alarm_t *alarm);
-
 
 #endif /* __OSI_ALARM_H */
 /*!@} */

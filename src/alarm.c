@@ -18,6 +18,10 @@
 
 #define LOG_TAG "alarm"
 
+#ifdef HAS_TIMER
+#include <signal.h>
+#include <time.h>
+#endif
 #include <osi/alarm.h>
 #include "osi/list.h"
 #include "osi/log.h"
@@ -34,8 +38,10 @@ static bool is_ready = false;// could remplace dispatcher_thread_active
 static LIST_HEAD(alarms);
 static struct mutex alarms_mutex;
 
+#ifdef HAS_TIMER
 static timer_t timer;
 static timer_t wakeup_timer;
+#endif
 
 static bool dispatcher_thread_active = false;
 static thread_t dispatcher_thread;
@@ -59,27 +65,34 @@ static void remove_pending_alarm(alarm_t *alarm) {
 //	}
 }
 
+#ifdef HAS_TIMER
+
 // NOTE: must be called with |alarms_mutex| held
 static bool timer_set = false;
 
 static void reschedule_root_alarm(void) {
+#ifdef HAS_WAKELOCK
 	const bool timer_was_set = timer_set;
+#endif
 	// If used in a zeroed state, disarms the timer.
 	struct itimerspec timer_time;
+
 	memset(&timer_time, 0, sizeof(timer_time));
 	if (list_empty(&alarms))
 		goto done;
-	const alarm_t *next = list_first_entry(&alarms, alarm_t, list_alarm);
-	const int64_t next_expiration = next->deadline - now();
+	const period_ms_t next_deadline = list_first_entry(&alarms, alarm_t, list_alarm)->deadline;
+	const int64_t next_expiration = next_deadline - now();
 	if (next_expiration < TIMER_INTERVAL_FOR_WAKELOCK_IN_MS) {
+#ifdef HAS_WAKELOCK
 		if (!timer_set) {
 			if (!wakelock_acquire()) {
 				LOG_ERROR(LOG_TAG, "%s unable to acquire wake lock", __func__);
 				goto done;
 			}
 		}
-		timer_time.it_value.tv_sec = (next->deadline / 1000);
-		timer_time.it_value.tv_nsec = (next->deadline % 1000) * 1000000LL;
+#endif
+		timer_time.it_value.tv_sec = (next_deadline / 1000);
+		timer_time.it_value.tv_nsec = (next_deadline % 1000) * 1000000LL;
 		// It is entirely unsafe to call timer_settime(2) with a zeroed timerspec
 		// for timers with *_ALARM clock IDs. Although the man page states that the
 		// timer would be canceled, the current behavior (as of Linux kernel 3.17)
@@ -94,8 +107,7 @@ static void reschedule_root_alarm(void) {
 		// have a pending wakeup timer so we simply cancel it.
 		struct itimerspec end_of_time;
 		memset(&end_of_time, 0, sizeof(end_of_time));
-		end_of_time.it_value.tv_sec = (time_t) (1LL
-			<< (sizeof(time_t) * 8 - 2));
+		end_of_time.it_value.tv_sec = (time_t) (1LL << (sizeof(time_t) * 8 - 2));
 		timer_settime(wakeup_timer, TIMER_ABSTIME, &end_of_time, NULL);
 	} else {
 		// WARNING: do not attempt to use relative timers with *_ALARM clock IDs
@@ -103,22 +115,22 @@ static void reschedule_root_alarm(void) {
 		// https://lkml.org/lkml/2014/7/7/576
 		struct itimerspec wakeup_time;
 		memset(&wakeup_time, 0, sizeof(wakeup_time));
-		wakeup_time.it_value.tv_sec = (next->deadline / 1000);
-		wakeup_time.it_value.tv_nsec = (next->deadline % 1000) * 1000000LL;
+		wakeup_time.it_value.tv_sec = (next_deadline / 1000);
+		wakeup_time.it_value.tv_nsec = (next_deadline % 1000) * 1000000LL;
 		if (timer_settime(wakeup_timer, TIMER_ABSTIME, &wakeup_time, NULL) ==
 			-1)
-			LOG_ERROR(LOG_TAG, "%s unable to set wakeup timer: %s",
-					  __func__, strerror(errno));
+			LOG_ERROR("Unable to set wakeup timer: %m");
 	}
 	done:
 	timer_set =
 		timer_time.it_value.tv_sec != 0 || timer_time.it_value.tv_nsec != 0;
+#ifdef HAS_WAKELOCK
 	if (timer_was_set && !timer_set) {
 		wakelock_release();
 	}
+#endif
 	if (timer_settime(timer, TIMER_ABSTIME, &timer_time, NULL) == -1)
-		LOG_ERROR(LOG_TAG, "%s unable to set timer: %s", __func__,
-				  strerror(errno));
+		LOG_ERROR("Unable to set timer: %m");
 	// If next expiration was in the past (e.g. short timer that got context
 	// switched) then the timer might have diarmed itself. Detect this case and
 	// work around it by manually signalling the |alarm_expired| semaphore.
@@ -134,13 +146,16 @@ static void reschedule_root_alarm(void) {
 		timer_gettime(timer, &time_to_expire);
 		if (time_to_expire.it_value.tv_sec == 0 &&
 			time_to_expire.it_value.tv_nsec == 0) {
-			LOG_DEBUG(LOG_TAG,
-					  "%s alarm expiration too close for posix timers, switching to guns",
-					  __func__);
+			LOG_DEBUG("Alarm expiration too close for posix timers, switching to guns");
 			sema_post(&alarm_expired);
 		}
 	}
 }
+#else
+static void reschedule_root_alarm(void) {
+	//nothing to do
+}
+#endif
 
 static void schedule_next_instance(alarm_t *alarm) {
 	period_ms_t just_now;
@@ -169,7 +184,7 @@ static void schedule_next_instance(alarm_t *alarm) {
 		reschedule_root_alarm();
 }
 
-static void callback_dispatch(void *context) {
+static void *callback_dispatch(void *context) {
 	alarm_t *alarm;
 
 	(void) context;
@@ -201,33 +216,14 @@ static void callback_dispatch(void *context) {
 		//TODO what happened to alarm if not periodic ????
 	}
 	LOG_DEBUG("Callback thread exited");
+	return NULL;
 }
 
+#ifdef HAS_TIMER
 static void timer_callback(void *ptr) {
 	(void) ptr;
 	sema_post(&alarm_expired);
 }
-
-#ifdef TOTOTOTOTOTO
-static bool timer_create_internal(const clockid_t clock_id, timer_t *timer) {
-	struct sigevent sigevent;
-
-	bzero(&sigevent, sizeof(sigevent));
-	sigevent.sigev_notify = SIGEV_THREAD;
-	sigevent.sigev_notify_function = (void (*)(union sigval))timer_callback;
-	if (timer_create(clock_id, &sigevent, timer) == -1) {
-		LOG_ERROR(LOG_TAG, "%s unable to create timer with clock %d: %s",
-				  __func__, clock_id, strerror(errno));
-		if (clock_id == CLOCK_BOOTTIME_ALARM) {
-			LOG_ERROR(LOG_TAG, "The kernel might not have support for timer_create(CLOCK_BOOTTIME_ALARM): https://lwn.net/Articles/429925/");
-			LOG_ERROR(LOG_TAG, "See following patches: https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/log/?qt=grep&q=CLOCK_BOOTTIME_ALARM");
-		}
-		return false;
-	}
-	return true;
-}
-
-#else
 
 static bool timer_create_internal(const clockid_t clock_id, timer_t *timer) {
 	struct sigevent sigevent;
@@ -264,7 +260,6 @@ static void alarm_queue_ready(blocking_queue_t *queue) {
 	alarm_t *alarm;
 	void *data;
 
-//	assert(queue != NULL);
 	mutex_lock(&alarms_mutex);
 	alarm = (alarm_t *) blocking_queue_trypop(queue);
 	if (alarm == NULL) { // The alarm was probably canceled
@@ -275,7 +270,7 @@ static void alarm_queue_ready(blocking_queue_t *queue) {
 	// If the alarm is not periodic, we've fully serviced it now, and can reset
 	// some of its internal state. This is useful to distinguish between expired
 	// alarms and active ones.
-	alarm_callback_t callback = alarm->callback;
+	work_t *callback = alarm->callback;
 	data = alarm->data;
 	if (!alarm->is_periodic) {
 		alarm->deadline = 0;
@@ -289,7 +284,7 @@ static void alarm_queue_ready(blocking_queue_t *queue) {
 	//TODO if not periodic do we need to free it ?
 }
 
-static bool alarm_lazy_init() {
+static bool alarm_lazy_init(void) {
 	if (is_ready)
 		return (true);
 	if (!init_started) {
@@ -301,16 +296,19 @@ static bool alarm_lazy_init() {
 		mutex_unlock(&alarms_mutex);
 		return (true);
 	}
+#ifdef HAS_TIMER
+
 	if (!timer_create_internal(CLOCK_ID, &timer))
 		goto error;
 	if (!timer_create_internal(CLOCK_ID_ALARM, &wakeup_timer))
 		goto error1;
+#endif
 	if (sema_init(&alarm_expired, 0))
 		goto error2;
 	if (thread_init(&default_callback_thread, "alarm_default_callback"))
 		goto error3;
 	//TODO priority here ?
-	if (blocking_queue_init(&default_callback_queue, SIZE_MAX))
+	if (blocking_queue_init(&default_callback_queue, UINT32_MAX))
 		goto error4;
 	blocking_queue_listen(&default_callback_queue, &default_callback_thread,
 						  alarm_queue_ready);
@@ -332,10 +330,12 @@ static bool alarm_lazy_init() {
 	error3:
 	sema_destroy(&alarm_expired);
 	error2:
+#ifdef HAS_TIMER
 	timer_delete(wakeup_timer);
 	error1:
 	timer_delete(timer);
 	error:
+#endif
 	mutex_unlock(&alarms_mutex);
 	return false;
 }
@@ -422,10 +422,9 @@ alarm_t *alarm_new_periodic(const char *name) {
 	return alarm_new_internal(name, true);
 }
 
-
 // Runs in exclusion with alarm_cancel and timer_callback.
 static void alarm_set_internal(alarm_t *alarm, period_ms_t period,
-							   alarm_callback_t cb, void *data,
+							   work_t cb, void *data,
 							   blocking_queue_t *queue) {
 //	assert(alarm != NULL);
 //	assert(cb != NULL);
@@ -441,14 +440,14 @@ static void alarm_set_internal(alarm_t *alarm, period_ms_t period,
 }
 
 void alarm_set_on_queue(alarm_t *alarm, period_ms_t interval_ms,
-						alarm_callback_t cb, void *data,
+						work_t cb, void *data,
 						blocking_queue_t *queue) {
 //	assert(queue != NULL);
 	alarm_set_internal(alarm, interval_ms, cb, data, queue);
 }
 
 void alarm_set(alarm_t *alarm, period_ms_t interval_ms,
-			   alarm_callback_t cb, void *data) {
+			   work_t cb, void *data) {
 	alarm_set_on_queue(alarm, interval_ms, cb, data, &default_callback_queue);
 }
 

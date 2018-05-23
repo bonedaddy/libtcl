@@ -41,6 +41,20 @@ check_function_exists(strnlen HAS_STRNLEN)
 check_function_exists(strlcpy HAS_STRLCPY)
 check_function_exists(strncpy HAS_STRNCPY)
 
+check_function_exists(wakelock_acquire HAS_WAKELOCK_ACQUIRE)
+check_function_exists(wakelock_release HAS_WAKELOCK_RELEASE)
+if (HAS_WAKELOCK_ACQUIRE AND HAS_WAKELOCK_RELEASE)
+  add_definitions(-DHAS_WAKELOCK)
+endif()
+
+check_function_exists(timer_settime HAS_TIMER_SETTIME)
+check_function_exists(timer_gettime HAS_TIMER_GETTIME)
+check_function_exists(timer_create HAS_TIMER_CREATE)
+if (HAS_TIMER_SETTIME AND HAS_TIMER_GETTIME AND HAS_TIMER_CREATE)
+  add_definitions(-DHAS_TIMER)
+endif()
+
+
 include(CheckIncludeFile)
 check_include_file(sys/eventfd.h HAS_SYS_EVENTFD_H)
 check_include_file(sys/epoll.h HAS_SYS_EPOLL_H)

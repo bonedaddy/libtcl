@@ -95,7 +95,7 @@ __api__ int blocking_queue_init(blocking_queue_t *queue, unsigned capacity);
  * @param dtor
  */
 __api__ void blocking_queue_destroy(blocking_queue_t *queue,
-	queue_dtor_t *dtor);
+									queue_dtor_t *dtor);
 
 /*!@public
  *
@@ -178,7 +178,7 @@ __api__ void *blocking_queue_trypop(blocking_queue_t *queue);
  * @param listener
  */
 __api__ void blocking_queue_listen(blocking_queue_t *queue,
-	struct thread *thread, listener_t *listener);
+								   struct thread *thread, listener_t *listener);
 
 /*!@public
  *
