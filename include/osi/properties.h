@@ -28,6 +28,8 @@
 
 #include "osi/conf.h"
 
+#define PROPERTY_VALUE_MAX 92
+
 /*!@public
  *
  * @brief

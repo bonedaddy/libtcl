@@ -21,8 +21,6 @@
 #ifdef HAS_SYS__SYSTEM_PROPERTIES_H
 # include <sys/_system_properties.h>
 # define SYSTEM_PROPERTIES
-#else
-# define PROPERTY_VALUE_MAX 92
 #endif
 
 int property_get(const char *key, char *value, const char *default_value)

@@ -16,44 +16,27 @@
  * limitations under the License.
  */
 
-/*!@file osi.h
+#pragma once
+
+/*!@file osi/allocator.h
  * @author uael
+ *
+ * @addtogroup osi.allocator @{
  */
-#ifndef __OSI_H
-# define __OSI_H
+#ifndef __OSI_BUFFER_H
+# define __OSI_BUFFER_H
 
 #include "osi/conf.h"
-#include "osi/alarm.h"
-#include "osi/allocator.h"
-#include "osi/blocking_queue.h"
-#include "osi/buffer.h"
-#include "osi/dispatcher.h"
-#include "osi/fiber.h"
-#include "osi/future.h"
-#include "osi/map.h"
-#include "osi/mutex.h"
-#include "osi/properties.h"
-#include "osi/queue.h"
-#include "osi/reactor.h"
-#include "osi/ringbuffer.h"
-#include "osi/sema.h"
-#include "osi/stack.h"
-#include "osi/string.h"
-#include "osi/thread.h"
-#include "osi/vector.h"
 
-/*!@public
- *
- * @brief
- * TODO
- */
-__api__ void osi_init(void);
+typedef void *(*alloc_fn)(size_t size);
+typedef void (*free_fn)(void *ptr);
 
-/*!@public
- *
- * @brief
- * TODO
- */
-__api__ void osi_cleanup(void);
+typedef struct {
+	alloc_fn alloc;
+	free_fn  free;
+} allocator_t;
 
-#endif /* __OSI_H */
+__api__ allocator_t const *DFT_ALLOCATOR;
+
+#endif /* __OSI_BUFFER_H */
+/*!@} */

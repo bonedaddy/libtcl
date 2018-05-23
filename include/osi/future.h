@@ -28,6 +28,9 @@
 
 #include "osi/sema.h"
 
+#define FUTURE_SUCCESS ((void *)1)
+#define FUTURE_FAIL ((void *)0)
+
 /*!@public
  *
  * @brief

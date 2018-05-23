@@ -16,44 +16,47 @@
  * limitations under the License.
  */
 
-/*!@file osi.h
+#pragma once
+
+/*!@file osi/module.h
  * @author uael
+ *
+ * @addtogroup osi.module @{
  */
-#ifndef __OSI_H
-# define __OSI_H
+#ifndef __OSI_MODULE_H
+# define __OSI_MODULE_H
 
-#include "osi/conf.h"
-#include "osi/alarm.h"
-#include "osi/allocator.h"
-#include "osi/blocking_queue.h"
-#include "osi/buffer.h"
-#include "osi/dispatcher.h"
-#include "osi/fiber.h"
 #include "osi/future.h"
-#include "osi/map.h"
-#include "osi/mutex.h"
-#include "osi/properties.h"
-#include "osi/queue.h"
-#include "osi/reactor.h"
-#include "osi/ringbuffer.h"
-#include "osi/sema.h"
-#include "osi/stack.h"
-#include "osi/string.h"
-#include "osi/thread.h"
-#include "osi/vector.h"
 
 /*!@public
  *
  * @brief
- * TODO
+ * The module structure declaration.
  */
-__api__ void osi_init(void);
+typedef struct module module_t;
 
 /*!@public
  *
  * @brief
- * TODO
+ * The module structure definition.
  */
-__api__ void osi_cleanup(void);
+struct module {
 
-#endif /* __OSI_H */
+	/*! TODO. */
+	future_t *(*init)(void);
+
+	/*! TODO. */
+	future_t *(*start_up)(void);
+
+	/*! TODO. */
+	future_t *(*shut_down)(void);
+
+	/*! TODO. */
+	future_t *(*clean_up)(void);
+
+	/*! TODO. */
+	module_t const *dependencies[];
+};
+
+#endif /* __OSI_MODULE_H */
+/*!@} */
