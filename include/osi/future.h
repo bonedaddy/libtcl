@@ -58,7 +58,7 @@ struct future {
 /*!@public
  *
  * @brief
- * TODO
+ * TODO(uael): remove it, only new/free, await should free
  *
  * @param future
  * @return
