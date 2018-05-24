@@ -189,7 +189,9 @@ static void *callback_dispatch(void *context) {
 
 	(void) context;
 	while (true) {
+#ifdef HAS_TIMER
 		sema_wait(&alarm_expired);
+#endif
 		if (!dispatcher_thread_active)
 			break;
 		mutex_lock(&alarms_mutex);
@@ -212,8 +214,8 @@ static void *callback_dispatch(void *context) {
 		reschedule_root_alarm();
 		// Enqueue the alarm for processing
 		blocking_queue_push(alarm->queue, alarm);
-		mutex_unlock(&alarms_mutex);
 		//TODO what happened to alarm if not periodic ????
+		mutex_unlock(&alarms_mutex);
 	}
 	LOG_DEBUG("Callback thread exited");
 	return NULL;
@@ -284,6 +286,10 @@ static void alarm_queue_ready(blocking_queue_t *queue) {
 	//TODO if not periodic do we need to free it ?
 }
 
+void alarm_register_processing_queue(blocking_queue_t *queue, thread_t *thread) {
+	blocking_queue_listen(queue, thread, alarm_queue_ready);
+}
+
 static bool alarm_lazy_init(void) {
 	if (is_ready)
 		return (true);
@@ -297,7 +303,6 @@ static bool alarm_lazy_init(void) {
 		return (true);
 	}
 #ifdef HAS_TIMER
-
 	if (!timer_create_internal(CLOCK_ID, &timer))
 		goto error;
 	if (!timer_create_internal(CLOCK_ID_ALARM, &wakeup_timer))
@@ -310,8 +315,8 @@ static bool alarm_lazy_init(void) {
 	//TODO priority here ?
 	if (blocking_queue_init(&default_callback_queue, UINT32_MAX))
 		goto error4;
-	blocking_queue_listen(&default_callback_queue, &default_callback_thread,
-						  alarm_queue_ready);
+	alarm_register_processing_queue(&default_callback_queue,
+									&default_callback_thread);
 	if (thread_init(&dispatcher_thread, "alarm_dispatcher"))
 		goto error5;
 	dispatcher_thread_active = true;
@@ -371,6 +376,7 @@ static bool alarm_init_internal(alarm_t *alarm,
 	alarm->name = strdup(name);
 	mutex_init(&alarm->callback_mutex);
 	//TODO this mutex was recursive. Is it ok ?
+	INIT_LIST_HEAD(&alarm->list_alarm);
 	//TODO
 	return true;
 }
@@ -397,7 +403,7 @@ static alarm_t *alarm_new_internal(const char *name, bool is_periodic) {
 
 	if (!alarm_lazy_init())
 		return NULL;
-	if (!(new_alarm = malloc(sizeof(new_alarm))))
+	if (!(new_alarm = malloc(sizeof(alarm_t))))
 		return NULL;
 	if (!(alarm_init_internal(new_alarm, name, is_periodic))) {
 		free(new_alarm);
@@ -424,10 +430,8 @@ alarm_t *alarm_new_periodic(const char *name) {
 
 // Runs in exclusion with alarm_cancel and timer_callback.
 static void alarm_set_internal(alarm_t *alarm, period_ms_t period,
-							   work_t cb, void *data,
+							   work_t *cb, void *data,
 							   blocking_queue_t *queue) {
-//	assert(alarm != NULL);
-//	assert(cb != NULL);
 	mutex_lock(&alarms_mutex);
 	alarm->creation_time = now();
 	alarm->period = period;
@@ -435,25 +439,72 @@ static void alarm_set_internal(alarm_t *alarm, period_ms_t period,
 	alarm->callback = cb;
 	alarm->data = data;
 	schedule_next_instance(alarm);
-//	alarm->stats.scheduled_count++;
 	mutex_unlock(&alarms_mutex);
 }
 
 void alarm_set_on_queue(alarm_t *alarm, period_ms_t interval_ms,
-						work_t cb, void *data,
+						work_t *cb, void *data,
 						blocking_queue_t *queue) {
-//	assert(queue != NULL);
 	alarm_set_internal(alarm, interval_ms, cb, data, queue);
 }
 
 void alarm_set(alarm_t *alarm, period_ms_t interval_ms,
-			   work_t cb, void *data) {
+			   work_t *cb, void *data) {
 	alarm_set_on_queue(alarm, interval_ms, cb, data, &default_callback_queue);
 }
-
 
 bool alarm_is_scheduled(const alarm_t *alarm) {
 	if (alarm == NULL)
 		return false;
 	return (alarm->callback != NULL);
+}
+
+void alarm_cleanup(void) {
+	// If lazy_initialize never ran there is nothing else to do
+	if (!is_ready)
+		return;
+	is_ready = false;
+	dispatcher_thread_active = false;
+	sema_post(&alarm_expired);
+	thread_destroy(&dispatcher_thread);
+	mutex_lock(&alarms_mutex);
+	blocking_queue_destroy(&default_callback_queue, NULL);
+	thread_destroy(&default_callback_thread);
+#ifdef HAS_TIMER
+	timer_delete(wakeup_timer);
+	timer_delete(timer);
+#endif
+	sema_destroy(&alarm_expired);
+	alarm_t *alarm_entry;
+	alarm_t *tmp;
+
+	//TODO cleanup doesnot free
+//	if (need_free) {
+//		list_for_each_entry_safe(alarm_entry, tmp, alarm_t, &alarms, list_alarm) {
+//			alarm_free(alarm_entry);
+//		}
+//	} else {
+		list_for_each_entry_safe(alarm_entry, tmp, alarm_t, &alarms, list_alarm) {
+			alarm_cancel_internal(alarm_entry);
+		}
+//	}
+	INIT_LIST_HEAD(&alarms);
+	init_started = false;
+	mutex_unlock(&alarms_mutex);
+	mutex_destroy(&alarms_mutex);
+}
+
+void alarm_unregister_processing_queue(blocking_queue_t *queue) {
+	alarm_t *alarm_entry;
+	alarm_t *tmp;
+
+	blocking_queue_unlisten(queue);
+	// Cancel all alarms that are using this queue
+	mutex_lock(&alarms_mutex);
+	list_for_each_entry_safe(alarm_entry, tmp, alarm_t, &alarms, list_alarm) {
+		if (alarm_entry->queue == queue) {
+			alarm_cancel_internal(alarm_entry);
+		}
+	}
+	mutex_unlock(&alarms_mutex);
 }

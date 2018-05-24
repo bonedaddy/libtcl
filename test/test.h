@@ -33,6 +33,7 @@
 
 #define ASSERT(cond) do if(!(cond))exit(printf(ASSERT_F(cond))>0);while(0)
 #define ASSERT_EQ(a, b) ASSERT((a) == (b))
+#define ASSERT_GE(a, b) ASSERT((a) >= (b))
 #define ASSERT_NEQ(a, b) ASSERT((a) != (b))
 #define ASSERT_TRUE(a) ASSERT_EQ(a, true)
 #define ASSERT_FALSE(a) ASSERT_EQ(a, false)

@@ -66,13 +66,19 @@ alarm_t *alarm_new_periodic(const char *name);
 void alarm_free(alarm_t *alarm);
 
 void alarm_set_on_queue(alarm_t *alarm, period_ms_t interval_ms,
-						work_t cb, void *data,
+						work_t *cb, void *data,
 						blocking_queue_t *queue);
 
 void alarm_set(alarm_t *alarm, period_ms_t interval_ms,
-			   work_t cb, void *data);
+			   work_t *cb, void *data);
 
 bool alarm_is_scheduled(const alarm_t *alarm);
+
+void alarm_register_processing_queue(blocking_queue_t *queue, thread_t *thread);
+
+void alarm_unregister_processing_queue(blocking_queue_t *queue);
+
+void alarm_cleanup(void);
 
 #endif /* __OSI_ALARM_H */
 /*!@} */

@@ -518,11 +518,11 @@ static inline void list_splice_tail_init(struct list_head *list,
  * @head:	the head for your list.
  * @member:	the name of the list_head within the struct.
  */
-#define list_for_each_entry_safe(pos, n, head, member)            \
-    for (pos = list_first_entry(head, typeof(*pos), member),    \
-        n = list_next_entry(pos, member);            \
+#define list_for_each_entry_safe(pos, n, type, head, member)            \
+    for (pos = list_first_entry(head, type, member),    \
+        n = list_next_entry(pos, type, member);            \
          &pos->member != (head);                    \
-         pos = n, n = list_next_entry(n, member))
+         pos = n, n = list_next_entry(n, type, member))
 
 /**
  * list_for_each_entry_safe_continue - continue list iteration safe against removal
