@@ -192,7 +192,7 @@ __api__ size_t eager_reader_read(eager_reader_t *reader, uint8_t *buffer,
  * @param reader 
  * @return 
  */
-__api__ thread_t *eager_reader_get_read_thread(const eager_reader_t *reader);
+__api__ thread_t *eager_reader_get_read_thread(eager_reader_t *reader);
 
 #endif /* __OSI_READER_H */
 /*!@} */

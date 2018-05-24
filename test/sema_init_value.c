@@ -31,7 +31,6 @@ int main(void)
 	ASSERT_TRUE(sema_trywait(&sema));
 	ASSERT_FALSE(sema_trywait(&sema));
 	sema_destroy(&sema);
-	ASSERT_EQ(INVALID_FD, sema.handle);
 
 	ASSERT_EQ(0, sema_init(&sema, 4));
 	ASSERT_TRUE(sema_trywait(&sema));
@@ -40,7 +39,6 @@ int main(void)
 	ASSERT_TRUE(sema_trywait(&sema));
 	ASSERT_FALSE(sema_trywait(&sema));
 	sema_destroy(&sema);
-	ASSERT_EQ(INVALID_FD, sema.handle);
 	fiber_cleanup();
 	return 0;
 }

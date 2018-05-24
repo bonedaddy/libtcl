@@ -30,7 +30,6 @@ int main(void)
 	sema_post(&sema);
 	sema_wait(&sema);
 	sema_destroy(&sema);
-	ASSERT_EQ(INVALID_FD, sema.handle);
 	fiber_cleanup();
 	return 0;
 }

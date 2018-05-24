@@ -64,6 +64,24 @@ enum fiber_flags {
 	FIBER_FL_LOOP = 1 << 1
 };
 
+typedef enum {
+
+	/*! The fiber was just created so ready */
+	FIBER_PENDING,
+
+	/*! The fiber is running in it's own context until it finish or yield */
+	FIBER_RUNNING,
+
+	/*! TODO */
+	FIBER_BLOCKING,
+
+	/*! The fiber is terminated but still exists */
+	FIBER_DONE,
+
+	/*! TODO */
+	FIBER_DESTROYED
+} fiber_st_t;
+
 /*!@public
  *
  * @brief
@@ -196,6 +214,10 @@ __api__ void fiber_lock(void);
  * TODO
  */
 __api__ void fiber_cleanup(void);
+
+__api__ void fiber_schedule(void);
+
+__api__ void fiber_setstate(fiber_st_t st);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */

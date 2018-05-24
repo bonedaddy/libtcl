@@ -52,12 +52,14 @@ struct thread {
 
 	blocking_queue_t work_queue;
 
+	reactor_t reactor;
+
 #ifdef OSI_THREADING
 
 	pthread_t pthread;
-
-	reactor_t reactor;
 #else
+
+	fid_t fiber;
 
 	bool running;
 

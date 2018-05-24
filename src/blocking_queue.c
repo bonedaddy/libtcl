@@ -17,6 +17,7 @@
  */
 
 #include "osi/blocking_queue.h"
+#include "osi/reactor.h"
 #include "osi/thread.h"
 #include "osi/string.h"
 
@@ -28,12 +29,9 @@ int blocking_queue_init(blocking_queue_t *queue, unsigned capacity)
 		return -1;
 	queue->capacity = capacity;
 	queue_init(&queue->base, sizeof(void *));
+	queue->reactor_event = NULL;
 #ifdef OSI_THREADING
 	pthread_mutex_init(&queue->lock, NULL);
-	queue->reactor_object = NULL;
-#else
-	queue->listener = NULL;
-	queue->thread = NULL;
 #endif /* OSI_THREADING */
 	return 0;
 }
@@ -85,15 +83,6 @@ unsigned blocking_queue_capacity(blocking_queue_t *queue)
 void blocking_queue_push(blocking_queue_t *queue, void const *item)
 {
 	sema_wait(&queue->producer);
-#ifndef OSI_THREADING
-	if (queue->listener) {
-		fid_t fid;
-
-		fiber_init(&fid, (work_t *)queue->listener, (fiber_attr_t){  });
-		fiber_call(fid, queue);
-		*(fid_t *)stack_push(&queue->thread->fibers) = fid;
-	}
-#endif
 #ifdef OSI_THREADING
 	pthread_mutex_lock(&queue->lock);
 #endif
@@ -125,15 +114,6 @@ bool blocking_queue_trypush(blocking_queue_t *queue, const void *item)
 {
 	if (!sema_trywait(&queue->producer))
 		return false;
-#ifndef OSI_THREADING
-	if (queue->listener) {
-		fid_t fid;
-
-		fiber_init(&fid, (work_t *)queue->listener, (fiber_attr_t){  });
-		fiber_call(fid, queue);
-		*(fid_t *)stack_push(&queue->thread->fibers) = fid;
-	}
-#endif
 #ifdef OSI_THREADING
 	pthread_mutex_lock(&queue->lock);
 #endif
@@ -167,30 +147,17 @@ void blocking_queue_listen(blocking_queue_t *queue, thread_t *thread,
 	listener_t *listener)
 {
 	blocking_queue_unlisten(queue);
-#ifdef OSI_THREADING
-	queue->reactor_object = reactor_register(
-		&thread->reactor, queue->consumer.handle, queue,
+	queue->reactor_event = reactor_register(
+		&thread->reactor, &queue->consumer.event, queue,
 		(reactor_ready_t *)listener, NULL);
-#else
-	queue->thread = thread;
-	queue->listener = listener;
-#endif /* OSI_THREADING */
 }
 
 void blocking_queue_unlisten(blocking_queue_t *queue)
 {
-#ifdef OSI_THREADING
-	if (queue->reactor_object) {
-		/*
-		 * There is still pending elements in the queue so make the reactor
-		 * process them all
-		 */
-		while (blocking_queue_length(queue))
-			sched_yield();
-		reactor_unregister(queue->reactor_object);
-		queue->reactor_object = NULL;
+	if (queue->reactor_event) {
+		while (queue_length(&queue->base))
+			reactor_run_once(queue->reactor_event->reactor);
+		reactor_unregister(queue->reactor_event);
+		queue->reactor_event = NULL;
 	}
-#else
-	queue->listener = NULL;
-#endif /* OSI_THREADING */
 }

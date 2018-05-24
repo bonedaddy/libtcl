@@ -28,14 +28,8 @@
 
 #include "osi/fiber.h"
 #include "osi/set.h"
-
-/*!@brief
- * The reactor pattern, which is described here
- * `http://en.wikipedia.org/wiki/Reactor_pattern' is required to handle event
- * properly when the stack is running on multi threads.
- * His implementation depends on `pthread' and `eventfd'.
- */
-#ifdef OSI_THREADING
+#include "osi/poll.h"
+#include "osi/mutex.h"
 
 /*!@public
  *
@@ -73,19 +67,16 @@ typedef void (reactor_ready_t)(void *context);
 struct reactor {
 
 	/*! TODO */
-	int epoll_fd;
+	poll_t poll;
 
 	/*! TODO */
-	int event_fd;
+	event_t stopev;
 
 	/*! protects invalidation_list. */
-	pthread_mutex_t invalidation_lock;
+	mutex_t invalidation_lock;
 
 	/*! reactor objects that have been unregistered. */
 	set_t invalidation_set;
-
-	/*! the pthread on which reactor_run is executing. */
-	pthread_t run_thread;
 
 	/*! indicates whether `run_thread' is valid. */
 	bool is_running;
@@ -94,10 +85,15 @@ struct reactor {
 	bool object_removed;
 };
 
+/*!@public
+ *
+ * @brief
+ * The reactor object structure definition.
+ */
 struct reactor_object {
 
-	/*! the file descriptor to monitor for events. */
-	int fd;
+	/*! the event to monitor for events. */
+	event_t *ev;
 
 	/*! a context that's passed back to the *_ready functions. */
 	void *context;
@@ -106,7 +102,7 @@ struct reactor_object {
 	reactor_t *reactor;
 
 	/*! protects the lifetime of this object and all variables. */
-	pthread_mutex_t lock;
+	mutex_t lock;
 
 	/*! function to call when the file descriptor becomes readable. */
 	reactor_ready_t *read_ready;
@@ -199,13 +195,13 @@ __api__ void reactor_stop(reactor_t *reactor);
  * `reactor_unregister'.
  *
  * @param reactor     Where to register.
- * @param fd          The file descriptor to monitor for events.
+ * @param ev          The event to monitor for events.
  * @param context     A context that's passed back to the *_ready functions.
  * @param read_ready  Function to call when the fd becomes readable.
  * @param write_ready Function to call when the fd becomes writeable.
  * @return            A fresh reactor object on success, NULL otherwise.
  */
-__api__ reactor_object_t *reactor_register(reactor_t *reactor, int fd,
+__api__ reactor_object_t *reactor_register(reactor_t *reactor, event_t *ev,
 	void *context, reactor_ready_t *read_ready, reactor_ready_t *write_ready);
 
 /*!@public
@@ -219,7 +215,5 @@ __api__ reactor_object_t *reactor_register(reactor_t *reactor, int fd,
  */
 __api__ void reactor_unregister(reactor_object_t *obj);
 
-#endif /* OSI_THREADING */
-
-#endif /* __OSI_REACTOR_H */
+#endif /* !__OSI_REACTOR_H */
 /*!@} */

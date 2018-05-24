@@ -26,9 +26,7 @@ int main(void)
 	sema_t sema;
 
 	ASSERT_EQ(0, sema_init(&sema, 0));
-	ASSERT_NEQ(INVALID_FD, sema.handle);
 	sema_destroy(&sema);
-	ASSERT_EQ(INVALID_FD, sema.handle);
 	fiber_cleanup();
 	return 0;
 }

@@ -61,16 +61,11 @@ struct blocking_queue {
 
 	sema_t consumer;
 
+	reactor_object_t *reactor_event;
+
 #ifdef OSI_THREADING
 
 	pthread_mutex_t lock;
-
-	reactor_object_t *reactor_object;
-#else
-
-	listener_t *listener;
-
-	struct thread *thread;
 #endif /* OSI_THREADING */
 };
 

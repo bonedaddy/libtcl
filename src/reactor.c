@@ -22,36 +22,33 @@
 #include "osi/string.h"
 #include "osi/log.h"
 
-#ifdef OSI_THREADING
-# ifndef EFD_SEMAPHORE
-#   define EFD_SEMAPHORE (1 << 0)
-# endif /* EFD_SEMAPHORE */
+#ifndef EFD_SEMAPHORE
+# define EFD_SEMAPHORE (1 << 0)
+#endif /* !EFD_SEMAPHORE */
 
 static reactor_st_t __run_reactor(reactor_t *reactor, int iterations);
 static const size_t __max_events = 64;
-static const eventfd_t __event_reactor_stop = 1;
 
 int reactor_init(reactor_t *reactor)
 {
-	struct epoll_event event;
+	pollev_t event;
 
-	if ((reactor->epoll_fd = epoll_create(__max_events)) < 0) {
+	if (poll_init(&reactor->poll, __max_events)) {
 		LOG_ERROR("unable to create epoll instance: %m");
 		return -1;
 	}
-	if ((reactor->event_fd = eventfd(0, 0)) < 0) {
+	if (event_init(&reactor->stopev, 0, 0)) {
 		LOG_ERROR("unable to create eventfd: %m");
 		return -1;
 	}
 	bzero(&event, sizeof(event));
-	event.events = EPOLLIN;
-	event.data.ptr = NULL;
-	if (epoll_ctl(reactor->epoll_fd, EPOLL_CTL_ADD, reactor->event_fd,
-		&event) < 0) {
+	event.events = POLL_IN;
+	event.ptr = NULL;
+	if (poll_add(&reactor->poll, &reactor->stopev, event)) {
 		LOG_ERROR("unable to register eventfd with epoll set: %m");
 		return -1;
 	}
-	pthread_mutex_init(&reactor->invalidation_lock, NULL);
+	mutex_init(&reactor->invalidation_lock);
 	set_init(&reactor->invalidation_set, NULL, NULL);
 	return 0;
 }
@@ -59,11 +56,9 @@ int reactor_init(reactor_t *reactor)
 void reactor_destroy(reactor_t *reactor)
 {
 	set_destroy(&reactor->invalidation_set);
-	close(reactor->event_fd);
-	reactor->event_fd = INVALID_FD;
-	close(reactor->epoll_fd);
-	reactor->epoll_fd = INVALID_FD;
-	pthread_mutex_destroy(&reactor->invalidation_lock);
+	poll_destroy(&reactor->poll);
+	event_destroy(&reactor->stopev);
+	mutex_destroy(&reactor->invalidation_lock);
 }
 
 reactor_st_t reactor_start(reactor_t *reactor)
@@ -78,32 +73,31 @@ reactor_st_t reactor_run_once(reactor_t *reactor)
 
 void reactor_stop(reactor_t *reactor)
 {
-	eventfd_write(reactor->event_fd, __event_reactor_stop);
+	event_write(&reactor->stopev, 1UL);
 }
 
-reactor_object_t *reactor_register(reactor_t *reactor, int fd, void *context,
-	reactor_ready_t *read_ready, reactor_ready_t *write_ready)
+reactor_object_t *reactor_register(reactor_t *reactor, event_t *ev,
+	void *context, reactor_ready_t *read_ready, reactor_ready_t *write_ready)
 {
 	reactor_object_t *object;
-	struct epoll_event event;
+	pollev_t event;
 
 	object = (reactor_object_t *)malloc(sizeof(reactor_object_t));
 	object->reactor = reactor;
-	object->fd = fd;
+	object->ev = ev;
 	object->context = context;
 	object->read_ready = read_ready;
 	object->write_ready = write_ready;
 	bzero(&event, sizeof(event));
-	if (read_ready) event.events |= (EPOLLIN | EPOLLRDHUP);
-	if (write_ready) event.events |= EPOLLOUT;
-	event.data.ptr = object;
-	if (epoll_ctl(reactor->epoll_fd, EPOLL_CTL_ADD, fd, &event) < 0) {
-		LOG_ERROR("unable to register fd %d to epoll set: %m", fd);
-		pthread_mutex_destroy(&object->lock);
+	if (read_ready) event.events |= POLL_IN;
+	if (write_ready) event.events |= POLL_OUT;
+	event.ptr = object;
+	if (poll_add(&reactor->poll, ev, event)) {
+		LOG_ERROR("unable to register ev to epoll set: %m");
 		free(object);
 		return NULL;
 	}
-	pthread_mutex_init(&object->lock, NULL);
+	mutex_init(&object->lock);
 	return object;
 }
 
@@ -111,21 +105,15 @@ void reactor_unregister(reactor_object_t *obj)
 {
 	reactor_t *reactor = obj->reactor;
 
-	if (epoll_ctl(reactor->epoll_fd, EPOLL_CTL_DEL, obj->fd, NULL) < 0) {
-		LOG_ERROR("unable to unregister fd %d from epoll set: %m", obj->fd);
-	}
-	if (reactor->is_running
-		&& pthread_equal(pthread_self(), reactor->run_thread)) {
+	poll_del(&reactor->poll, obj->ev);
+	if (reactor->is_running) {
 		reactor->object_removed = true;
 		return;
 	}
-	pthread_mutex_lock(&reactor->invalidation_lock);
+	mutex_lock(&reactor->invalidation_lock);
 	set_put(&reactor->invalidation_set, obj);
-	pthread_mutex_unlock(&reactor->invalidation_lock);
-
-	pthread_mutex_lock(&obj->lock);
-	pthread_mutex_unlock(&obj->lock);
-	pthread_mutex_destroy(&obj->lock);
+	mutex_unlock(&reactor->invalidation_lock);
+	mutex_destroy(&obj->lock);
 	free(obj);
 }
 
@@ -133,17 +121,15 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 {
 	int ret, i, j;
 	reactor_object_t *object;
-	struct epoll_event events[__max_events];
-
-	reactor->run_thread = pthread_self();
+	pollev_t events[__max_events];
+	
 	reactor->is_running = true;
 	for (i = 0; iterations == 0 || i < iterations; ++i) {
-		pthread_mutex_lock(&reactor->invalidation_lock);
+		mutex_lock(&reactor->invalidation_lock);
 		set_clear(&reactor->invalidation_set);
-		pthread_mutex_unlock(&reactor->invalidation_lock);
+		mutex_unlock(&reactor->invalidation_lock);
 
-		do (ret = epoll_wait(reactor->epoll_fd, events, __max_events, -1));
-		while (ret < 0 && errno == EINTR);
+		ret = poll_wait(&reactor->poll, events, __max_events);
 		if (ret < 0) {
 			LOG_ERROR("error in epoll_wait: %m");
 			reactor->is_running = false;
@@ -156,35 +142,34 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 			 * a NULL data pointer. We use the NULL to identify it and break
 			 * out of the reactor loop.
 			 */
-			if (events[j].data.ptr == NULL) {
-				eventfd_t value;
-				eventfd_read(reactor->event_fd, &value);
+			if (events[j].ptr == NULL) {
+				event_value_t value;
+				
+				event_read(&reactor->stopev, &value);
 				reactor->is_running = false;
 				return REACTOR_STATUS_STOP;
 			}
-			object = (reactor_object_t *)events[j].data.ptr;
+			object = (reactor_object_t *)events[j].ptr;
 
-			pthread_mutex_lock(&reactor->invalidation_lock);
+			mutex_lock(&reactor->invalidation_lock);
 			if (set_contains(&reactor->invalidation_set, object)) {
-				pthread_mutex_unlock(&reactor->invalidation_lock);
+				mutex_unlock(&reactor->invalidation_lock);
 				continue;
 			}
 
 			/* Downgrade the list lock to an object lock. */
-			pthread_mutex_lock(&object->lock);
-			pthread_mutex_unlock(&reactor->invalidation_lock);
+			mutex_lock(&object->lock);
+			mutex_unlock(&reactor->invalidation_lock);
 			reactor->object_removed = false;
-			if ((events[j].events &
-				(EPOLLIN | EPOLLHUP | EPOLLRDHUP | EPOLLERR))
-				&& object->read_ready)
+			if ((events[j].events & POLL_IN) && object->read_ready)
 				object->read_ready(object->context);
-			if (!reactor->object_removed && (events[j].events & EPOLLOUT)
+			if (!reactor->object_removed && (events[j].events & POLL_OUT)
 				&& object->write_ready)
 				object->write_ready(object->context);
-			pthread_mutex_unlock(&object->lock);
+			mutex_unlock(&object->lock);
 
 			if (reactor->object_removed) {
-				pthread_mutex_destroy(&object->lock);
+				mutex_destroy(&object->lock);
 				free(object);
 			}
 		}
@@ -192,5 +177,3 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 	reactor->is_running = false;
 	return REACTOR_STATUS_DONE;
 }
-
-#endif /* OSI_THREADING */

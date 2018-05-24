@@ -48,10 +48,6 @@ void mutex_lock(mutex_t *mutex)
 #ifdef OSI_THREADING
 	pthread_mutex_lock(&mutex->mutex);
 #else
-	while (mutex->islocked) {
-		*(fid_t *)queue_push(&mutex->queue) = fiber_getfid();
-		fiber_lock();
-	}
 	mutex->islocked = true;
 #endif /* OSI_THREADING */
 }
@@ -61,11 +57,6 @@ void mutex_unlock(mutex_t *mutex)
 #ifdef OSI_THREADING
 	pthread_mutex_unlock(&mutex->mutex);
 #else
-	fid_t fid;
-
-	assert(mutex->islocked);
-	while (queue_pop(&mutex->queue, &fid))
-		fiber_unlock(fid);
 	mutex->islocked = false;
 #endif /* OSI_THREADING */
 }

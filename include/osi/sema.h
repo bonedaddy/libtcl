@@ -26,8 +26,7 @@
 #ifndef __OSI_SEMA_H
 # define __OSI_SEMA_H
 
-#include "osi/conf.h"
-#include "osi/queue.h"
+#include "osi/event.h"
 
 /*!@public
  *
@@ -43,14 +42,8 @@ typedef struct sema sema_t;
  */
 struct sema {
 
-	/*! fd when `OSI_THREADING', counter otherwise */
-	int handle;
-
-#ifndef OSI_THREADING
-
-	/*! Pending fibers blocked by `sema_wait'. */
-	queue_t queue;
-#endif
+	/*! TODO. */
+	event_t event;
 };
 
 /*!@public

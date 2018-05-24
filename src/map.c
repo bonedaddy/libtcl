@@ -60,7 +60,7 @@ __always_inline void map_destroy(map_t *map, map_dtor_t *idtor)
 
 	if (map->flags) {
 		if (idtor) {
-			for (it = 0; it < map->length; ++it)
+			for (it = 0; it < map->capacity; ++it)
 				if (!__ac_iseither(map->flags, it)) {
 					idtor((void *)map->values[it]);
 				}

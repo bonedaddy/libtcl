@@ -42,24 +42,6 @@
 # define CALLBACK_RETURN_TY void
 #endif
 
-typedef enum {
-
-	/*! The fiber was just created so ready */
-	FIBER_PENDING,
-
-	/*! The fiber is running in it's own context until it finish or yield */
-	FIBER_RUNNING,
-
-	/*! TODO */
-	FIBER_BLOCKING,
-
-	/*! The fiber is terminated but still exists */
-	FIBER_DONE,
-
-	/*! TODO */
-	FIBER_DESTROYED
-} fiber_st_t;
-
 typedef struct {
 
 	/*! The fiber status */
@@ -337,7 +319,7 @@ __always_inline bool fiber_isdone(fid_t fid)
 	return __getfiber(fid)->status >= FIBER_DONE;
 }
 
-static __always_inline void __schedule(void)
+__always_inline void fiber_schedule(void)
 {
 	uint16_t begin;
 	fiber_t *fiber;
@@ -349,7 +331,8 @@ static __always_inline void __schedule(void)
 		++__fiber_idx;
 	while ((fiber = __getfiber(__fibers.queue[__fiber_idx]))->status
 		!= FIBER_PENDING) {
-		assert(begin != __fiber_idx);
+		if (begin == __fiber_idx)
+			return;
 		if (++__fiber_idx >= __fibers.len)
 			__fiber_idx = 0;
 	}
@@ -359,7 +342,7 @@ static __always_inline void __schedule(void)
 __always_inline void fiber_join(fid_t fid)
 {
 	while (!fiber_isdone(fid))
-		__schedule();
+		fiber_schedule();
 }
 
 void *fiber_yield(void *context)
@@ -410,14 +393,23 @@ __always_inline fid_t fiber_getfid(void)
 	return __fiber_current;
 }
 
-void fiber_lock(void)
+__always_inline void fiber_setstate(fiber_st_t st)
+{
+	fiber_t *fiber;
+
+	fiber = __getfiber(__fiber_current);
+	assert(fiber->status != st);
+	fiber->status = st;
+}
+
+__always_inline void fiber_lock(void)
 {
 	fiber_t *fiber;
 
 	fiber = __getfiber(__fiber_current);
 	assert(fiber->status == FIBER_RUNNING);
 	fiber->status = FIBER_BLOCKING;
-	__schedule();
+	fiber_schedule();
 }
 
 __always_inline void fiber_unlock(fid_t fid)
@@ -425,7 +417,5 @@ __always_inline void fiber_unlock(fid_t fid)
 	fiber_t *fiber;
 
 	fiber = __getfiber(fid);
-	assert(fiber->status == FIBER_BLOCKING);
 	fiber->status = FIBER_PENDING;
-	__schedule();
 }
