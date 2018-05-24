@@ -25,10 +25,6 @@ int main(void)
 	reactor_t reactor;
 
 	ASSERT(reactor_init(&reactor) == 0);
-	ASSERT(reactor.epoll_fd != INVALID_FD);
-	ASSERT(reactor.event_fd != INVALID_FD);
 	reactor_destroy(&reactor);
-	ASSERT(reactor.epoll_fd == INVALID_FD);
-	ASSERT(reactor.event_fd == INVALID_FD);
 	return 0;
 }

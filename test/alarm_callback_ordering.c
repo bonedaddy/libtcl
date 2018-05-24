@@ -1,29 +1,31 @@
-/******************************************************************************
+/*
+ * Copyright 2018 Tempow
  *
- *  Copyright (C) 2014 Google, Inc.
+ * Author - 2018 uael <abel@tempow.com>
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- ******************************************************************************/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #define LOG_TAG "test/alarm"
+
 #include "alarm.h"
 
-// Test whether the callbacks are invoked in the expected order
-void test_callback_ordering(void) {
+int main(void)
+{
 	alarm_t *alarms[100];
 	char alarm_name[50];
 
+	sema_init(&semaphore, 0);
 	strcpy(alarm_name, "alarm_test.test_callback_ordering[000]");
 	for (int i = 0; i < 100; i++) {
 		alarm_name[34] = (char)(i % 1000 / 100 + '0');
@@ -45,11 +47,5 @@ void test_callback_ordering(void) {
 
 	for (int i = 0; i < 100; i++)
 		alarm_free(alarms[i]);
-
-}
-
-int main(void) {
-	sema_init(&semaphore, 0);
-	test_callback_ordering();
-	return (0);
+	return 0;
 }

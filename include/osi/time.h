@@ -30,13 +30,16 @@
 
 typedef uint64_t period_ms_t;
 
-/*!
+/*!@public
+ *
+ * @brief
+ * TODO
  *
  * @return
  */
 period_ms_t now(void);
 
-#define TIMER_INTERVAL_FOR_WAKELOCK_IN_MS 3000
+#define TIMER_INTERVAL_FOR_WAKELOCK_IN_MS 500
 
 #define CLOCK_ID  CLOCK_BOOTTIME
 #if (KERNEL_MISSING_CLOCK_BOOTTIME_ALARM == TRUE)

@@ -36,9 +36,9 @@ static void *sleep_then_increment_counter(void *context) {
 	ASSERT(helper->sema);
 /* TODO: put this compat somewhere else */
 #ifdef OS_PROVENCORE
-	sleep(100 * 1000);
+	sleep(50 * 1000);
 #else
-	usleep(100 * 1000);
+	usleep(50 * 1000);
 #endif
 	++helper->counter;
 	sema_post(helper->sema);

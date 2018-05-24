@@ -22,13 +22,11 @@
 #include <signal.h>
 #include <time.h>
 #endif
-#include <osi/alarm.h>
+#include "osi/alarm.h"
 #include "osi/list.h"
 #include "osi/log.h"
-#include "osi/alarm.h"
 #include "osi/mutex.h"
 #include "osi/thread.h"
-
 
 #define THREAD_RT_PRIORITY 1
 
@@ -192,6 +190,7 @@ static void *callback_dispatch(void *context) {
 #ifdef HAS_TIMER
 		sema_wait(&alarm_expired);
 #endif
+		fiber_schedule();
 		if (!dispatcher_thread_active)
 			break;
 		mutex_lock(&alarms_mutex);
@@ -508,7 +507,3 @@ void alarm_unregister_processing_queue(blocking_queue_t *queue) {
 	}
 	mutex_unlock(&alarms_mutex);
 }
-=======
-#include <osi/alarm.h>
-
->>>>>>> .merge_file_Uwlpro

@@ -45,7 +45,8 @@
 #define LOG_ERROR(...) pr_err(EXPEND_LOG_ARGS(__VA_ARGS__))
 #else /* !defined(OS_PROVENCORE) */
 #define LOGWRAP(lvl, fmt, args...) \
-	fprintf(stderr, "[%s] %s: %s: %d "fmt"\n", #lvl, LOG_TAG, __func__, __LINE__, ##args)
+	fprintf(stderr, "[%s] %s: %s: %d "fmt"\n", #lvl, LOG_TAG, __func__, \
+		__line__, ##args)
 #ifdef NDEBUG
 #define LOG_VERBOSE(...) do; while (0)
 #else

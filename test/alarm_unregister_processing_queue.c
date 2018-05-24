@@ -1,32 +1,33 @@
-/******************************************************************************
+/*
+ * Copyright 2018 Tempow
  *
- *  Copyright (C) 2014 Google, Inc.
+ * Author - 2018 uael <abel@tempow.com>
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- ******************************************************************************/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #define LOG_TAG "test/alarm"
+
 #include "alarm.h"
 
-// Test whether unregistering a processing queue cancels all timers using
-// that queue.
-void test_unregister_processing_queue(void) {
+int main(void)
+{
 	alarm_t *alarms[100];
 	blocking_queue_t queue;
-	blocking_queue_init(&queue, UINT32_MAX);
 	thread_t thread;
 
+	sema_init(&semaphore, 0);
+	blocking_queue_init(&queue, UINT32_MAX);
 	thread_init(&thread, "timers.test_unregister_processing_queue.thread");
 
 	alarm_register_processing_queue(&queue, &thread);
@@ -40,16 +41,17 @@ void test_unregister_processing_queue(void) {
 		alarms[i] = alarm_new(alarm_name);
 	}
 
-// Schedule half of the timers to expire soon, and the rest far in the future
+	// Schedule half of the timers to expire soon, and the rest far in the
+	// future
 	for (int i = 0; i < 50; i++) {
 		alarm_set_on_queue(alarms[i], 100, ordered_cb, INT_TO_PTR(i), &queue);
 	}
 	for (int i = 50; i < 100; i++) {
 		alarm_set_on_queue(alarms[i], 1000 * 1000, ordered_cb, INT_TO_PTR(i),
-						   &queue);
+			&queue);
 	}
 
-// Wait until half of the timers have expired
+	// Wait until half of the timers have expired
 	for (int i = 1; i <= 50; i++) {
 		sema_wait(&semaphore);
 		ASSERT_GE(cb_counter, i);
@@ -57,7 +59,7 @@ void test_unregister_processing_queue(void) {
 	ASSERT_EQ(cb_counter, 50);
 	ASSERT_EQ(cb_misordered_counter, 0);
 
-// Test that only the expired timers are not scheduled
+	// Test that only the expired timers are not scheduled
 	for (int i = 0; i < 50; i++) {
 		ASSERT_FALSE(alarm_is_scheduled(alarms[i]));
 	}
@@ -67,7 +69,7 @@ void test_unregister_processing_queue(void) {
 
 	alarm_unregister_processing_queue(&queue);
 
-// Test that none of the timers are scheduled
+	// Test that none of the timers are scheduled
 	for (int i = 0; i < 100; i++) {
 		ASSERT_FALSE(alarm_is_scheduled(alarms[i]));
 	}
@@ -77,10 +79,5 @@ void test_unregister_processing_queue(void) {
 	}
 
 	blocking_queue_destroy(&queue, NULL);
-}
-
-int main(void) {
-	sema_init(&semaphore, 0);
-	test_unregister_processing_queue();
-	return (0);
+	return 0;
 }

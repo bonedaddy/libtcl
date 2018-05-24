@@ -33,20 +33,21 @@
 #define INT_TO_PTR(i) ((void *) ((intptr_t) (i)))
 
 #define EPSILON_MS 5
-static sema_t semaphore;
 
+static sema_t semaphore;
 static int cb_counter;
 static int cb_misordered_counter;
 
-
-static inline void *cb(void *data) {
+static inline void *cb(void *data)
+{
 	(void) data;
 	++cb_counter;
 	sema_post(&semaphore);
 	return NULL;
 }
 
-static inline  void *ordered_cb(void *data) {
+static inline void *ordered_cb(void *data)
+{
 	int i = PTR_TO_INT(data);
 	if (i != cb_counter)
 		cb_misordered_counter++;
@@ -55,5 +56,9 @@ static inline  void *ordered_cb(void *data) {
 	return NULL;
 }
 
+static inline void msleep(uint64_t ms)
+{
+	usleep((__useconds_t)(ms * 1000));
+}
 
 #endif /* __OSI_TEST_ALARM_H */

@@ -309,6 +309,7 @@ void *fiber_call(fid_t fid, void *context)
 	if (resume(fiber->coroutine, &dummy))
 		fiber->status = FIBER_DONE;
 #else
+	LOG_DEBUG("fiber call: %d > %d", current->fid, fiber->fid);
 	coro_transfer(&current->coroutine, &fiber->coroutine);
 #endif
 	return fiber->result;
@@ -382,6 +383,7 @@ void *fiber_yield(void *context)
 		yield();
 	}
 # else
+	LOG_DEBUG("fiber yield: %d > %d", fiber->fid, caller->fid);
 	coro_transfer(&fiber->coroutine, &caller->coroutine);
 # endif
 	return fiber->context;
