@@ -28,44 +28,57 @@
 
 #include "osi/blocking_queue.h"
 #include "osi/thread.h"
+#include "osi/time.h"
+#include "osi/mutex.h"
+#include "osi/list.h"
 
 /*!@public
  *
  * @brief
  * The alarm structure declaration.
  */
-typedef struct alarm alarm_t;
-
-/*!@public
- *
- * @brief
- * The alarm structure definition.
- */
-struct alarm {
+typedef struct {
 	const char *name;
-	uint64_t last_exec;
-	uint64_t interval;
-	bool periodic;
+	period_ms_t deadline;
+	period_ms_t creation_time;
+	period_ms_t period;
 	void *data;
-	work_t *work;
-};
+	bool is_periodic;
+	work_t *callback;
+	mutex_t callback_mutex;
+	blocking_queue_t *queue;  // The processing queue to add this alarm to
+	struct list_head list_alarm;
+} alarm_t;
 
-typedef void (*alarm_callback_t)(void *data);
-typedef uint64_t period_ms_t;
-typedef struct fixed_queue_t fixed_queue_t;
+bool alarm_init(alarm_t *alarm, const char *name);
+
+bool alarm_init_periodic(alarm_t *alarm, const char *name);
+
+void alarm_destroy(alarm_t *alarm);
 
 void alarm_cancel(alarm_t *alarm);
-void alarm_set(alarm_t *alarm, period_ms_t interval_ms,
-			   alarm_callback_t cb, void *data);
+
+//this function use malloc
 alarm_t *alarm_new(const char *name);
+
+alarm_t *alarm_new_periodic(const char *name);
+
 void alarm_free(alarm_t *alarm);
+
 void alarm_set_on_queue(alarm_t *alarm, period_ms_t interval_ms,
-						alarm_callback_t cb, void *data,
-						fixed_queue_t *queue);
-void alarm_register_processing_queue(fixed_queue_t *queue, thread_t *thread);
-void alarm_unregister_processing_queue(fixed_queue_t *queue);
+						work_t *cb, void *data,
+						blocking_queue_t *queue);
+
+void alarm_set(alarm_t *alarm, period_ms_t interval_ms,
+			   work_t *cb, void *data);
+
 bool alarm_is_scheduled(const alarm_t *alarm);
 
+void alarm_register_processing_queue(blocking_queue_t *queue, thread_t *thread);
+
+void alarm_unregister_processing_queue(blocking_queue_t *queue);
+
+void alarm_cleanup(void);
 
 #endif /* __OSI_ALARM_H */
 /*!@} */

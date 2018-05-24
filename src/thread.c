@@ -132,7 +132,8 @@ bool thread_post(thread_t *thread, work_t *work, void *context)
 {
 	work_item_t *item;
 
-	item = (work_item_t *)malloc(sizeof(work_item_t));
+	if (!(item = (work_item_t *)malloc(sizeof(work_item_t))))
+		return false;
 	item->func = work;
 	item->context = context;
 	blocking_queue_push(&thread->work_queue, item);

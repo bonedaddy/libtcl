@@ -41,6 +41,26 @@ check_function_exists(strnlen HAS_STRNLEN)
 check_function_exists(strlcpy HAS_STRLCPY)
 check_function_exists(strncpy HAS_STRNCPY)
 
+check_function_exists(wakelock_acquire HAS_WAKELOCK_ACQUIRE)
+check_function_exists(wakelock_release HAS_WAKELOCK_RELEASE)
+if (HAS_WAKELOCK_ACQUIRE AND HAS_WAKELOCK_RELEASE)
+  set(HAS_WAKELOCK ON)
+endif()
+message(STATUS HAS_WAKELOCK)
+
+include(CheckSymbolExists)
+check_symbol_exists(timer_settime "/usr/include/linux/time.h" HAS_TIMER_SETTIME)
+check_symbol_exists(timer_gettime "time.h" HAS_TIMER_GETTIME)
+check_symbol_exists(timer_create "time.h" HAS_TIMER_CREATE)
+
+if (HAS_TIMER_SETTIME AND HAS_TIMER_GETTIME AND HAS_TIMER_CREATE)
+  set(HAS_TIMER ON)
+endif()
+message(STATUS ${HAS_TIMER_SETTIME})
+message(STATUS ${HAS_TIMER_GETTIME})
+message(STATUS ${HAS_TIMER_CREATE})
+
+
 include(CheckIncludeFile)
 check_include_file(sys/eventfd.h HAS_SYS_EVENTFD_H)
 check_include_file(sys/epoll.h HAS_SYS_EPOLL_H)
@@ -67,7 +87,7 @@ add_library(osi ${osi_SRCS} ${osi_HDRS} ${osi_HDR})
 target_include_directories(osi
   PUBLIC ${osi_INC_DIR} ${CMAKE_BINARY_DIR}/include
   PRIVATE ${osi_SRC_DIR})
-target_link_libraries(osi PUBLIC pp)
+target_link_libraries(osi PUBLIC pp rt)
 add_dependencies(osi pp)
 
 if (USE_CORO)

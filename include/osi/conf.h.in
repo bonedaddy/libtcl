@@ -67,6 +67,10 @@
 #cmakedefine HAS_UNISTD_H
 #endif
 
+#cmakedefine HAS_WAKELOCK
+
+#cmakedefine HAS_TIMER
+
 #ifndef OSI_LOGGING
 #cmakedefine OSI_LOGGING
 #endif
