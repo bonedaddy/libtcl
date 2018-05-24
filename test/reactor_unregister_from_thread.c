@@ -46,20 +46,20 @@ static void join_reactor_thread()
 
 int main(void)
 {
-	int fd;
+	event_t ev;
 	reactor_t reactor;
 	reactor_object_t *object;
 
 	ASSERT_EQ(0, reactor_init(&reactor));
-	fd = eventfd(0, 0);
-	object = reactor_register(&reactor, fd, NULL, NULL, NULL);
+	event_init(&ev, 0, 0);;
+	object = reactor_register(&reactor, &ev, NULL, NULL, NULL);
 	spawn_reactor_thread(&reactor);
 	usleep(50 * 1000);
 	reactor_unregister(object);
 	reactor_stop(&reactor);
 	join_reactor_thread();
 
-	close(fd);
+	event_destroy(&ev);
 	reactor_destroy(&reactor);
 	return 0;
 }

@@ -25,7 +25,8 @@ int event_init(event_t *event, event_value_t value,
 	unsigned flags)
 {
 #ifdef OSI_THREADING
-	return eventfd((unsigned)value, flags);
+	if ((event->fd = eventfd((unsigned)value, flags)) < 0)
+		return -1;
 #else
 	if (flags & ~EVENT_FLAGS_SET) {
 		errno = EINVAL;
@@ -34,8 +35,8 @@ int event_init(event_t *event, event_value_t value,
 	event->count = value;
 	event->flags = flags;
 	queue_init(&event->wq, sizeof(fid_t));
-	return 0;
 #endif /* OSI_THREADING */
+	return 0;
 }
 
 void event_destroy(event_t *event)
@@ -53,14 +54,13 @@ bool event_tryread(event_t *event, event_value_t *value)
 #ifdef OSI_THREADING
 	int flags;
 	bool rc;
-	eventfd_t value;
 
 	if ((flags = fcntl(event->fd, F_GETFL)) < 0)
 		return false;
 	if (fcntl(event->fd, F_SETFL, flags | O_NONBLOCK) < 0)
 		return false;
 	rc = true;
-	if (eventfd_read(event->fd, &value) < 0)
+	if (eventfd_read(event->fd, value) < 0)
     	rc = false;
 	fcntl(event->fd, F_SETFL, flags);
 

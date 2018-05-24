@@ -48,17 +48,13 @@ int reactor_init(reactor_t *reactor)
 		LOG_ERROR("unable to register eventfd with epoll set: %m");
 		return -1;
 	}
-	mutex_init(&reactor->invalidation_lock);
-	set_init(&reactor->invalidation_set, NULL, NULL);
 	return 0;
 }
 
 void reactor_destroy(reactor_t *reactor)
 {
-	set_destroy(&reactor->invalidation_set);
 	poll_destroy(&reactor->poll);
 	event_destroy(&reactor->stopev);
-	mutex_destroy(&reactor->invalidation_lock);
 }
 
 reactor_st_t reactor_start(reactor_t *reactor)
@@ -106,13 +102,12 @@ void reactor_unregister(reactor_object_t *obj)
 	reactor_t *reactor = obj->reactor;
 
 	poll_del(&reactor->poll, obj->ev);
+	obj->read_ready = NULL;
+	obj->write_ready = NULL;
 	if (reactor->is_running) {
 		reactor->object_removed = true;
 		return;
 	}
-	mutex_lock(&reactor->invalidation_lock);
-	set_put(&reactor->invalidation_set, obj);
-	mutex_unlock(&reactor->invalidation_lock);
 	mutex_destroy(&obj->lock);
 	free(obj);
 }
@@ -125,11 +120,8 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 	
 	reactor->is_running = true;
 	for (i = 0; iterations == 0 || i < iterations; ++i) {
-		mutex_lock(&reactor->invalidation_lock);
-		set_clear(&reactor->invalidation_set);
-		mutex_unlock(&reactor->invalidation_lock);
 
-		ret = poll_wait(&reactor->poll, events, __max_events);
+		ret = poll_wait(&reactor->poll, events, (int)__max_events);
 		if (ret < 0) {
 			LOG_ERROR("error in epoll_wait: %m");
 			reactor->is_running = false;
@@ -151,15 +143,8 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 			}
 			object = (reactor_object_t *)events[j].ptr;
 
-			mutex_lock(&reactor->invalidation_lock);
-			if (set_contains(&reactor->invalidation_set, object)) {
-				mutex_unlock(&reactor->invalidation_lock);
-				continue;
-			}
-
 			/* Downgrade the list lock to an object lock. */
 			mutex_lock(&object->lock);
-			mutex_unlock(&reactor->invalidation_lock);
 			reactor->object_removed = false;
 			if ((events[j].events & POLL_IN) && object->read_ready)
 				object->read_ready(object->context);

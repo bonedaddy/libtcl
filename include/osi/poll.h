@@ -84,7 +84,7 @@ __api__ int poll_add(poll_t *poll, event_t *event, pollev_t attr);
 
 __api__ int poll_del(poll_t *poll, event_t *event);
 
-__api__ int poll_wait(poll_t *poll, pollev_t *events, size_t size);
+__api__ int poll_wait(poll_t *poll, pollev_t *events, int size);
 
 #endif /* !__OSI_POLL_H */
 /*!@} */

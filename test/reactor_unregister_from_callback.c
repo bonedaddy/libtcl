@@ -61,18 +61,18 @@ static void unregister_cb(void *context)
 
 int main(void)
 {
-	int fd;
+	event_t ev;
 	reactor_t reactor;
 	unregister_arg_t arg;
 
 	ASSERT_EQ(0, reactor_init(&reactor));
-	fd = eventfd(0, 0);
+	event_init(&ev, 0, 0);
 	arg.reactor = &reactor;
-	arg.object = reactor_register(&reactor, fd, &arg, unregister_cb, NULL);
+	arg.object = reactor_register(&reactor, &ev, &arg, unregister_cb, NULL);
 	spawn_reactor_thread(&reactor);
-	eventfd_write(fd, 1);
+	event_write(&ev, 1);
 	join_reactor_thread();
-	close(fd);
+	event_destroy(&ev);
 	reactor_destroy(&reactor);
 	return 0;
 }

@@ -41,7 +41,7 @@ static int cb_misordered_counter;
 static inline void *cb(void *data)
 {
 	(void) data;
-	++cb_counter;
+	printf("counter: %d\n", ++cb_counter);
 	sema_post(&semaphore);
 	return NULL;
 }
@@ -51,7 +51,7 @@ static inline void *ordered_cb(void *data)
 	int i = PTR_TO_INT(data);
 	if (i != cb_counter)
 		cb_misordered_counter++;
-	++cb_counter;
+	printf("counter: %d\n", ++cb_counter);
 	sema_post(&semaphore);
 	return NULL;
 }

@@ -72,12 +72,6 @@ struct reactor {
 	/*! TODO */
 	event_t stopev;
 
-	/*! protects invalidation_list. */
-	mutex_t invalidation_lock;
-
-	/*! reactor objects that have been unregistered. */
-	set_t invalidation_set;
-
 	/*! indicates whether `run_thread' is valid. */
 	bool is_running;
 

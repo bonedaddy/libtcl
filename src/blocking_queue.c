@@ -155,7 +155,8 @@ void blocking_queue_listen(blocking_queue_t *queue, thread_t *thread,
 void blocking_queue_unlisten(blocking_queue_t *queue)
 {
 	if (queue->reactor_event) {
-		while (queue_length(&queue->base))
+		while (queue_length(&queue->base)
+			&& queue->reactor_event->reactor->is_running)
 			reactor_run_once(queue->reactor_event->reactor);
 		reactor_unregister(queue->reactor_event);
 		queue->reactor_event = NULL;

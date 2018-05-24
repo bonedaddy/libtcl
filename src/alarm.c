@@ -22,6 +22,8 @@
 #include <signal.h>
 #include <time.h>
 #endif
+
+#include <osi/alarm.h>
 #include "osi/alarm.h"
 #include "osi/list.h"
 #include "osi/log.h"
@@ -190,7 +192,9 @@ static void *callback_dispatch(void *context) {
 #ifdef HAS_TIMER
 		sema_wait(&alarm_expired);
 #endif
+#ifndef OSI_THREADING
 		fiber_schedule();
+#endif
 		if (!dispatcher_thread_active)
 			break;
 		mutex_lock(&alarms_mutex);
@@ -263,7 +267,7 @@ static void alarm_queue_ready(blocking_queue_t *queue) {
 
 	mutex_lock(&alarms_mutex);
 	alarm = (alarm_t *) blocking_queue_trypop(queue);
-	if (alarm == NULL) { // The alarm was probably canceled
+	if (alarm == NULL || !alarm->callback) { // The alarm was probably canceled
 		mutex_unlock(&alarms_mutex);
 		return;
 	}
@@ -359,12 +363,8 @@ static void alarm_cancel_internal(alarm_t *alarm) {
 void alarm_cancel(alarm_t *alarm) {
 	if (!alarm)
 		return;
-	mutex_lock(&alarms_mutex);
+
 	alarm_cancel_internal(alarm);
-	mutex_unlock(&alarms_mutex);
-	// If the callback for |alarm| is in progress, wait here until it completes.
-	mutex_lock(&alarm->callback_mutex);
-	mutex_unlock(&alarm->callback_mutex);
 }
 
 static bool alarm_init_internal(alarm_t *alarm,
@@ -393,8 +393,11 @@ bool alarm_init_periodic(alarm_t *alarm, const char *name) {
 }
 
 void alarm_destroy(alarm_t *alarm) {
+	mutex_lock(&alarms_mutex);
 	alarm_cancel(alarm);
 	mutex_destroy(&alarm->callback_mutex);
+	free((void *) alarm->name);
+	mutex_unlock(&alarms_mutex);
 }
 
 static alarm_t *alarm_new_internal(const char *name, bool is_periodic) {
@@ -414,8 +417,8 @@ static alarm_t *alarm_new_internal(const char *name, bool is_periodic) {
 void alarm_free(alarm_t *alarm) {
 	if (!alarm)
 		return;
+
 	alarm_destroy(alarm);
-	free((void *) alarm->name);
 	free(alarm);
 }
 

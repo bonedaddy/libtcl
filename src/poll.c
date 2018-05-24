@@ -65,8 +65,7 @@ int poll_add(poll_t *poll, event_t *ev, pollev_t attr)
 int poll_del(poll_t *poll, event_t *ev)
 {
 #ifdef OSI_THREADING
-	return epoll_ctl(poll->fd, EPOLL_CTL_ADD, event->fd,
-		&event);
+	return epoll_ctl(poll->fd, EPOLL_CTL_ADD, ev->fd, NULL);
 #else
 	pollev_t *event;
 
@@ -78,13 +77,13 @@ int poll_del(poll_t *poll, event_t *ev)
 #endif
 }
 
-int poll_wait(poll_t *poll, pollev_t *events, size_t size)
+int poll_wait(poll_t *poll, pollev_t *events, int size)
 {
 #ifdef OSI_THREADING
 	int ret, i;
 	struct epoll_event epoll_events[size];
 
-	do (ret = epoll_wait(poll->fd, events, size, -1));
+	do (ret = epoll_wait(poll->fd, epoll_events, size, -1));
 	while (ret < 0 && errno == EINTR);
 
 	for (i = 0; i < ret; ++i) {
@@ -96,14 +95,15 @@ int poll_wait(poll_t *poll, pollev_t *events, size_t size)
 			events[i].events |= POLL_OUT;
 		events[i].ptr = epoll_events[i].data.ptr;
 	}
+	
 #else
-	int res;
+	int ret;
 	size_t it;
 	const event_t *ev;
 	const pollev_t *event;
 
-	res = 0;
-	while ((size_t)res < size) {
+	ret = 0;
+	while ((size_t)ret < size) {
 		for (it = 0; it < poll->events.capacity; ++it) {
 			/* TODO(uael): ops */
 			if (!(poll->events.flags[it] & 0b11111111)) {
@@ -112,16 +112,16 @@ int poll_wait(poll_t *poll, pollev_t *events, size_t size)
 
 				/* TODO(uael): poll out */
 				if (ev->count) {
-					events[res].events = POLL_IN;
-					events[res].ptr = event->ptr;
-					++res;
+					events[ret].events = POLL_IN;
+					events[ret].ptr = event->ptr;
+					++ret;
 				}
 			}
 		}
-		if (res)
+		if (ret)
 			break;
 		fiber_schedule();
 	}
-	return res;
 #endif
+	return ret;
 }
