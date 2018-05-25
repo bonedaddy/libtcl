@@ -49,7 +49,7 @@ struct mutex {
 	pthread_mutex_t mutex;
 #else
 
-	queue_t queue;
+	fifo_t queue;
 
 	bool islocked;
 #endif /* OSI_THREADING */

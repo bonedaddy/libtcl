@@ -31,14 +31,14 @@
 /*!@public
  *
  * @brief
- * The stack structure type declaration.
+ * The lifo structure type declaration.
  */
-typedef union stack lifo_t;
+typedef union lifo lifo_t;
 
 /*!@public
  *
  * @brief
- * STACK item destruction callback, passed to `stack_destroy' to destroy every
+ * stack item destruction callback, passed to `stack_destroy' to destroy every
  * item before freed.
  */
 typedef void (stack_dtor_t)(void *item);
@@ -46,9 +46,9 @@ typedef void (stack_dtor_t)(void *item);
 /*!@public
  *
  * @brief
- * The stack structure definition.
+ * The lifo structure definition.
  */
-union stack {
+union lifo {
 
 	/*!@private
 	 * Base of the stack. */

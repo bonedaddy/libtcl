@@ -22,7 +22,7 @@
 
 int main(void)
 {
-	queue_t queue;
+	fifo_t queue;
 	int i;
 
 	queue_init(&queue, sizeof(int));

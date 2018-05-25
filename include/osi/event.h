@@ -72,7 +72,7 @@ struct event {
 #ifndef OSI_THREADING
 
 	/*! TODO. */
-	queue_t wq;
+	fifo_t wq;
 
 	/*! TODO. */
 	event_value_t count;

@@ -31,9 +31,9 @@
 /*!@public
  *
  * @brief
- * The queue structure type declaration.
+ * The fifo structure type declaration.
  */
-typedef union queue queue_t;
+typedef union fifo fifo_t;
 
 /*!@public
  *
@@ -46,9 +46,9 @@ typedef void (queue_dtor_t)(void *item);
 /*!@public
  *
  * @brief
- * The queue structure definition.
+ * The fifo structure definition.
  */
-union queue {
+union fifo {
 
 	/*!@private
 	 * Base of the queue. */
@@ -81,7 +81,7 @@ union queue {
  * @param queue The queue to initialize.
  * @param isize The size of an item.
  */
-__api__ void queue_init(queue_t *queue, size_t isize);
+__api__ void queue_init(fifo_t *queue, size_t isize);
 
 /*!@public
  *
@@ -92,7 +92,7 @@ __api__ void queue_init(queue_t *queue, size_t isize);
  * @param queue The queue to destroy.
  * @param idtor The item callback destructor.
  */
-__api__ void queue_destroy(queue_t *queue, queue_dtor_t *idtor);
+__api__ void queue_destroy(fifo_t *queue, queue_dtor_t *idtor);
 
 /*!@public
  *
@@ -104,7 +104,7 @@ __api__ void queue_destroy(queue_t *queue, queue_dtor_t *idtor);
  * @param queue The queue to clear.
  * @param idtor The item callback destructor.
  */
-__api__ void queue_clear(queue_t *queue, queue_dtor_t *idtor);
+__api__ void queue_clear(fifo_t *queue, queue_dtor_t *idtor);
 
 /*!@public
  *
@@ -114,7 +114,7 @@ __api__ void queue_clear(queue_t *queue, queue_dtor_t *idtor);
  * @param queue The queue.
  * @return      The queue length.
  */
-__api__ size_t queue_length(queue_t *queue);
+__api__ size_t queue_length(fifo_t *queue);
 
 /*!@public
  *
@@ -125,7 +125,7 @@ __api__ size_t queue_length(queue_t *queue);
  * @param queue The queue.
  * @return      The queue begin pointer or `NULL'.
  */
-__api__ void *queue_peek(queue_t *queue);
+__api__ void *queue_peek(fifo_t *queue);
 
 /*!@public
  *
@@ -137,7 +137,7 @@ __api__ void *queue_peek(queue_t *queue);
  * @param queue The queue to ensure.
  * @param n     The number of items to ensure.
  */
-__api__ void queue_ensure(queue_t *queue, size_t n);
+__api__ void queue_ensure(fifo_t *queue, size_t n);
 
 /*!@public
  *
@@ -149,7 +149,7 @@ __api__ void queue_ensure(queue_t *queue, size_t n);
  * @param queue The queue to grow.
  * @param n     The number of additional items to ensure.
  */
-__api__ void queue_grow(queue_t *queue, size_t n_added);
+__api__ void queue_grow(fifo_t *queue, size_t n_added);
 
 /*!@public
  *
@@ -162,7 +162,7 @@ __api__ void queue_grow(queue_t *queue, size_t n_added);
  * @param n     The number of items in the new space.
  * @return      A pointer to the begin of this new space.
  */
-__api__ void *queue_npush(queue_t *queue, size_t n);
+__api__ void *queue_npush(fifo_t *queue, size_t n);
 
 /*!@public
  *
@@ -177,7 +177,7 @@ __api__ void *queue_npush(queue_t *queue, size_t n);
  * @param out   Nullable pointer to receive removed items.
  * @return      Return the number of items which have been actually removed.
  */
-__api__ size_t queue_npop(queue_t *queue, size_t n, void *out);
+__api__ size_t queue_npop(fifo_t *queue, size_t n, void *out);
 
 /*!@public
  *
@@ -189,7 +189,7 @@ __api__ size_t queue_npop(queue_t *queue, size_t n, void *out);
  * @param queue The queue where to push.
  * @return      A pointer to the begin of the new item.
  */
-__api__ void *queue_push(queue_t *queue);
+__api__ void *queue_push(fifo_t *queue);
 
 /*!@public
  *
@@ -202,7 +202,7 @@ __api__ void *queue_push(queue_t *queue);
  * @param out   Nullable pointer to receive removed item.
  * @return      Return if an item have been actually removed.
  */
-__api__ bool queue_pop(queue_t *queue, void *out);
+__api__ bool queue_pop(fifo_t *queue, void *out);
 
 /*!
  * @brief
@@ -212,7 +212,7 @@ __api__ bool queue_pop(queue_t *queue, void *out);
  * @param item  The item to find index
  * @return
  */
-__always_inline size_t queue_index_of(queue_t *queue, void *item);
+__always_inline size_t queue_index_of(fifo_t *queue, void *item);
 
 /*!@public
  *
@@ -226,7 +226,7 @@ __always_inline size_t queue_index_of(queue_t *queue, void *item);
  * @param out   Nullable pointer to receive removed item.
  * @return      Return if an item have been actually removed.
  */
-__always_inline bool queue_pop_at(queue_t *queue, size_t idx, void *out);
+__always_inline bool queue_pop_at(fifo_t *queue, size_t idx, void *out);
 
 #endif /* __OSI_QUEUE_H */
 /*!@} */

@@ -53,7 +53,7 @@ typedef void (listener_t)(blocking_queue_t *blocking_queue);
  */
 struct blocking_queue {
 
-	queue_t base;
+	fifo_t base;
 
 	uint32_t capacity;
 

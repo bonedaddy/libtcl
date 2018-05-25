@@ -18,65 +18,65 @@
 
 #include "osi/queue.h"
 
-__always_inline void queue_init(queue_t *queue, size_t isize)
+__always_inline void queue_init(fifo_t *queue, size_t isize)
 {
 	vector_init(&queue->base, isize);
 }
 
-__always_inline void queue_destroy(queue_t *queue, queue_dtor_t *idtor)
+__always_inline void queue_destroy(fifo_t *queue, queue_dtor_t *idtor)
 {
 	vector_destroy(&queue->base, idtor);
 }
 
-__always_inline void queue_clear(queue_t *queue, queue_dtor_t *idtor)
+__always_inline void queue_clear(fifo_t *queue, queue_dtor_t *idtor)
 {
 	vector_clear(&queue->base, idtor);
 }
 
-__always_inline size_t queue_length(queue_t *queue)
+__always_inline size_t queue_length(fifo_t *queue)
 {
 	return vector_length(&queue->base);
 }
 
-__always_inline void *queue_peek(queue_t *queue)
+__always_inline void *queue_peek(fifo_t *queue)
 {
 	return vector_begin(&queue->base);
 }
 
-__always_inline void queue_ensure(queue_t *queue, size_t n)
+__always_inline void queue_ensure(fifo_t *queue, size_t n)
 {
 	vector_ensure(&queue->base, n);
 }
 
-__always_inline void queue_grow(queue_t *queue, size_t n_added)
+__always_inline void queue_grow(fifo_t *queue, size_t n_added)
 {
 	vector_grow(&queue->base, n_added);
 }
 
-__always_inline void *queue_npush(queue_t *queue, size_t n)
+__always_inline void *queue_npush(fifo_t *queue, size_t n)
 {
 	return vector_npush_back(&queue->base, n);
 }
 
-__always_inline size_t queue_npop(queue_t *queue, size_t n, void *out)
+__always_inline size_t queue_npop(fifo_t *queue, size_t n, void *out)
 {
 	return vector_npop_front(&queue->base, n, out);
 }
 
-__always_inline void *queue_push(queue_t *queue)
+__always_inline void *queue_push(fifo_t *queue)
 {
 	return queue_npush(queue, 1);
 }
 
-__always_inline bool queue_pop(queue_t *queue, void *out)
+__always_inline bool queue_pop(fifo_t *queue, void *out)
 {
 	return queue_npop(queue, 1, out) == 1;
 }
 
-__always_inline size_t queue_index_of(queue_t *queue, void *item) {
+__always_inline size_t queue_index_of(fifo_t *queue, void *item) {
 	return vector_indexof(&queue->base, item);
 }
 
-__always_inline bool queue_pop_at(queue_t *queue, size_t idx, void *out) {
+__always_inline bool queue_pop_at(fifo_t *queue, size_t idx, void *out) {
 	return vector_pop_at(&queue->base, idx, out);
 }
