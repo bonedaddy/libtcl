@@ -35,7 +35,9 @@
 #define EPSILON_MS 5
 
 static sema_t semaphore;
+static sema_t semaphore2;
 static int cb_counter;
+static int cb_counter2;
 static int cb_misordered_counter;
 
 static inline void *cb(void *data)
@@ -43,6 +45,13 @@ static inline void *cb(void *data)
 	(void) data;
 	printf("counter: %d\n", ++cb_counter);
 	sema_post(&semaphore);
+	return NULL;
+}
+static inline void *cb2(void *data)
+{
+	(void) data;
+	sema_wait(&semaphore2);
+	printf("counter2: %d\n", ++cb_counter2);
 	return NULL;
 }
 
