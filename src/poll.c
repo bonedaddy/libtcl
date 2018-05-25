@@ -103,7 +103,7 @@ int poll_wait(poll_t *poll, pollev_t *events, int size)
 	const pollev_t *event;
 
 	ret = 0;
-	while ((size_t)ret < size) {
+	while (ret < size) {
 		for (it = 0; it < poll->events.capacity; ++it) {
 			/* TODO(uael): ops */
 			if (!(poll->events.flags[it] & 0b11111111)) {

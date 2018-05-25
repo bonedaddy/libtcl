@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "test/alarm"
+#define LOG_TAG "test_alarm_set_short_long"
 
 #include "alarm.h"
 
