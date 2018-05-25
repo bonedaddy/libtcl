@@ -63,10 +63,7 @@ struct blocking_queue {
 
 	reactor_object_t *reactor_event;
 
-#ifdef OSI_THREADING
-
-	pthread_mutex_t lock;
-#endif /* OSI_THREADING */
+	mutex_t lock;
 };
 
 /*!@public
@@ -183,6 +180,8 @@ __api__ void blocking_queue_listen(blocking_queue_t *queue,
  * @param queue
  */
 __api__ void blocking_queue_unlisten(blocking_queue_t *queue);
+
+__api__ bool blocking_queue_remove(blocking_queue_t *queue, void *item);
 
 #endif /* __OSI_BLOCKING_QUEUE_H */
 /*!@} */

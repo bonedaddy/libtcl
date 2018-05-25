@@ -35,5 +35,6 @@ int main(void)
 	alarm_cancel(alarm);
 
 	alarm_free(alarm);
+	alarm_cleanup();
 	return 0;
 }

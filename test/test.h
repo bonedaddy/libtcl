@@ -31,7 +31,7 @@
 # define ASSERT_F(cond...) "%s:%d: `%s'\n", __FILE__, __LINE__, #cond
 #endif
 
-#ifdef TEARDOWN
+#ifndef TEARDOWN
 #define ASSERT(cond) do if(!(cond))exit(printf(ASSERT_F(cond))>0);while(0)
 #else
 #define ASSERT(cond) do if(!(cond)) { \

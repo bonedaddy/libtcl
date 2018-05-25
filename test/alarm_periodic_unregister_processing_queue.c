@@ -77,5 +77,7 @@ int main(void)
 	}
 
 	blocking_queue_destroy(&queue, NULL);
+	alarm_cleanup();
+
 	return 0;
 }

@@ -204,5 +204,29 @@ __api__ void *queue_push(queue_t *queue);
  */
 __api__ bool queue_pop(queue_t *queue, void *out);
 
+/*!
+ * @brief
+ *  Get index of an item `item` in a queue `queue`.
+ *
+ * @param queue The queue where to look for.
+ * @param item  The item to find index
+ * @return
+ */
+__always_inline size_t queue_index_of(queue_t *queue, void *item);
+
+/*!@public
+ *
+ * @brief
+ * Remove 1 item at the index `idx' of `queue'.
+ * Copy removed item to the optional pointer `out' if not `NULL'.
+ * Return if an item have been actually removed.
+ *
+ * @param queue The queue where to pop.
+ * @param idx   The index where to remove items.
+ * @param out   Nullable pointer to receive removed item.
+ * @return      Return if an item have been actually removed.
+ */
+__always_inline bool queue_pop_at(queue_t *queue, size_t idx, void *out);
+
 #endif /* __OSI_QUEUE_H */
 /*!@} */

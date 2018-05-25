@@ -18,10 +18,6 @@
 
 #define LOG_TAG "alarm"
 
-#ifdef HAS_TIMER
-#include <signal.h>
-#include <time.h>
-#endif
 
 #include <osi/alarm.h>
 #include "osi/alarm.h"
@@ -29,6 +25,11 @@
 #include "osi/log.h"
 #include "osi/mutex.h"
 #include "osi/thread.h"
+
+#ifdef HAS_TIMER
+#include <signal.h>
+#include <time.h>
+#endif
 
 #define THREAD_RT_PRIORITY 1
 
@@ -58,11 +59,9 @@ static inline bool is_first_alarm(alarm_t *alarm) {
 
 static void remove_pending_alarm(alarm_t *alarm) {
 	list_del_init(&alarm->list_alarm);
-	//TODO remove from alarm->queue
-//	while (fixed_queue_try_remove_from_queue(alarm->queue, alarm) != NULL) {
-	// Remove all repeated alarm instances from the queue.
-	// NOTE: We are defensive here - we shouldn't have repeated alarm instances
-//	}
+	if (blocking_queue_remove(alarm->queue, alarm))
+		// We shouldn't have repeated alarm instances
+		assert(blocking_queue_remove(alarm->queue, alarm) == false);
 }
 
 #ifdef HAS_TIMER

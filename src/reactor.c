@@ -42,7 +42,7 @@ int reactor_init(reactor_t *reactor)
 		return -1;
 	}
 	bzero(&event, sizeof(event));
-	event.events = POLL_IN;
+	event.events = POLL_IN_;
 	event.ptr = NULL;
 	if (poll_add(&reactor->poll, &reactor->stopev, event)) {
 		LOG_ERROR("unable to register eventfd with epoll set: %m");
@@ -86,8 +86,8 @@ reactor_object_t *reactor_register(reactor_t *reactor, event_t *ev,
 	object->write_ready = write_ready;
 	object->is_processed = false;
 	bzero(&event, sizeof(event));
-	if (read_ready) event.events |= POLL_IN;
-	if (write_ready) event.events |= POLL_OUT;
+	if (read_ready) event.events |= POLL_IN_;
+	if (write_ready) event.events |= POLL_OUT_;
 	event.ptr = object;
 	if (poll_add(&reactor->poll, ev, event)) {
 		LOG_ERROR("unable to register ev to epoll set: %m");
@@ -148,9 +148,9 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 			/* Downgrade the list lock to an object lock. */
 			mutex_lock(&object->lock);
 			reactor->object_removed = false;
-			if ((events[j].events & POLL_IN) && object->read_ready)
+			if ((events[j].events & POLL_IN_) && object->read_ready)
 				object->read_ready(object->context);
-			if (!reactor->object_removed && (events[j].events & POLL_OUT)
+			if (!reactor->object_removed && (events[j].events & POLL_OUT_)
 				&& object->write_ready)
 				object->write_ready(object->context);
 			mutex_unlock(&object->lock);

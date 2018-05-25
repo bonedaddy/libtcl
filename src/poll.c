@@ -90,9 +90,9 @@ int poll_wait(poll_t *poll, pollev_t *events, int size)
 		events[i].events = 0;
 		if (epoll_events[i].events &
 			(EPOLLIN | EPOLLHUP | EPOLLRDHUP | EPOLLERR))
-			events[i].events |= POLL_IN;
+			events[i].events |= POLL_IN_;
 		if (epoll_events[i].events & EPOLLOUT)
-			events[i].events |= POLL_OUT;
+			events[i].events |= POLL_OUT_;
 		events[i].ptr = epoll_events[i].data.ptr;
 	}
 	
@@ -112,7 +112,7 @@ int poll_wait(poll_t *poll, pollev_t *events, int size)
 
 				/* TODO(uael): poll out */
 				if (ev->count) {
-					events[ret].events = POLL_IN;
+					events[ret].events = POLL_IN_;
 					events[ret].ptr = event->ptr;
 					++ret;
 				}

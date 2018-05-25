@@ -343,6 +343,16 @@ __api__ bool vector_pop_front(vector_t *vector, void *out);
  */
 __api__ bool vector_pop_at(vector_t *vector, size_t idx, void *out);
 
+ /*!
+  * @brief
+  *  Get index of an item `item` in a vector `vector`.
+  *
+  * @param vector The vector where to look for.
+  * @param item   The item to find index
+  * @return
+  */
+__always_inline size_t vector_index_of(vector_t *vector, void *item);
+
 /*!@public
  *
  * @brief

@@ -30,9 +30,7 @@ int blocking_queue_init(blocking_queue_t *queue, unsigned capacity)
 	queue->capacity = capacity;
 	queue_init(&queue->base, sizeof(void *));
 	queue->reactor_event = NULL;
-#ifdef OSI_THREADING
-	pthread_mutex_init(&queue->lock, NULL);
-#endif /* OSI_THREADING */
+	mutex_init(&queue->lock);
 	return 0;
 }
 
@@ -42,22 +40,16 @@ void blocking_queue_destroy(blocking_queue_t *queue, queue_dtor_t *dtor)
 	queue_destroy(&queue->base, dtor);
 	sema_destroy(&queue->producer);
 	sema_destroy(&queue->consumer);
-#ifdef OSI_THREADING
-	pthread_mutex_destroy(&queue->lock);
-#endif /* OSI_THREADING */
+	mutex_destroy(&queue->lock);
 }
 
 bool blocking_queue_empty(blocking_queue_t *queue)
 {
 	bool empty;
 
-#ifdef OSI_THREADING
-	pthread_mutex_lock(&queue->lock);
-#endif
+	mutex_lock(&queue->lock);
 	empty = queue_length(&queue->base) == 0;
-#ifdef OSI_THREADING
-	pthread_mutex_unlock(&queue->lock);
-#endif
+	mutex_unlock(&queue->lock);
 	return empty;
 }
 
@@ -65,13 +57,9 @@ unsigned blocking_queue_length(blocking_queue_t *queue)
 {
 	unsigned len;
 
-#ifdef OSI_THREADING
-	pthread_mutex_lock(&queue->lock);
-#endif
+	mutex_lock(&queue->lock);
 	len = (unsigned)queue_length(&queue->base);
-#ifdef OSI_THREADING
-	pthread_mutex_unlock(&queue->lock);
-#endif
+	mutex_unlock(&queue->lock);
 	return len;
 }
 
@@ -83,13 +71,9 @@ unsigned blocking_queue_capacity(blocking_queue_t *queue)
 void blocking_queue_push(blocking_queue_t *queue, void const *item)
 {
 	sema_wait(&queue->producer);
-#ifdef OSI_THREADING
-	pthread_mutex_lock(&queue->lock);
-#endif
+	mutex_lock(&queue->lock);
 	*(void const **)queue_push(&queue->base) = item;
-#ifdef OSI_THREADING
-	pthread_mutex_unlock(&queue->lock);
-#endif
+	mutex_unlock(&queue->lock);
 	sema_post(&queue->consumer);
 }
 
@@ -98,14 +82,10 @@ void *blocking_queue_pop(blocking_queue_t *queue)
 	void *item;
 
 	sema_wait(&queue->consumer);
-#ifdef OSI_THREADING
-	pthread_mutex_lock(&queue->lock);
-#endif
+	mutex_lock(&queue->lock);
 	item = NULL;
 	queue_pop(&queue->base, &item);
-#ifdef OSI_THREADING
-	pthread_mutex_unlock(&queue->lock);
-#endif
+	mutex_unlock(&queue->lock);
 	sema_post(&queue->producer);
 	return item;
 }
@@ -114,13 +94,9 @@ bool blocking_queue_trypush(blocking_queue_t *queue, const void *item)
 {
 	if (!sema_trywait(&queue->producer))
 		return false;
-#ifdef OSI_THREADING
-	pthread_mutex_lock(&queue->lock);
-#endif
+	mutex_lock(&queue->lock);
 	*(void const **)queue_push(&queue->base) = item;
-#ifdef OSI_THREADING
-	pthread_mutex_unlock(&queue->lock);
-#endif
+	mutex_unlock(&queue->lock);
 	sema_post(&queue->consumer);
 	return true;
 }
@@ -131,14 +107,10 @@ void *blocking_queue_trypop(blocking_queue_t *queue)
 
 	if (!sema_trywait(&queue->consumer))
 		return false;
-#ifdef OSI_THREADING
-	pthread_mutex_lock(&queue->lock);
-#endif
+	mutex_lock(&queue->lock);
 	item = NULL;
 	queue_pop(&queue->base, &item);
-#ifdef OSI_THREADING
-	pthread_mutex_unlock(&queue->lock);
-#endif
+	mutex_unlock(&queue->lock);
 	sema_post(&queue->producer);
 	return item;
 }
@@ -161,4 +133,23 @@ void blocking_queue_unlisten(blocking_queue_t *queue)
 		reactor_unregister(queue->reactor_event);
 		queue->reactor_event = NULL;
 	}
+}
+
+bool blocking_queue_remove(blocking_queue_t *queue, void *item) {
+	bool removed;
+	size_t item_idx;
+
+	if (!queue)
+		return false;
+	removed = false;
+	mutex_lock(&queue->lock);
+	item_idx = queue_index_of(&queue->base, item);
+	if (item_idx != (size_t)-1 && sema_trywait(&queue->consumer)) {
+		removed = queue_pop_at(&queue->base, item_idx, NULL);
+	}
+	mutex_unlock(&queue->lock);
+	if (removed) {
+		sema_post(&queue->producer);
+	}
+	return removed;
 }

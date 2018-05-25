@@ -22,7 +22,7 @@
 
 int main(void)
 {
-	stack_t stack;
+	lifo_t stack;
 
 	stack_init(&stack, sizeof(int));
 	ASSERT_NULL(stack.buffer);

@@ -29,8 +29,8 @@
 #include "osi/event.h"
 #include "osi/map.h"
 
-#define POLL_IN (1 << 0)
-#define POLL_OUT (1 << 1)
+#define POLL_IN_ (1 << 0)
+#define POLL_OUT_ (1 << 1)
 
 /*!@public
  *
