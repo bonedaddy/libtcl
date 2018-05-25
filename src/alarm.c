@@ -212,8 +212,9 @@ static void *callback_dispatch(void *context) {
 //			alarm->stats.rescheduled_count++;//TODO ?
 		}
 		reschedule_root_alarm();
-		// Enqueue the alarm for processing
-		blocking_queue_push(alarm->queue, alarm);
+		// Enqueue the alarm for processing if not canceled
+		if (alarm->callback)
+			blocking_queue_push(alarm->queue, alarm);
 		//TODO what happened to alarm if not periodic ????
 		mutex_unlock(&alarms_mutex);
 	}
@@ -348,9 +349,9 @@ static bool alarm_lazy_init(void) {
 static void alarm_cancel_internal(alarm_t *alarm) {
 	// Check if alarm is first entry of alarms
 	const bool needs_reschedule = is_first_alarm(alarm);
+	alarm->callback = NULL;
 	remove_pending_alarm(alarm);
 	alarm->deadline = 0;
-	alarm->callback = NULL;
 	alarm->data = NULL;
 	alarm->queue = NULL;
 	if (needs_reschedule)

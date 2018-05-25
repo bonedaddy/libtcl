@@ -275,12 +275,12 @@ __always_inline bool vector_pop_at(vector_t *vector, size_t idx, void *out)
 	return vector_npop_at(vector, 1, idx, out) == 1;
 }
 
-__always_inline size_t vector_index_of(vector_t *vector, void *item) {
+__always_inline size_t vector_indexof(vector_t *vector, void *item) {
 	size_t i;
 
 	i = 0;
 	while (i < vector->length) {
-		if (vector_at(vector, i) == item) {
+		if (!memcmp(*(void **)vector_at(vector, i), item, vector->isize)) {
 			return i;
 		}
 		++i;

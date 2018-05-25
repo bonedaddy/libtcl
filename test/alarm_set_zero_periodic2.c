@@ -39,8 +39,6 @@ int main(void)
 	}
 
 	ASSERT_EQ(9, cb_counter2);
-	alarm_cancel(alarm);
-	alarm_cancel(alarm2);
 
 	alarm_free(alarm);
 	alarm_free(alarm2);

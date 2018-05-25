@@ -106,7 +106,7 @@ void *blocking_queue_trypop(blocking_queue_t *queue)
 	void *item;
 
 	if (!sema_trywait(&queue->consumer))
-		return false;
+		return NULL;
 	mutex_lock(&queue->lock);
 	item = NULL;
 	queue_pop(&queue->base, &item);
