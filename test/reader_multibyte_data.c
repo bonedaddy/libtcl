@@ -105,6 +105,7 @@ void test(void)
 	eager_reader_register(&reader, &read_thread, expect_data, large_data);
 	write(pipefd[1], large_data, strlen(large_data));
 	sema_wait(&sema);
+	eager_reader_unregister(&reader);
 
 	thread_destroy(&read_thread);
 	eager_reader_destroy(&reader);
