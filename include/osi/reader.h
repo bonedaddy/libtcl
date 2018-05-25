@@ -123,8 +123,9 @@ struct eager_reader {
  * @param buffer_size 
  * @param max_buffer_count 
  * @param thread_name 
+ * @return
  */
-__api__ void eager_reader_init(eager_reader_t *reader, int fd_to_read,
+__api__ int eager_reader_init(eager_reader_t *reader, int fd_to_read,
 	const allocator_t *allocator, unsigned buffer_size,
 	unsigned max_buffer_count, const char *thread_name);
 

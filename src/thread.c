@@ -116,6 +116,14 @@ void thread_destroy(thread_t *thread)
 	reactor_destroy(&thread->reactor);
 }
 
+bool thread_setpriority(thread_t *thread, int priority)
+{
+	//TODO(uael):
+	(void)thread;
+	(void)priority;
+	return false;
+}
+
 void thread_join(thread_t *thread)
 {
 	if (!thread->is_joined) {

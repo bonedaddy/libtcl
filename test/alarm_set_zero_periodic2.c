@@ -37,13 +37,14 @@ int main(void)
 		ASSERT_GE(cb_counter, i);
 		ASSERT_GE(i, cb_counter2);
 	}
-	msleep(150);
+
+	ASSERT_EQ(9, cb_counter2);
 	alarm_cancel(alarm);
 	alarm_cancel(alarm2);
 
 	alarm_free(alarm);
 	alarm_free(alarm2);
+
 	alarm_cleanup();
-	ASSERT_EQ(10, cb_counter2);
 	return 0;
 }

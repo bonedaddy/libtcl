@@ -86,7 +86,7 @@ void loop_join(loop_t *loop)
 	if (loop->is_running) {
 		loop_stop(loop);
 #ifdef OSI_THREADING
-		//TODO(uael): ??? pthread_join(loop->pthread, NULL);
+		pthread_join(loop->pthread, NULL);
 #else
 		fiber_join(loop->fiber);
 #endif /* OSI_THREADING */

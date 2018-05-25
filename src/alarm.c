@@ -449,7 +449,9 @@ void alarm_set_on_queue(alarm_t *alarm, period_ms_t interval_ms,
 }
 
 void alarm_set(alarm_t *alarm, period_ms_t interval_ms,
-			   work_t *cb, void *data) {
+	work_t *cb, void *data) {
+	if (interval_ms == 0)
+		interval_ms = 1; //TODO(tempow): quickfix..
 	alarm_set_on_queue(alarm, interval_ms, cb, data, &default_callback_queue);
 }
 

@@ -25,7 +25,7 @@ int main(void)
 	alarm_t *alarm = alarm_new_periodic("alarm_test.test_set_zero_periodic");
 
 	sema_init(&semaphore, 0);
-	alarm_set(alarm, 0, cb, NULL);
+	alarm_set(alarm, 1, cb, NULL);
 
 	for (int i = 1; i <= 10; i++) {
 		sema_wait(&semaphore);

@@ -26,7 +26,7 @@ static bool __has_byte(const eager_reader_t *reader);
 static void *__inbound_read_loop(void *context);
 static void __outbound_read_ready(void *context);
 
-void eager_reader_init(eager_reader_t *ret, int fd_to_read,
+int eager_reader_init(eager_reader_t *ret, int fd_to_read,
 	const allocator_t *allocator, unsigned buffer_size,
 	unsigned max_buffer_count, const char *thread_name)
 {
@@ -62,10 +62,11 @@ void eager_reader_init(eager_reader_t *ret, int fd_to_read,
 	ret->outbound_registration = NULL;
 	ret->current_buffer = NULL;
 
-	return;
+	return 0;
 
 error:
 	eager_reader_destroy(ret);
+	return -1;
 }
 
 void eager_reader_destroy(eager_reader_t *reader)
