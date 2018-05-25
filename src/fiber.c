@@ -279,6 +279,7 @@ void fiber_cleanup(void)
 	}
 	if (__fibers.len) {
 		free(__fibers.buffer);
+		free(__fibers.queue);
 		bzero(&__fibers, sizeof(__fibers));
 	}
 }
