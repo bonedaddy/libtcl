@@ -31,5 +31,6 @@ int main(void)
 
 	ASSERT_EQ(cb_counter, 0);
 	alarm_free(alarm);
+	alarm_cleanup();
 	return 0;
 }

@@ -32,6 +32,7 @@
 #include "osi/mutex.h"
 #include "osi/list.h"
 
+#define HAS_TIMER
 /*!@public
  *
  * @brief

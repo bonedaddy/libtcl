@@ -77,6 +77,9 @@ int main(void)
 	}
 
 	blocking_queue_destroy(&queue, NULL);
+	thread_destroy(&thread);
+	sema_destroy(&semaphore);
+
 	alarm_cleanup();
 
 	return 0;
