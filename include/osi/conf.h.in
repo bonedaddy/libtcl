@@ -66,10 +66,12 @@
 #ifndef HAS_UNISTD_H
 #cmakedefine HAS_UNISTD_H
 #endif
-
-#cmakedefine HAS_WAKELOCK
-
-#cmakedefine HAS_TIMER
+#ifndef HAS_TIME_H
+#cmakedefine HAS_TIME_H
+#endif
+#ifndef HAS_SIGNAL_H
+#cmakedefine HAS_SIGNAL_H
+#endif
 
 #ifndef OSI_LOGGING
 #cmakedefine OSI_LOGGING
@@ -85,6 +87,12 @@
 # include <sys/epoll.h>
 # include <sys/eventfd.h>
 # include <sys/prctl.h>
+# if defined(HAS_TIME_H) && defined(HAS_SIGNAL_H) && defined(_POSIX_C_SOURCE) \
+  && _POSIX_C_SOURCE >= 199309L
+#   define HAS_TIMER
+#   include <signal.h>
+#   include <time.h>
+# endif
 #endif
 
 #include <pp.h>

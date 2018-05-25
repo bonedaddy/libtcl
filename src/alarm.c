@@ -24,11 +24,6 @@
 #include "osi/mutex.h"
 #include "osi/thread.h"
 
-#ifdef HAS_TIMER
-#include <signal.h>
-#include <time.h>
-#endif
-
 #define THREAD_RT_PRIORITY 1
 
 static bool init_started = false;

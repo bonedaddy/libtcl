@@ -32,10 +32,6 @@
 #include "osi/mutex.h"
 #include "osi/list.h"
 
-#ifdef OSI_THREADING
-# define HAS_TIMER
-#endif
-
 /*!@public
  *
  * @brief

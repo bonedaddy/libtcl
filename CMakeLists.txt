@@ -37,6 +37,17 @@ else ()
   option(OSI_LOGGING "Enable Logging" OFF)
 endif ()
 
+include(CheckIncludeFile)
+check_include_file(sys/eventfd.h HAS_SYS_EVENTFD_H)
+check_include_file(sys/epoll.h HAS_SYS_EPOLL_H)
+check_include_file(sys/time.h HAS_SYS_TIME_H)
+check_include_file(sys/prctl.h HAS_SYS_PRCTL_H)
+check_include_file(sys/_system_properties.h HAS_SYS__SYSTEM_PROPERTIES_H)
+check_include_file(pthread.h HAS_PTHREAD_H)
+check_include_file(unistd.h HAS_UNISTD_H)
+check_include_file(time.h HAS_TIME_H)
+check_include_file(signal.h HAS_SIGNAL_H)
+
 include(CheckFunctionExists)
 check_function_exists(bzero HAS_BZERO)
 check_function_exists(free HAS_FREE)
@@ -47,27 +58,6 @@ check_function_exists(strncpy HAS_STRNCPY)
 
 check_function_exists(wakelock_acquire HAS_WAKELOCK_ACQUIRE)
 check_function_exists(wakelock_release HAS_WAKELOCK_RELEASE)
-if (HAS_WAKELOCK_ACQUIRE AND HAS_WAKELOCK_RELEASE)
-  set(HAS_WAKELOCK ON)
-endif()
-
-include(CheckSymbolExists)
-check_symbol_exists(timer_settime "time.h" HAS_TIMER_SETTIME)
-check_symbol_exists(timer_gettime "time.h" HAS_TIMER_GETTIME)
-check_symbol_exists(timer_create "time.h" HAS_TIMER_CREATE)
-
-if (HAS_TIMER_SETTIME AND HAS_TIMER_GETTIME AND HAS_TIMER_CREATE)
-  set(HAS_TIMER ON)
-endif()
-
-include(CheckIncludeFile)
-check_include_file(sys/eventfd.h HAS_SYS_EVENTFD_H)
-check_include_file(sys/epoll.h HAS_SYS_EPOLL_H)
-check_include_file(sys/time.h HAS_SYS_TIME_H)
-check_include_file(sys/prctl.h HAS_SYS_PRCTL_H)
-check_include_file(sys/_system_properties.h HAS_SYS__SYSTEM_PROPERTIES_H)
-check_include_file(pthread.h HAS_PTHREAD_H)
-check_include_file(unistd.h HAS_UNISTD_H)
 
 if (OSI_THREADING AND (NOT HAS_SYS_EVENTFD_H OR NOT HAS_SYS_EPOLL_H
   OR NOT HAS_PTHREAD_H OR NOT HAS_UNISTD_H OR NOT HAS_SYS_PRCTL_H))
@@ -80,7 +70,7 @@ configure_file(${osi_INC_DIR}/osi/conf.h.in
 file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.c)
 file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.h)
 file(GLOB_RECURSE osi_HDRS ${osi_HDRS} ${osi_INC_DIR}/osi/*.h)
-set(osi_HDR ${osi_INC_DIR}/osi.h)
+set(osi_HDR ${osi_INC_DIR}/osi.h ${CMAKE_BINARY_DIR}/include/osi/conf.h)
 
 add_library(osi ${osi_SRCS} ${osi_HDRS} ${osi_HDR})
 target_include_directories(osi
