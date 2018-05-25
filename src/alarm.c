@@ -363,8 +363,9 @@ static void alarm_cancel_internal(alarm_t *alarm) {
 void alarm_cancel(alarm_t *alarm) {
 	if (!alarm)
 		return;
-
+	mutex_lock(&alarms_mutex);
 	alarm_cancel_internal(alarm);
+	mutex_unlock(&alarms_mutex);
 }
 
 static bool alarm_init_internal(alarm_t *alarm,
@@ -393,11 +394,9 @@ bool alarm_init_periodic(alarm_t *alarm, const char *name) {
 }
 
 void alarm_destroy(alarm_t *alarm) {
-	mutex_lock(&alarms_mutex);
 	alarm_cancel(alarm);
 	mutex_destroy(&alarm->callback_mutex);
 	free((void *) alarm->name);
-	mutex_unlock(&alarms_mutex);
 }
 
 static alarm_t *alarm_new_internal(const char *name, bool is_periodic) {
