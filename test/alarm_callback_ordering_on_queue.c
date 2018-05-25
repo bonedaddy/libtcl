@@ -58,5 +58,6 @@ int main(void)
 	alarm_unregister_processing_queue(&queue);
 	blocking_queue_destroy(&queue, NULL);
 	thread_destroy(&thread);
+	alarm_cleanup();
 	return 0;
 }

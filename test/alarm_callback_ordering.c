@@ -47,5 +47,6 @@ int main(void)
 
 	for (int i = 0; i < 100; i++)
 		alarm_free(alarms[i]);
+	alarm_cleanup();
 	return 0;
 }
