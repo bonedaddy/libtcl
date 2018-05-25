@@ -206,13 +206,6 @@ __api__ fid_t fiber_getfid(void);
  * @brief
  * TODO
  */
-__api__ void fiber_lock(void);
-
-/*!@public
- *
- * @brief
- * TODO
- */
 __api__ void fiber_cleanup(void);
 
 __api__ void fiber_schedule(void);

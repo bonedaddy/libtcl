@@ -101,8 +101,8 @@ int event_read(event_t *event, event_value_t *value)
 	}
 	ucnt = (event->flags & EVENT_SEMAPHORE) ? 1 : event->count;
 	if ((event->count -= ucnt)) {
-		queue_pop(&event->wq, &current);
-		fiber_unlock(current);
+		if (queue_pop(&event->wq, &current))
+			fiber_unlock(current);
 	}
 	if (value) *value = ucnt;
 	return res;
@@ -133,8 +133,8 @@ int event_write(event_t *event, event_value_t value)
 		}
 	}
 	event->count += ucnt;
-	queue_pop(&event->wq, &current);
-	fiber_unlock(current);
+	if (queue_pop(&event->wq, &current))
+		fiber_unlock(current);
 	return 0;
 #endif /* OSI_THREADING */
 }

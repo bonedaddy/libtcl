@@ -18,8 +18,6 @@
 
 #define LOG_TAG "alarm"
 
-
-#include <osi/alarm.h>
 #include "osi/alarm.h"
 #include "osi/list.h"
 #include "osi/log.h"

@@ -405,16 +405,6 @@ __always_inline void fiber_setstate(fiber_st_t st)
 	fiber->status = st;
 }
 
-__always_inline void fiber_lock(void)
-{
-	fiber_t *fiber;
-
-	fiber = __getfiber(__fiber_current);
-	assert(fiber->status == FIBER_RUNNING);
-	fiber->status = FIBER_BLOCKING;
-	fiber_schedule();
-}
-
 __always_inline void fiber_unlock(fid_t fid)
 {
 	fiber_t *fiber;
