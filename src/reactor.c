@@ -84,6 +84,7 @@ reactor_object_t *reactor_register(reactor_t *reactor, event_t *ev,
 	object->context = context;
 	object->read_ready = read_ready;
 	object->write_ready = write_ready;
+	object->is_processed = false;
 	bzero(&event, sizeof(event));
 	if (read_ready) event.events |= POLL_IN;
 	if (write_ready) event.events |= POLL_OUT;
@@ -104,7 +105,7 @@ void reactor_unregister(reactor_object_t *obj)
 	poll_del(&reactor->poll, obj->ev);
 	obj->read_ready = NULL;
 	obj->write_ready = NULL;
-	if (reactor->is_running) {
+	if (obj->is_processed) {
 		reactor->object_removed = true;
 		return;
 	}
@@ -142,6 +143,7 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 				return REACTOR_STATUS_STOP;
 			}
 			object = (reactor_object_t *)events[j].ptr;
+			object->is_processed = true;
 
 			/* Downgrade the list lock to an object lock. */
 			mutex_lock(&object->lock);
@@ -153,6 +155,7 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 				object->write_ready(object->context);
 			mutex_unlock(&object->lock);
 
+			object->is_processed = false;
 			if (reactor->object_removed) {
 				mutex_destroy(&object->lock);
 				free(object);

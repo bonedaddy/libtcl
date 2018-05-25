@@ -103,6 +103,9 @@ struct reactor_object {
 
 	/*! function to call when the file descriptor becomes writeable. */
 	reactor_ready_t *write_ready;
+
+	/*! TODO. */
+	bool is_processed;
 };
 
 /*!@public

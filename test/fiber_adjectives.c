@@ -20,7 +20,7 @@
 
 #include "osi/fiber.h"
 
-void *call_fiber(void *arg)
+static void *call_fiber(void *arg)
 {
 	static char *adjectives[] = { "small", "clean", NULL, "fast", NULL };
 	char **adjective = adjectives;

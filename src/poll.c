@@ -65,7 +65,7 @@ int poll_add(poll_t *poll, event_t *ev, pollev_t attr)
 int poll_del(poll_t *poll, event_t *ev)
 {
 #ifdef OSI_THREADING
-	return epoll_ctl(poll->fd, EPOLL_CTL_ADD, ev->fd, NULL);
+	return epoll_ctl(poll->fd, EPOLL_CTL_DEL, ev->fd, NULL);
 #else
 	pollev_t *event;
 

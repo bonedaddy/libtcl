@@ -99,7 +99,7 @@ static struct {
 	fid_t *queue;
 	uint16_t len;
 	uint16_t cap;
-} __fibers = {NULL, 0, 0};
+} __fibers = {NULL, NULL, 0, 0};
 
 static int __lazyinit(void)
 {
@@ -260,8 +260,8 @@ void fiber_destroy(fid_t fid)
 	(void)coro_destroy(&fiber->coroutine);
 	coro_stack_free(&fiber->stack);
 #endif
-	bzero(fiber, sizeof(fiber_t));
 	free(fiber->coroutine_ctx);
+	bzero(fiber, sizeof(fiber_t));
 	fiber->coroutine_ctx = NULL;
 	fiber->fid = fid;
 	fiber->status = FIBER_DESTROYED;
