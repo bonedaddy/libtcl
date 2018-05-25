@@ -28,6 +28,7 @@
 
 #include "osi/allocator.h"
 #include "osi/blocking_queue.h"
+#include "osi/loop.h"
 #include "osi/thread.h"
 
 /*!@public
@@ -76,7 +77,7 @@ struct data_buffer {
 struct eager_reader {
 
 	/*! TODO. */
-	int bytes_available_fd;
+	event_t event;
 
 	/*! TODO. */
 	int inbound_fd;
@@ -85,7 +86,7 @@ struct eager_reader {
 	const allocator_t *allocator;
 
 	/*! TODO. */
-	unsigned buffer_size;
+	size_t buffer_size;
 
 	/*! TODO. */
 	blocking_queue_t buffers;
@@ -94,10 +95,7 @@ struct eager_reader {
 	data_buffer_t *current_buffer;
 
 	/*! TODO. */
-	thread_t inbound_read_thread;
-
-	/*! TODO. */
-	reactor_object_t *inbound_read_object;
+	loop_t inbound_read_thread;
 
 	/*! TODO. */
 	reactor_object_t *outbound_registration;

@@ -18,41 +18,35 @@
 
 #pragma once
 
-/*!@file osi/thread.h
+/*!@file osi/loop.h
  * @author uael
  *
- * @addtogroup osi.thread @{
+ * @addtogroup osi.loop @{
  */
-#ifndef __OSI_THREAD_H
-# define __OSI_THREAD_H
+#ifndef __OSI_LOOP_H
+# define __OSI_LOOP_H
 
-#include "osi/reactor.h"
-#include "osi/blocking_queue.h"
-#include "osi/stack.h"
-
-#define THREAD_NAME_MAX 16
+#include "osi/fiber.h"
 
 /*!@public
  *
  * @brief
- * The thread structure declaration.
+ * The loop structure declaration.
  */
-typedef struct thread thread_t;
+typedef struct loop loop_t;
 
 /*!@public
  *
  * @brief
- * The thread structure definition.
+ * The loop structure definition.
  */
-struct thread {
+struct loop {
 
-	char name[THREAD_NAME_MAX + 1];
+	bool is_running;
 
-	bool is_joined;
+	work_t *work;
 
-	blocking_queue_t work_queue;
-
-	reactor_t reactor;
+	void *context;
 
 #ifdef OSI_THREADING
 
@@ -63,17 +57,13 @@ struct thread {
 #endif
 };
 
-__api__ int thread_init(thread_t *thread, char const *name);
+__api__ int loop_init(loop_t *loop, work_t *work, void *context);
 
-__api__ void thread_destroy(thread_t *thread);
+__api__ void loop_destroy(loop_t *loop);
 
-__api__ bool thread_setpriority(thread_t *thread, int priority);
+__api__ void loop_stop(loop_t *loop);
 
-__api__ void thread_join(thread_t *thread);
-
-__api__ bool thread_post(thread_t *thread, work_t *work, void *context);
-
-__api__ void thread_stop(thread_t *thread);
+__api__ void loop_join(loop_t *loop);
 
 #endif /* __OSI_THREAD_H */
 /*!@} */

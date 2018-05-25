@@ -104,3 +104,8 @@ osi_register_test(alarm_callback_ordering)
 osi_register_test(alarm_callback_ordering_on_queue)
 osi_register_test(alarm_unregister_processing_queue)
 osi_register_test(alarm_periodic_unregister_processing_queue)
+
+osi_register_suite(reader)
+osi_register_test(reader_init)
+osi_register_test(reader_small_data)
+osi_register_test(reader_multibyte_data)
