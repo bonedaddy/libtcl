@@ -73,5 +73,7 @@ __api__ void task_stop(task_t *task);
 
 __api__ void task_join(task_t *task);
 
+__api__ void task_schedule(void);
+
 #endif /* __OSI_TASK_H */
 /*!@} */

@@ -19,21 +19,19 @@
 #include "osi/string.h"
 
 #ifndef HAS_BZERO
-
-# include <string.h>
 # ifdef OS_PROVENCORE
 #   include <sizes.h>
 # endif
 
-void bzero(void *ptr, size_t n) {
+void bzero(void *ptr, size_t n)
+{
 	memset(ptr, 0, n);
 }
-
-#endif /* HAS_BZERO */
+#endif /* !HAS_BZERO */
 
 #ifndef HAS_STRNLEN
-
-size_t strnlen(const char *s, size_t n) {
+size_t strnlen(const char *s, size_t n)
+{
 	const char *p;
 
 	p = s;
@@ -41,23 +39,22 @@ size_t strnlen(const char *s, size_t n) {
 		p++;
 	return (size_t) (p - s);
 }
-
-#endif /* HAS_STRNLEN */
+#endif /* !HAS_STRNLEN */
 
 #ifndef HAS_STRNCPY
-
-char *strncpy(char *s1, const char *s2, size_t n) {
+char *strncpy(char *s1, const char *s2, size_t n)
+{
 	size_t size = strnlen(s2, n);
 	if (size != n)
 		memset(s1 + size, '\0', n - size);
 	return memcpy(s1, s2, size);
 }
 
-#endif /* HAS_STRNCPY */
+#endif /* !HAS_STRNCPY */
 
 #ifndef HAS_STRLCPY
-
-size_t strlcpy(char *dst, const char *src, size_t siz) {
+size_t strlcpy(char *dst, const char *src, size_t siz)
+{
 	char *d = dst;
 	const char *s = src;
 	size_t n = siz;
@@ -79,5 +76,4 @@ size_t strlcpy(char *dst, const char *src, size_t siz) {
 
 	return (s - src - 1);    /* count does not include NUL */
 }
-
-#endif /* HAS_STRLCPY */
+#endif /* !HAS_STRLCPY */

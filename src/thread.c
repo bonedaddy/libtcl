@@ -19,6 +19,7 @@
 #define LOG_TAG "osi_thread"
 
 #include "osi/log.h"
+#include "osi/allocator.h"
 #include "osi/thread.h"
 #include "osi/sema.h"
 #include "osi/string.h"
@@ -96,7 +97,7 @@ int thread_init(thread_t *thread, char const *name)
 	sema_wait(&start.start_sem);
 	sema_destroy(&start.start_sem);
 	if (start.error) {
-		blocking_queue_destroy(&thread->work_queue, free);
+		blocking_queue_destroy(&thread->work_queue, pfree);
 		reactor_destroy(&thread->reactor);
 	}
 	return 0;
@@ -107,7 +108,7 @@ void thread_destroy(thread_t *thread)
 	thread_stop(thread);
 	thread_join(thread);
 	task_destroy(&thread->task);
-	blocking_queue_destroy(&thread->work_queue, free);
+	blocking_queue_destroy(&thread->work_queue, pfree);
 	reactor_destroy(&thread->reactor);
 }
 

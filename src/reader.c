@@ -75,13 +75,9 @@ void eager_reader_destroy(eager_reader_t *reader)
 
 	eager_reader_unregister(reader);
 	event_destroy(&reader->event);
-
-	// Free the current buffer, because it's not in the queue
-	// and won't be freed below
 	if (reader->current_buffer)
 		reader->allocator->free(reader->current_buffer);
-
-	blocking_queue_destroy(&reader->buffers, reader->allocator->free);
+	blocking_queue_destroy(&reader->buffers, pfree);
 	task_destroy(&reader->inbound_read_task);
 }
 
@@ -91,10 +87,8 @@ void eager_reader_register(eager_reader_t *reader, thread_t *thread,
 	assert(reader != NULL);
 	assert(thread != NULL);
 	assert(read_cb != NULL);
-
-	// Make sure the reader isn't currently registered.
+	
 	eager_reader_unregister(reader);
-
 	reader->outbound_read_ready = read_cb;
 	reader->outbound_context = context;
 	reader->outbound_registration = reactor_register(&thread->reactor,
@@ -190,8 +184,8 @@ static void *__inbound_read_loop(void *context)
 	eager_reader_t *reader = (eager_reader_t *)context;
 
 	if (__has_byte(reader)) {
-		data_buffer_t *buffer = (data_buffer_t *)reader->allocator->alloc(
-			reader->buffer_size + sizeof(data_buffer_t));
+		data_buffer_t *buffer = (data_buffer_t *)malloc(reader->buffer_size +
+			sizeof(data_buffer_t));
 		if (!buffer) {
 			LOG_ERROR("couldn't aquire memory for inbound data buffer.");
 			return NULL;
@@ -219,7 +213,7 @@ static void *__inbound_read_loop(void *context)
 			else
 				LOG_WARN("unable to read from file descriptor: %m");
 #endif
-			reader->allocator->free(buffer);
+			free(buffer);
 		}
 
 	}

@@ -24,3 +24,11 @@ static const allocator_t __interface = {
 };
 
 allocator_t const *DFT_ALLOCATOR = &__interface;
+
+void pfree(void *pptr)
+{
+	if (pptr && *(void **)pptr) {
+		free(*(void **)pptr);
+		*(void **)pptr = NULL;
+	}
+}

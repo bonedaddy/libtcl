@@ -106,20 +106,17 @@ int task_repeat(task_t *task, work_t *work, void *context)
 	return __init(task, work, context, true);
 }
 
-void task_destroy(task_t *task)
+__always_inline void task_destroy(task_t *task)
 {
 	task_join(task);
-#ifndef OSI_THREADING
-	fiber_destroy(task->fiber);
-#endif /* !OSI_THREADING */
 }
 
-bool task_running(task_t *task)
+__always_inline bool task_running(task_t *task)
 {
 	return !task->joined;
 }
 
-int task_setpriority(task_t *task, int priority)
+__always_inline int task_setpriority(task_t *task, int priority)
 {
 	(void)task;
 	(void)priority;
@@ -127,12 +124,12 @@ int task_setpriority(task_t *task, int priority)
 	return 1;
 }
 
-void task_stop(task_t *task)
+__always_inline void task_stop(task_t *task)
 {
 	task->running = false;
 }
 
-void task_join(task_t *task)
+__always_inline void task_join(task_t *task)
 {
 	if (!task->joined) {
 		task_stop(task);
@@ -142,4 +139,13 @@ void task_join(task_t *task)
 		fiber_join(task->fiber);
 #endif /* OSI_THREADING */
 	}
+}
+
+__always_inline void task_schedule(void)
+{
+#ifdef OSI_THREADING
+	sched_yield();
+#else
+	fiber_schedule();
+#endif
 }

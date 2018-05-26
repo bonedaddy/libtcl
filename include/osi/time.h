@@ -18,10 +18,10 @@
 
 #pragma once
 
-/*!@file osi/alarm.h
+/*!@file osi/time.h
  * @author uael
  *
- * @addtogroup osi.alarm @{
+ * @addtogroup osi.time @{
  */
 #ifndef __OSI_TIME_H
 # define __OSI_TIME_H
@@ -39,13 +39,14 @@ typedef uint64_t period_ms_t;
  */
 period_ms_t now(void);
 
-#define TIMER_INTERVAL_FOR_WAKELOCK_IN_MS 500
+#define TIMER_INTERVAL_FOR_WAKELOCK_IN_MS 250
 
 #define CLOCK_ID  CLOCK_BOOTTIME
+
 #if (KERNEL_MISSING_CLOCK_BOOTTIME_ALARM == TRUE)
-#define CLOCK_ID_ALARM CLOCK_BOOTTIME
+# define CLOCK_ID_ALARM CLOCK_BOOTTIME
 #else
-#define CLOCK_ID_ALARM CLOCK_BOOTTIME_ALARM
+# define CLOCK_ID_ALARM CLOCK_BOOTTIME_ALARM
 #endif
 
 #endif /* __OSI_TIME_H */

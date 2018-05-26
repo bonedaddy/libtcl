@@ -70,5 +70,13 @@ struct allocator {
  */
 __api__ allocator_t const *DFT_ALLOCATOR;
 
+/*!@public
+ *
+ * @brief
+ *
+ * @param pptr
+ */
+__api__ void pfree(void *pptr);
+
 #endif /* !__OSI_ALLOCATOR_H */
 /*!@} */

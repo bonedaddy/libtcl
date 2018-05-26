@@ -101,12 +101,12 @@ static struct {
 	uint16_t cap;
 } __fibers = {NULL, NULL, 0, 0};
 
+static int __init = 0;
+
 static int __lazyinit(void)
 {
-	static int init = 0;
-
-	if (!init) {
-		init = 1;
+	if (!__init) {
+		__init = 1;
 		__fibers.buffer = calloc(32, sizeof(fiber_t));
 		__fibers.queue = calloc(32, sizeof(fid_t));
 		__fibers.len = 1;
@@ -135,8 +135,17 @@ static fid_t __createfiber(void)
 
 	for (i = 1; i < __fibers.len; ++i) {
 		fiber = __getfiber(i);
-		if (fiber->status == FIBER_DONE || fiber->status == FIBER_DESTROYED)
+		if (fiber->status == FIBER_DESTROYED) {
+			LOG_DEBUG("fiber reuse destroyed: %d", fiber->fid);
 			goto got_one;
+		}
+		if (fiber->status == FIBER_DONE) {
+			LOG_DEBUG("fiber reuse done: %d", fiber->fid);
+#ifdef USE_CORO
+			(void)coro_destroy(&fiber->coroutine);
+#endif
+			goto got_one;
+		}
 	}
 	if ((i = __fibers.len++) + 1 >= __fibers.cap) {
 		cap = (uint16_t)(__fibers.cap * 2);
@@ -148,7 +157,7 @@ static fid_t __createfiber(void)
 			sizeof(fid_t));
 		__fibers.cap = cap;
 	}
-	got_one:
+got_one:
 	__fibers.buffer[i].fid = i;
 	return i;
 }
@@ -160,6 +169,7 @@ static CALLBACK_RETURN_TY __fn(fid_t *fid)
 	fiber = __getfiber(*fid);
 	fiber->result = fiber->fn(fiber->context);
 	fiber->status = FIBER_DONE;
+	LOG_DEBUG("fiber exited: %d", fiber->fid);
 	fiber_yield(fiber->result);
 #ifdef OS_PROVENCORE
 	return 0;
@@ -200,7 +210,7 @@ static __always_inline void __setpriority(fid_t fid)
 	a->priority_idx = i;
 }
 
-static __always_inline void __updatepriority(fid_t fid)
+static __always_inline void __deletepriority(fid_t fid)
 {
 	fid_t i;
 	fiber_t *b;
@@ -210,9 +220,15 @@ static __always_inline void __updatepriority(fid_t fid)
 		if (b->fid == fid)
 			break;
 	}
-	memmove(__fibers.queue + i, __fibers.queue + i + 1,
-		(__fibers.len - 1 - i) * sizeof(fid_t));
+	if (i != __fibers.len)
+		memmove(__fibers.queue + i, __fibers.queue + i + 1,
+			(__fibers.len - 1 - i) * sizeof(fid_t));
 	__fibers.queue[i] = 0;
+}
+
+static __always_inline void __updatepriority(fid_t fid)
+{
+	__deletepriority(fid);
 	__setpriority(fid);
 }
 
@@ -248,6 +264,7 @@ void fiber_init(fid_t *fid, work_t *work, fiber_attr_t attr)
 	fiber->ss = attr.stack_size;
 	fiber->priority = attr.priority;
 	(fiber->priority_idx ? __updatepriority : __setpriority)(*fid);
+	LOG_DEBUG("fiber created: %d", fiber->fid);
 }
 
 void fiber_destroy(fid_t fid)
@@ -255,6 +272,8 @@ void fiber_destroy(fid_t fid)
 	fiber_t *fiber;
 
 	fiber = __getfiber(fid);
+	__deletepriority(fid);
+	LOG_DEBUG("fiber destroyed: %d", fiber->fid);
 	assert(fiber->status == FIBER_DONE);
 #ifdef USE_CORO
 	(void)coro_destroy(&fiber->coroutine);
@@ -262,7 +281,6 @@ void fiber_destroy(fid_t fid)
 #endif
 	free(fiber->coroutine_ctx);
 	bzero(fiber, sizeof(fiber_t));
-	fiber->coroutine_ctx = NULL;
 	fiber->fid = fid;
 	fiber->status = FIBER_DESTROYED;
 }
@@ -282,6 +300,7 @@ void fiber_cleanup(void)
 		free(__fibers.queue);
 		bzero(&__fibers, sizeof(__fibers));
 	}
+	__init = 0;
 }
 
 void *fiber_call(fid_t fid, void *context)
