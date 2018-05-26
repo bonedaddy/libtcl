@@ -62,7 +62,11 @@ typedef uint64_t event_value_t;
  */
 struct event {
 
-#ifndef OSI_THREADING
+#ifdef OSI_THREADING
+
+	/*! TODO. */
+	int fd;
+#else
 
 	/*! TODO. */
 	fifo_t wq;
@@ -72,12 +76,7 @@ struct event {
 
 	/*! TODO. */
 	unsigned flags;
-
-#else
-
-	/*! TODO. */
-	int fd;
-#endif /* !OSI_THREADING */
+#endif /* OSI_THREADING */
 };
 
 __api__ int event_init(event_t *event, event_value_t value, unsigned flags);

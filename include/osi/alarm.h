@@ -92,7 +92,7 @@ struct alarm {
  * @param name  The alarm name.
  * @return      0 on success, non zero otherwise.
  */
-int alarm_init(alarm_t *alarm, const char *name);
+__api__ int alarm_init(alarm_t *alarm, const char *name);
 
 /*!@public
  *
@@ -105,7 +105,7 @@ int alarm_init(alarm_t *alarm, const char *name);
  * @param name  The alarm name.
  * @return      0 on success, non zero otherwise.
  */
-int alarm_init_periodic(alarm_t *alarm, const char *name);
+__api__ int alarm_init_periodic(alarm_t *alarm, const char *name);
 
 /*!@public
  *
@@ -114,7 +114,7 @@ int alarm_init_periodic(alarm_t *alarm, const char *name);
  *
  * @param alarm The alarm to destroy.
  */
-void alarm_destroy(alarm_t *alarm);
+__api__ void alarm_destroy(alarm_t *alarm);
 
 /*!@public
  *
@@ -124,7 +124,7 @@ void alarm_destroy(alarm_t *alarm);
  * @param alarm The alarm to check for.
  * @return      If `alarm' is scheduled or not.
  */
-bool alarm_is_scheduled(const alarm_t *alarm);
+__api__ bool alarm_is_scheduled(const alarm_t *alarm);
 
 /*!@public
  *
@@ -133,7 +133,7 @@ bool alarm_is_scheduled(const alarm_t *alarm);
  *
  * @param alarm The alarm to cancel.
  */
-void alarm_cancel(alarm_t *alarm);
+__api__ void alarm_cancel(alarm_t *alarm);
 
 /*!@public
  *
@@ -149,8 +149,8 @@ void alarm_cancel(alarm_t *alarm);
  * @param data   The `cb' argument.
  * @param queue  The queue where alarm is queued when ready.
  */
-void alarm_attach(alarm_t *alarm, period_ms_t period, work_t *cb, void *data,
-	blocking_queue_t *queue);
+__api__ void alarm_attach(alarm_t *alarm, period_ms_t period, work_t *cb,
+	void *data, blocking_queue_t *queue);
 
 /*!@public
  *
@@ -165,7 +165,8 @@ void alarm_attach(alarm_t *alarm, period_ms_t period, work_t *cb, void *data,
  * @param cb     The alarm work.
  * @param data   The `cb' argument.
  */
-void alarm_set(alarm_t *alarm, period_ms_t period, work_t *cb, void *data);
+__api__ void alarm_set(alarm_t *alarm, period_ms_t period, work_t *cb,
+	void *data);
 
 /*!@public
  *
@@ -177,7 +178,7 @@ void alarm_set(alarm_t *alarm, period_ms_t period, work_t *cb, void *data);
  * @param queue  The queue to listen.
  * @param thread The thread o schedule alarm on.
  */
-void alarm_register(blocking_queue_t *queue, thread_t *thread);
+__api__ void alarm_register(blocking_queue_t *queue, thread_t *thread);
 
 /*!@public
  *
@@ -186,7 +187,7 @@ void alarm_register(blocking_queue_t *queue, thread_t *thread);
  *
  * @param queue The queue to unlisten.
  */
-void alarm_unregister(blocking_queue_t *queue);
+__api__ void alarm_unregister(blocking_queue_t *queue);
 
 /*!@public
  *
@@ -195,7 +196,7 @@ void alarm_unregister(blocking_queue_t *queue);
  * Must be called before exiting.
  * `osi_cleanup' trigger the alarm cleanup.
  */
-void alarm_cleanup(void);
+__api__ void alarm_cleanup(void);
 
 #endif /* !__OSI_ALARM_H */
 /*!@} */
