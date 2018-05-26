@@ -89,16 +89,10 @@ int thread_init(thread_t *thread, char const *name)
 		return -1;
 	start.thread = thread;
 	start.error = 0;
-	thread->is_joined = false;
 	strncpy(thread->name, name, THREAD_NAME_MAX);
 	blocking_queue_init(&thread->work_queue, DEFAULT_WORK_QUEUE_CAPACITY);
 	reactor_init(&thread->reactor);
-#ifdef OSI_THREADING
-	pthread_create(&thread->pthread, NULL, __run_thread, &start);
-#else
-	fiber_init(&thread->fiber, __run_thread,
-		(fiber_attr_t){ .context = &start });
-#endif
+	task_spawn(&thread->task, __run_thread, &start);
 	sema_wait(&start.start_sem);
 	sema_destroy(&start.start_sem);
 	if (start.error) {
@@ -112,28 +106,19 @@ void thread_destroy(thread_t *thread)
 {
 	thread_stop(thread);
 	thread_join(thread);
+	task_destroy(&thread->task);
 	blocking_queue_destroy(&thread->work_queue, free);
 	reactor_destroy(&thread->reactor);
 }
 
 bool thread_setpriority(thread_t *thread, int priority)
 {
-	//TODO(uael):
-	(void)thread;
-	(void)priority;
-	return false;
+	return task_setpriority(&thread->task, priority) == 0;
 }
 
 void thread_join(thread_t *thread)
 {
-	if (!thread->is_joined) {
-		thread->is_joined = true;
-#ifdef OSI_THREADING
-		pthread_join(thread->pthread, NULL);
-#else
-		fiber_join(thread->fiber);
-#endif /* OSI_THREADING */
-	}
+	task_join(&thread->task);
 }
 
 bool thread_post(thread_t *thread, work_t *work, void *context)

@@ -29,6 +29,7 @@
 #include "osi/reactor.h"
 #include "osi/blocking_queue.h"
 #include "osi/stack.h"
+#include "osi/task.h"
 
 #define THREAD_NAME_MAX 16
 
@@ -48,19 +49,11 @@ struct thread {
 
 	char name[THREAD_NAME_MAX + 1];
 
-	bool is_joined;
-
 	blocking_queue_t work_queue;
 
 	reactor_t reactor;
 
-#ifdef OSI_THREADING
-
-	pthread_t pthread;
-#else
-
-	fid_t fiber;
-#endif
+	task_t task;
 };
 
 __api__ int thread_init(thread_t *thread, char const *name);

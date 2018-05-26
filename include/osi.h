@@ -32,7 +32,6 @@
 #include "osi/fiber.h"
 #include "osi/future.h"
 #include "osi/list.h"
-#include "osi/loop.h"
 #include "osi/map.h"
 #include "osi/module.h"
 #include "osi/mutex.h"
@@ -45,6 +44,7 @@
 #include "osi/sema.h"
 #include "osi/stack.h"
 #include "osi/string.h"
+#include "osi/task.h"
 #include "osi/thread.h"
 #include "osi/vector.h"
 

@@ -20,7 +20,6 @@
 
 #include "osi/log.h"
 #include "osi/reader.h"
-#include "osi/loop.h"
 
 static bool __has_byte(const eager_reader_t *reader);
 static void *__inbound_read_loop(void *context);
@@ -52,7 +51,7 @@ int eager_reader_init(eager_reader_t *ret, int fd_to_read,
 		goto error;
 	}
 
-	if (loop_init(&ret->inbound_read_thread, __inbound_read_loop, ret)) {
+	if (task_repeat(&ret->inbound_read_task, __inbound_read_loop, ret)) {
 		LOG_ERROR("unable to make reading thread.");
 		goto error;
 	}
@@ -83,7 +82,7 @@ void eager_reader_destroy(eager_reader_t *reader)
 		reader->allocator->free(reader->current_buffer);
 
 	blocking_queue_destroy(&reader->buffers, reader->allocator->free);
-	loop_destroy(&reader->inbound_read_thread);
+	task_destroy(&reader->inbound_read_task);
 }
 
 void eager_reader_register(eager_reader_t *reader, thread_t *thread,

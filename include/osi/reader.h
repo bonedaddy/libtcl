@@ -28,7 +28,7 @@
 
 #include "osi/allocator.h"
 #include "osi/blocking_queue.h"
-#include "osi/loop.h"
+#include "osi/task.h"
 #include "osi/thread.h"
 
 /*!@public
@@ -95,7 +95,7 @@ struct eager_reader {
 	data_buffer_t *current_buffer;
 
 	/*! TODO. */
-	loop_t inbound_read_thread;
+	task_t inbound_read_task;
 
 	/*! TODO. */
 	reactor_object_t *outbound_registration;

@@ -18,31 +18,33 @@
 
 #pragma once
 
-/*!@file osi/loop.h
+/*!@file osi/task.h
  * @author uael
  *
- * @addtogroup osi.loop @{
+ * @addtogroup osi.task @{
  */
-#ifndef __OSI_LOOP_H
-# define __OSI_LOOP_H
+#ifndef __OSI_TASK_H
+# define __OSI_TASK_H
 
 #include "osi/fiber.h"
 
 /*!@public
  *
  * @brief
- * The loop structure declaration.
+ * The task structure declaration.
  */
-typedef struct loop loop_t;
+typedef struct task task_t;
 
 /*!@public
  *
  * @brief
- * The loop structure definition.
+ * The task structure definition.
  */
-struct loop {
+struct task {
+	
+	bool running;
 
-	bool is_running;
+	bool joined;
 
 	work_t *work;
 
@@ -57,13 +59,19 @@ struct loop {
 #endif
 };
 
-__api__ int loop_init(loop_t *loop, work_t *work, void *context);
+__api__ int task_spawn(task_t *task, work_t *work, void *context);
 
-__api__ void loop_destroy(loop_t *loop);
+__api__ int task_repeat(task_t *task, work_t *work, void *context);
 
-__api__ void loop_stop(loop_t *loop);
+__api__ void task_destroy(task_t *task);
 
-__api__ void loop_join(loop_t *loop);
+__api__ bool task_running(task_t *task);
 
-#endif /* __OSI_THREAD_H */
+__api__ int task_setpriority(task_t *task, int priority);
+
+__api__ void task_stop(task_t *task);
+
+__api__ void task_join(task_t *task);
+
+#endif /* __OSI_TASK_H */
 /*!@} */

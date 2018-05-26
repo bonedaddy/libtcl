@@ -22,16 +22,17 @@
 #include "osi/list.h"
 #include "osi/log.h"
 #include "osi/mutex.h"
+#include "osi/task.h"
 #include "osi/thread.h"
 
 #define THREAD_RT_PRIORITY 1
 
 static bool init_started = false;
-static bool is_ready = false; /*TODO: could replace dispatcher_thread_active */
+static bool is_ready = false; /*TODO: could replace __dispatcher_active */
 static LIST_HEAD(alarms);
 static mutex_t alarms_mutex;
-static bool dispatcher_thread_active = false;
-static thread_t dispatcher_thread;
+static bool __dispatcher_active = false;
+static task_t __dispatcher;
 static thread_t default_callback_thread;
 static blocking_queue_t default_callback_queue;
 static sema_t alarm_expired;
@@ -178,35 +179,29 @@ static void *__schedule_loop(void *context)
 	alarm_t *alarm;
 
 	(void)context;
-	while (true) {
 #ifdef HAS_TIMER
 		sema_wait(&alarm_expired);
 #endif
-#ifndef OSI_THREADING
-		fiber_schedule();
-#endif
-		if (!dispatcher_thread_active)
-			break;
-		mutex_lock(&alarms_mutex);
-		if (list_empty(&alarms) ||
-			(alarm = list_first_entry(&alarms, alarm_t, list_alarm))->deadline >
-			now()) {
-			__schedule_root();
-			mutex_unlock(&alarms_mutex);
-			continue;
-		}
-		list_del_init(&alarm->list_alarm);
-		if (alarm->is_periodic) {
-			/* TODO?: alarm->prev_deadline = alarm->deadline; */
-			__schedule(alarm);
-		}
+	if (!__dispatcher_active)
+		return NULL;
+	mutex_lock(&alarms_mutex);
+	if (list_empty(&alarms) ||
+		(alarm = list_first_entry(&alarms, alarm_t, list_alarm))->deadline >
+		now()) {
 		__schedule_root();
-		if (alarm->callback)
-			blocking_queue_push(alarm->queue, alarm);
-		/* TODO: what happened to alarm if not periodic ???? */
 		mutex_unlock(&alarms_mutex);
+		return NULL;
 	}
-	LOG_DEBUG("Callback thread exited");
+	list_del_init(&alarm->list_alarm);
+	if (alarm->is_periodic) {
+		/* TODO?: alarm->prev_deadline = alarm->deadline; */
+		__schedule(alarm);
+	}
+	__schedule_root();
+	if (alarm->callback)
+		blocking_queue_push(alarm->queue, alarm);
+	/* TODO: what happened to alarm if not periodic ???? */
+	mutex_unlock(&alarms_mutex);
 	return NULL;
 }
 
@@ -268,17 +263,12 @@ static bool __lazyinit(void)
 		goto error4;
 	alarm_register(&default_callback_queue,
 		&default_callback_thread);
-	if (thread_init(&dispatcher_thread, "alarm_dispatcher"))
+	if (task_repeat(&__dispatcher, __schedule_loop, NULL))
 		goto error5;
-	dispatcher_thread_active = true;
-	if (!thread_post(&dispatcher_thread, __schedule_loop, NULL))
-		goto error6;
+	__dispatcher_active = true;
 	is_ready = true;
 	mutex_unlock(&alarms_mutex);
 	return true;
-error6:
-	dispatcher_thread_active = false;
-	thread_destroy(&dispatcher_thread);
 error5:
 	blocking_queue_destroy(&default_callback_queue, NULL);
 error4:
@@ -416,9 +406,9 @@ void alarm_cleanup(void)
 	if (!is_ready)
 		return;
 	is_ready = false;
-	dispatcher_thread_active = false;
+	__dispatcher_active = false;
 	sema_post(&alarm_expired);
-	thread_destroy(&dispatcher_thread);
+	task_destroy(&__dispatcher);
 	mutex_lock(&alarms_mutex);
 	blocking_queue_destroy(&default_callback_queue, NULL);
 	thread_destroy(&default_callback_thread);
