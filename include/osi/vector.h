@@ -380,5 +380,5 @@ __always_inline size_t vector_indexof(vector_t *vector, void *item);
 		item && (void *)item >= vector_begin(vector); \
 		item = (void *)((char *)item - (vector)->isize))
 
-#endif /* __OSI_VECTOR_H */
+#endif /* !__OSI_VECTOR_H */
 /*!@} */

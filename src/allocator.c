@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "bt_osi_allocator"
-
-#include "osi/log.h"
 #include "osi/allocator.h"
 
-static const allocator_t __interface = { malloc, free };
+static const allocator_t __interface = {
+	malloc,
+	free
+};
+
 allocator_t const *DFT_ALLOCATOR = &__interface;

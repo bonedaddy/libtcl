@@ -23,20 +23,52 @@
  *
  * @addtogroup osi.allocator @{
  */
-#ifndef __OSI_BUFFER_H
-# define __OSI_BUFFER_H
+#ifndef __OSI_ALLOCATOR_H
+# define __OSI_ALLOCATOR_H
 
 #include "osi/conf.h"
 
-typedef void *(*alloc_fn)(size_t size);
-typedef void (*free_fn)(void *ptr);
+/*!@public
+ *
+ * @brief
+ * The allocator structure declaration.
+ */
+typedef struct allocator allocator_t;
 
-typedef struct {
-	alloc_fn alloc;
-	free_fn  free;
-} allocator_t;
+/*!@public
+ *
+ * @brief
+ * Declaration of alloc function.
+ */
+typedef void *(*alloc_t)(size_t size);
 
+/*!@public
+ *
+ * @brief
+ * Declaration of free function.
+ */
+typedef void (*free_t)(void *ptr);
+
+/*!@public
+ *
+ * @brief
+ * The allocator structure definition.
+ */
+struct allocator {
+
+	/*! Allocation callback wrapper. */
+	alloc_t alloc;
+
+	/*! Allocation freed callback wrapper. */
+	free_t  free;
+};
+
+/*!@public
+ *
+ * @brief
+ * The default allocator.
+ */
 __api__ allocator_t const *DFT_ALLOCATOR;
 
-#endif /* __OSI_BUFFER_H */
+#endif /* !__OSI_ALLOCATOR_H */
 /*!@} */

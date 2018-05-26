@@ -92,8 +92,7 @@ __api__ buffer_t *buffer_newref(const buffer_t *buf);
  * @param slice_size
  * @return
  */
-__api__ buffer_t *buffer_newslice(const buffer_t *buf,
-	size_t slice_size);
+__api__ buffer_t *buffer_newslice(const buffer_t *buf, size_t slice_size);
 
 /*!@public
  *
@@ -129,5 +128,5 @@ __api__ void *buffer_ptr(const buffer_t *buf);
  */
 __api__ size_t buffer_length(const buffer_t *buf);
 
-#endif /* __OSI_BUFFER_H */
+#endif /* !__OSI_BUFFER_H */
 /*!@} */

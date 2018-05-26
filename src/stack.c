@@ -23,12 +23,12 @@ __always_inline void stack_init(lifo_t *stack, size_t isize)
 	vector_init(&stack->base, isize);
 }
 
-__always_inline void stack_destroy(lifo_t *stack, stack_dtor_t *idtor)
+__always_inline void stack_destroy(lifo_t *stack, lifo_dtor_t *idtor)
 {
 	vector_destroy(&stack->base, idtor);
 }
 
-__always_inline void stack_clear(lifo_t *stack, stack_dtor_t *idtor)
+__always_inline void stack_clear(lifo_t *stack, lifo_dtor_t *idtor)
 {
 	vector_clear(&stack->base, idtor);
 }

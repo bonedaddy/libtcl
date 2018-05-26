@@ -26,8 +26,8 @@
 #ifndef __OSI_DISPATCHER_H
 # define __OSI_DISPATCHER_H
 
-#include "osi/map.h"
 #include "osi/blocking_queue.h"
+#include "osi/map.h"
 
 #define DISPATCHER_NAME_MAX 16
 
@@ -122,5 +122,5 @@ __api__ void dispatcher_register_default(dispatcher_t *dispatcher,
 __api__ bool dispatcher_dispatch(dispatcher_t *dispatcher, uintptr_t type,
 	void *data);
 
-#endif /* __OSI_DISPATCHER_H */
+#endif /* !__OSI_DISPATCHER_H */
 /*!@} */

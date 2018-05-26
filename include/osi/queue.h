@@ -41,7 +41,7 @@ typedef union fifo fifo_t;
  * QUEUE item destruction callback, passed to `queue_destroy' to destroy every
  * item before freed.
  */
-typedef void (queue_dtor_t)(void *item);
+typedef void (fifo_dtor_t)(void *item);
 
 /*!@public
  *
@@ -51,7 +51,8 @@ typedef void (queue_dtor_t)(void *item);
 union fifo {
 
 	/*!@private
-	 * Base of the queue. */
+	 * Base of the queue.
+	 */
 	vector_t base;
 
 	/*! Public accessors. */
@@ -92,7 +93,7 @@ __api__ void queue_init(fifo_t *queue, size_t isize);
  * @param queue The queue to destroy.
  * @param idtor The item callback destructor.
  */
-__api__ void queue_destroy(fifo_t *queue, queue_dtor_t *idtor);
+__api__ void queue_destroy(fifo_t *queue, fifo_dtor_t *idtor);
 
 /*!@public
  *
@@ -104,7 +105,7 @@ __api__ void queue_destroy(fifo_t *queue, queue_dtor_t *idtor);
  * @param queue The queue to clear.
  * @param idtor The item callback destructor.
  */
-__api__ void queue_clear(fifo_t *queue, queue_dtor_t *idtor);
+__api__ void queue_clear(fifo_t *queue, fifo_dtor_t *idtor);
 
 /*!@public
  *
@@ -228,5 +229,5 @@ __always_inline size_t queue_index_of(fifo_t *queue, void *item);
  */
 __always_inline bool queue_pop_at(fifo_t *queue, size_t idx, void *out);
 
-#endif /* __OSI_QUEUE_H */
+#endif /* !__OSI_QUEUE_H */
 /*!@} */

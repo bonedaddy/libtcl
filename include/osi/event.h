@@ -41,13 +41,6 @@ typedef struct event event_t;
  * @brief
  * The event structure declaration.
  */
-typedef struct event_poll event_poll_t;
-
-/*!@public
- *
- * @brief
- * The event structure declaration.
- */
 #ifdef OSI_THREADING
 typedef eventfd_t event_value_t;
 

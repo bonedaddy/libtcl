@@ -34,7 +34,7 @@ int blocking_queue_init(blocking_queue_t *queue, unsigned capacity)
 	return 0;
 }
 
-void blocking_queue_destroy(blocking_queue_t *queue, queue_dtor_t *dtor)
+void blocking_queue_destroy(blocking_queue_t *queue, fifo_dtor_t *dtor)
 {
 	blocking_queue_unlisten(queue);
 	queue_destroy(&queue->base, dtor);

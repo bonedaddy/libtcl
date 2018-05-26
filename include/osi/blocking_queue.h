@@ -22,6 +22,16 @@
  * @author uael
  *
  * @addtogroup osi.ds @{
+ *
+ * @brief
+ * The blocking queue is a concurrent version of the lock free one fifo data
+ * structure. This blocking queue apply the producer/consumer pattern which is
+ * described here `https://en.wikipedia.org/wiki/Producer-consumer_problem',
+ * using two semaphores, one to produce the other to consume.
+ *
+ * This implementation also provide a way to listen push/pop operation on a
+ * thread using the reactor pattern, see `blocking_queue_listen' and
+ * `blocking_queue_unlisten' for more information.
  */
 #ifndef __OSI_BLOCKING_QUEUE_H
 # define __OSI_BLOCKING_QUEUE_H
@@ -53,41 +63,49 @@ typedef void (listener_t)(blocking_queue_t *blocking_queue);
  */
 struct blocking_queue {
 
+	/*! Use a fifo as base to stock items. */
 	fifo_t base;
 
+	/*! The `producer' capacity. */
 	uint32_t capacity;
 
+	/*! The producer semaphore, wait on push, post on pop. */
 	sema_t producer;
 
+	/*! The consumer semaphore, wait on pop, post on push. */
 	sema_t consumer;
 
+	/*! Used when listening operations on a thread, see
+	 * `blocking_queue_unlisten'.
+	 */
 	reactor_object_t *reactor_event;
 
+	/*! Used to lock operations on the `base' fifo. */
 	mutex_t lock;
 };
 
 /*!@public
  *
  * @brief
- * TODO
+ * Init the `queue' blocking queue with `capacity' for capacity, which represent
+ * the maximum items at once in the queue.
+ * `queue' must be destroyed with `blocking_queue_destroy'.
  *
- * @param queue
- * @param isize
- * @param capacity
- * @return
+ * @param queue    The blocking queue to init.
+ * @param capacity The capacity to init the queue with.
+ * @return         0 on success, non-zero otherwise.
  */
 __api__ int blocking_queue_init(blocking_queue_t *queue, unsigned capacity);
 
 /*!@public
  *
  * @brief
- * TODO
+ * Destroy the given `queue' blocking queue.
  *
- * @param queue
- * @param dtor
+ * @param queue The blocking queue to destroy.
+ * @param dtor  The callback which is called on every remaining items.
  */
-__api__ void blocking_queue_destroy(blocking_queue_t *queue,
-	queue_dtor_t *dtor);
+__api__ void blocking_queue_destroy(blocking_queue_t *queue, fifo_dtor_t *dtor);
 
 /*!@public
  *
@@ -181,7 +199,16 @@ __api__ void blocking_queue_listen(blocking_queue_t *queue,
  */
 __api__ void blocking_queue_unlisten(blocking_queue_t *queue);
 
+/*!@public
+ *
+ * @brief
+ * TODO
+ * 
+ * @param queue 
+ * @param item 
+ * @return 
+ */
 __api__ bool blocking_queue_remove(blocking_queue_t *queue, void *item);
 
-#endif /* __OSI_BLOCKING_QUEUE_H */
+#endif /* !__OSI_BLOCKING_QUEUE_H */
 /*!@} */

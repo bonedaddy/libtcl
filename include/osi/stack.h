@@ -41,7 +41,7 @@ typedef union lifo lifo_t;
  * stack item destruction callback, passed to `stack_destroy' to destroy every
  * item before freed.
  */
-typedef void (stack_dtor_t)(void *item);
+typedef void (lifo_dtor_t)(void *item);
 
 /*!@public
  *
@@ -51,7 +51,8 @@ typedef void (stack_dtor_t)(void *item);
 union lifo {
 
 	/*!@private
-	 * Base of the stack. */
+	 * Base of the stack.
+	 */
 	vector_t base;
 
 	/*! Public accessors. */
@@ -92,7 +93,7 @@ __api__ void stack_init(lifo_t *stack, size_t isize);
  * @param stack The stack to destroy.
  * @param idtor The item callback destructor.
  */
-__api__ void stack_destroy(lifo_t *stack, stack_dtor_t *idtor);
+__api__ void stack_destroy(lifo_t *stack, lifo_dtor_t *idtor);
 
 /*!@public
  *
@@ -104,7 +105,7 @@ __api__ void stack_destroy(lifo_t *stack, stack_dtor_t *idtor);
  * @param stack The stack to clear.
  * @param idtor The item callback destructor.
  */
-__api__ void stack_clear(lifo_t *stack, stack_dtor_t *idtor);
+__api__ void stack_clear(lifo_t *stack, lifo_dtor_t *idtor);
 
 /*!@public
  *
@@ -204,5 +205,5 @@ __api__ void *stack_push(lifo_t *stack);
  */
 __api__ bool stack_pop(lifo_t *stack, void *out);
 
-#endif /* __OSI_STACK_H */
+#endif /* !__OSI_STACK_H */
 /*!@} */
