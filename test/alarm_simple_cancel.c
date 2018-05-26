@@ -22,8 +22,10 @@
 
 int main(void)
 {
-	alarm_t *alarm = alarm_new("alarm_test.test_simple_cancel");
-	alarm_cancel(alarm);
-	alarm_free(alarm);
+	alarm_t alarm;
+
+	ASSERT_EQ(0, alarm_init(&alarm, "alarm_test.test_simple_cancel"));
+	alarm_cancel(&alarm);
+	alarm_destroy(&alarm);
 	return 0;
 }

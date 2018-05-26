@@ -22,9 +22,11 @@
 
 int main(void)
 {
-	alarm_t *alarm = alarm_new("alarm_test.test_set_long");
+	alarm_t alarm;
 
-	alarm_set(alarm, TIMER_INTERVAL_FOR_WAKELOCK_IN_MS + EPSILON_MS, cb, NULL);
+	alarm_init(&alarm, "alarm_test.test_set_long");
+
+	alarm_set(&alarm, TIMER_INTERVAL_FOR_WAKELOCK_IN_MS + EPSILON_MS, cb, NULL);
 	sema_init(&semaphore, 0);
 
 	ASSERT_EQ(cb_counter, 0);
@@ -33,6 +35,6 @@ int main(void)
 
 	ASSERT_EQ(cb_counter, 1);
 
-	alarm_free(alarm);
+	alarm_destroy(&alarm);
 	return 0;
 }

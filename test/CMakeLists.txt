@@ -87,7 +87,7 @@ osi_register_suite(thread)
 osi_register_test(thread_init)
 
 osi_register_suite(alarm)
-osi_register_test(alarm_simple_free)
+osi_register_test(alarm_simple_destroy)
 osi_register_test(alarm_simple_cancel)
 osi_register_test(alarm_cancel)
 osi_register_test(alarm_cancel_idempotent)

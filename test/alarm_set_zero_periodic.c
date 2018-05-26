@@ -22,19 +22,21 @@
 
 int main(void)
 {
-	alarm_t *alarm = alarm_new_periodic("alarm_test.test_set_zero_periodic");
+	alarm_t alarm;
 
+	alarm_init_periodic(&alarm,
+		"test_set_zero_periodic.test_set_short_periodic");
 	sema_init(&semaphore, 0);
-	alarm_set(alarm, 1, cb, NULL);
+	alarm_set(&alarm, 0, cb, NULL);
 
 	for (int i = 1; i <= 10; i++) {
 		sema_wait(&semaphore);
 
 		ASSERT_GE(cb_counter, i);
 	}
-	alarm_cancel(alarm);
+	alarm_cancel(&alarm);
 
-	alarm_free(alarm);
+	alarm_destroy(&alarm);
 	alarm_cleanup();
 	return 0;
 }

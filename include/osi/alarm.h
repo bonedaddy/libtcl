@@ -27,58 +27,175 @@
 # define __OSI_ALARM_H
 
 #include "osi/blocking_queue.h"
+#include "osi/list.h"
+#include "osi/mutex.h"
 #include "osi/thread.h"
 #include "osi/time.h"
-#include "osi/mutex.h"
-#include "osi/list.h"
 
 /*!@public
  *
  * @brief
  * The alarm structure declaration.
  */
-typedef struct {
+typedef struct alarm alarm_t;
+
+/*!@public
+ *
+ * @brief
+ * The alarm structure definition.
+ */
+struct alarm {
+
+	/*! The alarm cute name. */
 	const char *name;
+
+	/*! The alarm deadline, must be scheduled after. */
 	period_ms_t deadline;
+
+	/*! At which time we set this alarm with `alarm_attach' or `alarm_set'. */
 	period_ms_t creation_time;
+
+	/*! The alarm period or relay, depends of `is_periodic'. */
 	period_ms_t period;
-	void *data;
+
+	/*! If this alarm is periodic. */
 	bool is_periodic;
+
+	/*! If this alarm was already set by `alarm_attach' or `alarm_set'. */
+	bool is_set;
+
+	/*! The `callback' argument. */
+	void *data;
+
+	/*! The alarm work. */
 	work_t *callback;
+
+	/*! Must lock the call of `callback'. */
 	mutex_t callback_mutex;
-	blocking_queue_t *queue;  // The processing queue to add this alarm to
+
+	/*! The processing queue to add this alarm to. */
+	blocking_queue_t *queue;
+
+	/*! Head of pending alarms list. */
 	struct list_head list_alarm;
-} alarm_t;
+};
 
-bool alarm_init(alarm_t *alarm, const char *name);
+/*!@public
+ *
+ * @brief
+ * Init `alarm' as a non periodic one. This means that she will not be
+ * re-scheduled on ready, after she was attached to a queue with `alarm_set'
+ * or `alarm_set'.
+ * The alarm must be destroyed with `alarm_destroy'.
+ *
+ * @param alarm The alarm to init.
+ * @param name  The alarm name.
+ * @return      0 on success, non zero otherwise.
+ */
+int alarm_init(alarm_t *alarm, const char *name);
 
-bool alarm_init_periodic(alarm_t *alarm, const char *name);
+/*!@public
+ *
+ * @brief
+ * Init `alarm' as a periodic one. This means that she will be re-scheduled
+ * on ready, after she was attached to a queue with `alarm_set' or `alarm_set'.
+ * The alarm must be destroyed with `alarm_destroy'.
+ *
+ * @param alarm The alarm to init.
+ * @param name  The alarm name.
+ * @return      0 on success, non zero otherwise.
+ */
+int alarm_init_periodic(alarm_t *alarm, const char *name);
 
+/*!@public
+ *
+ * @brief
+ * Destroy `alarm', trigger `alarm_cancel'.
+ *
+ * @param alarm The alarm to destroy.
+ */
 void alarm_destroy(alarm_t *alarm);
 
-void alarm_cancel(alarm_t *alarm);
-
-//this function use malloc
-alarm_t *alarm_new(const char *name);
-
-alarm_t *alarm_new_periodic(const char *name);
-
-void alarm_free(alarm_t *alarm);
-
-void alarm_set_on_queue(alarm_t *alarm, period_ms_t interval_ms,
-						work_t *cb, void *data,
-						blocking_queue_t *queue);
-
-void alarm_set(alarm_t *alarm, period_ms_t interval_ms,
-			   work_t *cb, void *data);
-
+/*!@public
+ *
+ * @brief
+ * Check if `alarm' is scheduled or not on his processing queue.
+ *
+ * @param alarm The alarm to check for.
+ * @return      If `alarm' is scheduled or not.
+ */
 bool alarm_is_scheduled(const alarm_t *alarm);
 
-void alarm_register_processing_queue(blocking_queue_t *queue, thread_t *thread);
+/*!@public
+ *
+ * @brief
+ * Cancel the scheduling of `alarm'.
+ *
+ * @param alarm The alarm to cancel.
+ */
+void alarm_cancel(alarm_t *alarm);
 
-void alarm_unregister_processing_queue(blocking_queue_t *queue);
+/*!@public
+ *
+ * @brief
+ * Attach the `alarm' work `cb' which will be called every `interval_ms' with
+ * the `data' argument on the `queue' processing queue.
+ * `alarm' can only be set once, at least until she was canceled by
+ * `alarm_cancel'.
+ *
+ * @param alarm  The alarm to set.
+ * @param period The period between every call of `cb'.
+ * @param cb     The alarm work.
+ * @param data   The `cb' argument.
+ * @param queue  The queue where alarm is queued when ready.
+ */
+void alarm_attach(alarm_t *alarm, period_ms_t period, work_t *cb, void *data,
+	blocking_queue_t *queue);
 
+/*!@public
+ *
+ * @brief
+ * Set the `alarm' work `cb' which will be called every `interval_ms' with
+ * the `data' argument on the default alarm processing queue.
+ * `alarm' can only be set once, at least until she was canceled by
+ * `alarm_cancel'.
+ *
+ * @param alarm  The alarm to set.
+ * @param period The period between every call of `cb'.
+ * @param cb     The alarm work.
+ * @param data   The `cb' argument.
+ */
+void alarm_set(alarm_t *alarm, period_ms_t period, work_t *cb, void *data);
+
+/*!@public
+ *
+ * @brief
+ * Listen `queue' to dispatch all alarms queued on and schedule them on
+ * `thread'.
+ * This can be done on multiple queues and threads.
+ *
+ * @param queue  The queue to listen.
+ * @param thread The thread o schedule alarm on.
+ */
+void alarm_register(blocking_queue_t *queue, thread_t *thread);
+
+/*!@public
+ *
+ * @brief
+ * Unregister a queue for listening.
+ *
+ * @param queue The queue to unlisten.
+ */
+void alarm_unregister(blocking_queue_t *queue);
+
+/*!@public
+ *
+ * @brief
+ * Cleanup the static scope of alarms handling.
+ * Must be called before exiting.
+ * `osi_cleanup' trigger the alarm cleanup.
+ */
 void alarm_cleanup(void);
 
-#endif /* __OSI_ALARM_H */
+#endif /* !__OSI_ALARM_H */
 /*!@} */

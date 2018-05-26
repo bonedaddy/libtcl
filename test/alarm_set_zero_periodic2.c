@@ -22,14 +22,19 @@
 
 int main(void)
 {
-	alarm_t *alarm = alarm_new_periodic("alarm_test.test_set_zero_periodic");
-	alarm_t *alarm2 = alarm_new_periodic("alarm_test.test_set_zero_periodic");
+	alarm_t alarm;
+	alarm_t alarm2;
+
+	alarm_init_periodic(&alarm,
+		"test_set_zero_periodic.test_set_zero_periodic");
+	alarm_init_periodic(&alarm2,
+		"test_set_zero_periodic.test_set_zero_periodic");
 
 	sema_init(&semaphore, 0);
 	sema_init(&semaphore2, 0);
 
-	alarm_set(alarm, 0, cb, NULL);
-	alarm_set(alarm2, 0, cb2, NULL);
+	alarm_set(&alarm, 0, cb, NULL);
+	alarm_set(&alarm2, 0, cb2, NULL);
 
 	for (int i = 1; i <= 10; i++) {
 		sema_wait(&semaphore);
@@ -40,8 +45,8 @@ int main(void)
 
 	ASSERT_EQ(9, cb_counter2);
 
-	alarm_free(alarm);
-	alarm_free(alarm2);
+	alarm_destroy(&alarm);
+	alarm_destroy(&alarm2);
 
 	alarm_cleanup();
 	return 0;

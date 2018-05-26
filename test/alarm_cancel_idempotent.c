@@ -22,11 +22,13 @@
 
 int main(void)
 {
-	alarm_t *alarm = alarm_new("alarm_test.test_cancel_idempotent");
-	alarm_set(alarm, 10, cb, NULL);
-	alarm_cancel(alarm);
-	alarm_cancel(alarm);
-	alarm_cancel(alarm);
-	alarm_free(alarm);
+	alarm_t alarm;
+
+	alarm_init(&alarm, "alarm_test.test_cancel_idempotent");
+	alarm_set(&alarm, 10, cb, NULL);
+	alarm_cancel(&alarm);
+	alarm_cancel(&alarm);
+	alarm_cancel(&alarm);
+	alarm_destroy(&alarm);
 	return 0;
 }

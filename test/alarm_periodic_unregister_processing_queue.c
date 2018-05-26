@@ -23,7 +23,7 @@
 
 int main(void)
 {
-	alarm_t *alarms[5];
+	alarm_t alarms[5];
 	blocking_queue_t queue;
 	thread_t thread;
 
@@ -31,7 +31,7 @@ int main(void)
 	blocking_queue_init(&queue, UINT32_MAX);
 	thread_init(&thread, "timers.periodic_unregister_processing_queue.thread");
 
-	alarm_register_processing_queue(&queue, &thread);
+	alarm_register(&queue, &thread);
 	char alarm_name[50];
 
 	strcpy(alarm_name, "alarm_test.test_callback_ordering_on_queue[000]");
@@ -39,12 +39,12 @@ int main(void)
 		alarm_name[43] = (char)(i % 1000 / 100 + '0');
 		alarm_name[44] = (char)(i % 100 / 10+ '0');
 		alarm_name[45] = (char)(i % 10 + '0');
-		alarms[i] = alarm_new_periodic(alarm_name);
+		alarm_init_periodic(alarms + i, alarm_name);
 	}
 
 	// Schedule each of the timers with different period
 	for (int i = 0; i < 5; i++) {
-		alarm_set_on_queue(alarms[i], (period_ms_t)20 + i,
+		alarm_attach(alarms + i, (period_ms_t)20 + i,
 			cb, INT_TO_PTR(i), &queue);
 	}
 
@@ -56,16 +56,16 @@ int main(void)
 
 	// Test that all timers are still scheduled
 	for (int i = 0; i < 5; i++) {
-		ASSERT_TRUE(alarm_is_scheduled(alarms[i]));
+		ASSERT_TRUE(alarm_is_scheduled(alarms + i));
 	}
 
-	alarm_unregister_processing_queue(&queue);
+	alarm_unregister(&queue);
 
 	int saved_cb_counter = cb_counter;
 
 	// Test that none of the timers are scheduled
 	for (int i = 0; i < 5; i++) {
-		ASSERT_FALSE(alarm_is_scheduled(alarms[i]));
+		ASSERT_FALSE(alarm_is_scheduled(alarms + i));
 	}
 
 	// Sleep for 500ms and test again that the cb_counter hasn't been modified
@@ -73,7 +73,7 @@ int main(void)
 	ASSERT_TRUE(cb_counter == saved_cb_counter);
 
 	for (int i = 0; i < 5; i++) {
-		alarm_free(alarms[i]);
+		alarm_destroy(alarms + i);
 	}
 
 	blocking_queue_destroy(&queue, NULL);

@@ -22,15 +22,17 @@
 
 int main(void)
 {
-	alarm_t *alarm = alarm_new("alarm_test.test_cancel");
+	alarm_t alarm;
 
-	alarm_set(alarm, 10, cb, NULL);
-	alarm_cancel(alarm);
+	alarm_init(&alarm, "alarm_test.test_cancel");
+
+	alarm_set(&alarm, 10, cb, NULL);
+	alarm_cancel(&alarm);
 
 	msleep(10 + EPSILON_MS);
 
 	ASSERT_EQ(cb_counter, 0);
-	alarm_free(alarm);
+	alarm_destroy(&alarm);
 	alarm_cleanup();
 	return 0;
 }

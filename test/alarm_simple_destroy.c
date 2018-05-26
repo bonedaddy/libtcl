@@ -16,14 +16,15 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "test_alarm_simple_free"
+#define LOG_TAG "test_alarm_simple_destroy"
 
 #include "alarm.h"
 
 int main(void)
 {
-	alarm_t *alarm = alarm_new("alarm_test.test_new_free_simple");
-	ASSERT_TRUE(alarm != NULL);
-	alarm_free(alarm);
+	alarm_t alarm;
+
+	ASSERT_EQ(0, alarm_init(&alarm, "alarm_test.test_new_free_simple"));
+	alarm_destroy(&alarm);
 	return 0;
 }

@@ -22,14 +22,14 @@
 
 int main(void)
 {
-	alarm_t *alarms[100];
+	alarm_t alarms[100];
 	blocking_queue_t queue;
 	thread_t thread;
 
 	blocking_queue_init(&queue, UINT32_MAX);
 	thread_init(&thread , "timers.test_callback_ordering_on_queue.thread");
 	sema_init(&semaphore, 0);
-	alarm_register_processing_queue(&queue, &thread);
+	alarm_register(&queue, &thread);
 
 	char alarm_name[50];
 
@@ -38,11 +38,11 @@ int main(void)
 		alarm_name[43] = (char)(i % 1000 / 100 + '0');
 		alarm_name[44] = (char)(i % 100 / 10+ '0');
 		alarm_name[45] = (char)(i % 10 + '0');
-		alarms[i] = alarm_new(alarm_name);
+		alarm_init(alarms + i, alarm_name);
 	}
 
 	for (int i = 0; i < 100; i++) {
-		alarm_set_on_queue(alarms[i], 100, ordered_cb, INT_TO_PTR(i), &queue);
+		alarm_attach(alarms + i, 100, ordered_cb, INT_TO_PTR(i), &queue);
 	}
 
 	for (int i = 1; i <= 100; i++) {
@@ -53,9 +53,9 @@ int main(void)
 	ASSERT_EQ(cb_misordered_counter, 0);
 
 	for (int i = 0; i < 100; i++)
-		alarm_free(alarms[i]);
+		alarm_destroy(alarms + i);
 
-	alarm_unregister_processing_queue(&queue);
+	alarm_unregister(&queue);
 	blocking_queue_destroy(&queue, NULL);
 	thread_destroy(&thread);
 	alarm_cleanup();

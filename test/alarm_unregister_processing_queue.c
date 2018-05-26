@@ -22,7 +22,7 @@
 
 int main(void)
 {
-	alarm_t *alarms[100];
+	alarm_t alarms[100];
 	blocking_queue_t queue;
 	thread_t thread;
 
@@ -30,7 +30,7 @@ int main(void)
 	blocking_queue_init(&queue, UINT32_MAX);
 	thread_init(&thread, "timers.test_unregister_processing_queue.thread");
 
-	alarm_register_processing_queue(&queue, &thread);
+	alarm_register(&queue, &thread);
 	char alarm_name[50];
 
 	strcpy(alarm_name, "alarm_test.test_unregister_processing_queue[000]");
@@ -38,16 +38,16 @@ int main(void)
 		alarm_name[44] = (char)(i % 1000 / 100 + '0');
 		alarm_name[45] = (char)(i % 100 / 10+ '0');
 		alarm_name[46] = (char)(i % 10 + '0');
-		alarms[i] = alarm_new(alarm_name);
+		alarm_init(alarms + i, alarm_name);
 	}
 
 	// Schedule half of the timers to expire soon, and the rest far in the
 	// future
 	for (int i = 0; i < 50; i++) {
-		alarm_set_on_queue(alarms[i], 100, ordered_cb, INT_TO_PTR(i), &queue);
+		alarm_attach(alarms + i, 100, ordered_cb, INT_TO_PTR(i), &queue);
 	}
 	for (int i = 50; i < 100; i++) {
-		alarm_set_on_queue(alarms[i], 1000 * 1000, ordered_cb, INT_TO_PTR(i),
+		alarm_attach(alarms + i, 1000 * 1000, ordered_cb, INT_TO_PTR(i),
 			&queue);
 	}
 
@@ -61,21 +61,21 @@ int main(void)
 
 	// Test that only the expired timers are not scheduled
 	for (int i = 0; i < 50; i++) {
-		ASSERT_FALSE(alarm_is_scheduled(alarms[i]));
+		ASSERT_FALSE(alarm_is_scheduled(alarms + i));
 	}
 	for (int i = 50; i < 100; i++) {
-		ASSERT_TRUE(alarm_is_scheduled(alarms[i]));
+		ASSERT_TRUE(alarm_is_scheduled(alarms + i));
 	}
 
-	alarm_unregister_processing_queue(&queue);
+	alarm_unregister(&queue);
 
 	// Test that none of the timers are scheduled
 	for (int i = 0; i < 100; i++) {
-		ASSERT_FALSE(alarm_is_scheduled(alarms[i]));
+		ASSERT_FALSE(alarm_is_scheduled(alarms + i));
 	}
 
 	for (int i = 0; i < 100; i++) {
-		alarm_free(alarms[i]);
+		alarm_destroy(alarms + i);
 	}
 
 	blocking_queue_destroy(&queue, NULL);

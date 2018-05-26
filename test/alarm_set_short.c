@@ -22,10 +22,12 @@
 
 int main(void)
 {
-	alarm_t *alarm = alarm_new("alarm_test.test_set_short");
+	alarm_t alarm;
+
+	alarm_init(&alarm, "alarm_test.test_set_short");
 
 	sema_init(&semaphore, 0);
-	alarm_set(alarm, 10, cb, NULL);
+	alarm_set(&alarm, 10, cb, NULL);
 
 	ASSERT_EQ(cb_counter, 0);
 
@@ -33,6 +35,6 @@ int main(void)
 
 	ASSERT_EQ(cb_counter, 1);
 
-	alarm_free(alarm);
+	alarm_destroy(&alarm);
 	return 0;
 }

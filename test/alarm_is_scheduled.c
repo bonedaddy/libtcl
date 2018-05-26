@@ -22,21 +22,23 @@
 
 int main(void)
 {
-	alarm_t *alarm = alarm_new("alarm_test.test_is_scheduled");
+	alarm_t alarm;
+
+	alarm_init(&alarm, "alarm_test.test_is_scheduled");
 
 	sema_init(&semaphore, 0);
 	ASSERT_FALSE(alarm_is_scheduled((alarm_t *) NULL));
-	ASSERT_FALSE(alarm_is_scheduled(alarm));
-	alarm_set(alarm, TIMER_INTERVAL_FOR_WAKELOCK_IN_MS + EPSILON_MS, cb, NULL);
-	ASSERT_TRUE(alarm_is_scheduled(alarm));
+	ASSERT_FALSE(alarm_is_scheduled(&alarm));
+	alarm_set(&alarm, TIMER_INTERVAL_FOR_WAKELOCK_IN_MS + EPSILON_MS, cb, NULL);
+	ASSERT_TRUE(alarm_is_scheduled(&alarm));
 
 	ASSERT_EQ(cb_counter, 0);
 
 	sema_wait(&semaphore);
 
-	ASSERT_FALSE(alarm_is_scheduled(alarm));
+	ASSERT_FALSE(alarm_is_scheduled(&alarm));
 	ASSERT_EQ(cb_counter, 1);
 
-	alarm_free(alarm);
+	alarm_destroy(&alarm);
 	return 0;
 }
