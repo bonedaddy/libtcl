@@ -415,13 +415,14 @@ __always_inline fid_t fiber_getfid(void)
 	return __fiber_current;
 }
 
-__always_inline void fiber_setstate(fiber_st_t st)
+__always_inline fid_t fiber_lock(void)
 {
 	fiber_t *fiber;
 
 	fiber = __getfiber(__fiber_current);
-	assert(fiber->status != st);
-	fiber->status = st;
+	assert(fiber->status != FIBER_BLOCKING);
+	fiber->status = FIBER_BLOCKING;
+	return __fiber_current;
 }
 
 __always_inline void fiber_unlock(fid_t fid)

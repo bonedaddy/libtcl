@@ -88,9 +88,7 @@ int event_read(event_t *event, event_value_t *value)
 
 	if (event->count > 0) res = sizeof(ucnt);
 	else {
-		current = fiber_getfid();
-		*(fid_t *)queue_push(&event->wq) = current;
-		fiber_setstate(FIBER_BLOCKING);
+		*(fid_t *)queue_push(&event->wq) = fiber_lock();
 		while (true) {
 			if (event->count > 0) {
 				res = sizeof(ucnt);
@@ -123,9 +121,7 @@ int event_write(event_t *event, event_value_t value)
 		return -1;
 	}
 	if (ULLONG_MAX - event->count <= ucnt) {
-		current = fiber_getfid();
-		*(fid_t *)queue_push(&event->wq) = current;
-		fiber_setstate(FIBER_BLOCKING);
+		*(fid_t *)queue_push(&event->wq) = fiber_lock();
 		while (true) {
 			if (ULLONG_MAX - event->count > ucnt)
 				break;

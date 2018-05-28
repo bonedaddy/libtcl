@@ -210,7 +210,7 @@ __api__ void fiber_cleanup(void);
 
 __api__ void fiber_schedule(void);
 
-__api__ void fiber_setstate(fiber_st_t st);
+__api__ fid_t fiber_lock(void);
 
 __api__ void fiber_setpriority(fid_t fid, int priority);
 

@@ -134,7 +134,7 @@ __always_inline int task_setpriority(task_t *task, int priority)
 		return -1;
 	}
 #else
-	fiber_setpriority(task, priority);
+	fiber_setpriority(task->fiber, priority);
 #endif /* OSI_THREADING */
 	return 1;
 }
