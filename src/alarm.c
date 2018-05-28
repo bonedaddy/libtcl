@@ -102,11 +102,12 @@ static void __schedule_root(void)
 	period_ms_t next_deadline;
 	int64_t next_expiration;
 
+	bzero(&timer_time, sizeof(struct itimerspec));
 	if (list_empty(&alarms))
 		goto done;
+
 	next_deadline = list_first_entry(&alarms, alarm_t, list_alarm)->deadline;
 	next_expiration = next_deadline - now();
-	bzero(&timer_time, sizeof(timer_time));
 	if (next_expiration < TIMER_INTERVAL_FOR_WAKELOCK_IN_MS) {
 # ifdef HAS_WAKELOCK
 		if (!timer_set) {
@@ -156,6 +157,7 @@ static void __schedule(alarm_t *alarm)
 	period_ms_t ms_into_period;
 	alarm_t *alarm_entry;
 	bool needs_reschedule;
+	bool inserted = false;
 
 	needs_reschedule = __schedule_needed(alarm);
 	if (alarm->callback) __unschedule(alarm);
@@ -167,10 +169,12 @@ static void __schedule(alarm_t *alarm)
 	list_for_each_entry(alarm_entry, alarm_t, &alarms, list_alarm) {
 		if (alarm->deadline < alarm_entry->deadline) {
 			list_add_tail(&alarm->list_alarm, &alarm_entry->list_alarm);
-			return;
+			inserted = true;
+			break;
 		}
 	}
-	list_add_tail(&alarm->list_alarm, &alarms);
+	if (!inserted)
+		list_add_tail(&alarm->list_alarm, &alarms);
 	if (needs_reschedule || __schedule_needed(alarm)) __schedule_root();
 }
 
