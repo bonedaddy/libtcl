@@ -44,7 +44,7 @@ int main(void)
 
 	// Schedule each of the timers with different period
 	for (int i = 0; i < 5; i++) {
-		alarm_attach(alarms + i, (period_ms_t)20 + i,
+		alarm_attach(alarms + i, (period_ms_t)25 + i,
 			cb, INT_TO_PTR(i), &queue);
 	}
 

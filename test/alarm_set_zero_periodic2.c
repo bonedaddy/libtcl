@@ -26,15 +26,15 @@ int main(void)
 	alarm_t alarm2;
 
 	alarm_init_periodic(&alarm,
-		"test_set_zero_periodic.test_set_zero_periodic");
+		"1test_set_zero_periodic.test_set_zero_periodic");
 	alarm_init_periodic(&alarm2,
-		"test_set_zero_periodic.test_set_zero_periodic");
+		"2test_set_zero_periodic.test_set_zero_periodic");
 
 	sema_init(&semaphore, 0);
 	sema_init(&semaphore2, 0);
 
-	alarm_set(&alarm, 0, cb, NULL);
-	alarm_set(&alarm2, 0, cb2, NULL);
+	alarm_set(&alarm, 25, cb, NULL);
+	alarm_set(&alarm2, 25, cb2, NULL);
 
 	for (int i = 1; i <= 10; i++) {
 		sema_wait(&semaphore);
@@ -43,7 +43,10 @@ int main(void)
 		ASSERT_GE(i, cb_counter2);
 	}
 
-	ASSERT_EQ(9, cb_counter2);
+	while (cb_counter2 != 10) {
+		task_schedule();
+	}
+	ASSERT_EQ(10, cb_counter2);
 
 	alarm_destroy(&alarm);
 	alarm_destroy(&alarm2);

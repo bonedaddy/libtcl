@@ -431,3 +431,12 @@ __always_inline void fiber_unlock(fid_t fid)
 	fiber = __getfiber(fid);
 	fiber->status = FIBER_PENDING;
 }
+
+__always_inline void fiber_setpriority(fid_t fid, int priority)
+{
+	fiber_t *fiber;
+
+	fiber = __getfiber(fid);
+	fiber->priority = priority;
+	__updatepriority(fid);
+}

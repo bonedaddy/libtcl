@@ -212,5 +212,7 @@ __api__ void fiber_schedule(void);
 
 __api__ void fiber_setstate(fiber_st_t st);
 
+__api__ void fiber_setpriority(fid_t fid, int priority);
+
 #endif /* __OSI_FIBER_H */
 /*!@} */

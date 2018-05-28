@@ -156,10 +156,7 @@ static void __schedule(alarm_t *alarm)
 	period_ms_t just_now;
 	period_ms_t ms_into_period;
 	alarm_t *alarm_entry;
-	bool needs_reschedule;
-	bool inserted = false;
 
-	needs_reschedule = __schedule_needed(alarm);
 	if (alarm->callback) __unschedule(alarm);
 	ms_into_period = 0;
 	just_now = now();
@@ -169,13 +166,10 @@ static void __schedule(alarm_t *alarm)
 	list_for_each_entry(alarm_entry, alarm_t, &alarms, list_alarm) {
 		if (alarm->deadline < alarm_entry->deadline) {
 			list_add_tail(&alarm->list_alarm, &alarm_entry->list_alarm);
-			inserted = true;
-			break;
+			return ;
 		}
 	}
-	if (!inserted)
-		list_add_tail(&alarm->list_alarm, &alarms);
-	if (needs_reschedule || __schedule_needed(alarm)) __schedule_root();
+	list_add_tail(&alarm->list_alarm, &alarms);
 }
 
 static void *__schedule_loop(void *context)
@@ -184,7 +178,7 @@ static void *__schedule_loop(void *context)
 
 	(void)context;
 #ifdef HAS_TIMER
-		sema_wait(&alarm_expired);
+	sema_wait(&alarm_expired);
 #endif
 	if (!__dispatcher_active) {
 		task_stop(&__dispatcher);
@@ -199,14 +193,11 @@ static void *__schedule_loop(void *context)
 		return NULL;
 	}
 	list_del_init(&alarm->list_alarm);
-	if (alarm->is_periodic) {
-		/* TODO?: alarm->prev_deadline = alarm->deadline; */
+	if (alarm->is_periodic)
 		__schedule(alarm);
-	}
 	__schedule_root();
 	if (alarm->callback)
 		blocking_queue_push(alarm->queue, alarm);
-	/* TODO: what happened to alarm if not periodic ???? */
 	mutex_unlock(&alarms_mutex);
 	return NULL;
 }
@@ -217,6 +208,8 @@ static void __dispatch_ready(blocking_queue_t *queue)
 	work_t *callback;
 	void *data;
 
+	if (!__dispatcher_active)
+		return ;
 	mutex_lock(&alarms_mutex);
 	if (!(alarm = (alarm_t *)blocking_queue_trypop(queue)) ||
 		!alarm->callback) {
@@ -300,7 +293,7 @@ static __always_inline int __init(alarm_t *alarm, const char *name,
 		return -1;
 
 	bzero(alarm, sizeof(alarm_t));
-	strncpy(alarm->name, name, ALARM_NAME_MAX);
+	strncpy(alarm->name, name, ALARM_NAME_MAX - 1);
 	if (mutex_init(&alarm->callback_mutex))
 		return -1;
 	INIT_LIST_HEAD(&alarm->list_alarm);
@@ -354,6 +347,10 @@ void alarm_attach(alarm_t *alarm, period_ms_t period, work_t *cb, void *data,
 	blocking_queue_t *queue)
 {
 	assert(!alarm->is_set);
+	/* please uael, don't remove this..*/
+	// TODO fix this shit
+	// TODO 2, dont
+	assert(!alarm->is_periodic || period >= 25);
 
 	mutex_lock(&alarms_mutex);
 	alarm->creation_time = now();
@@ -363,14 +360,14 @@ void alarm_attach(alarm_t *alarm, period_ms_t period, work_t *cb, void *data,
 	alarm->data = data;
 	__schedule(alarm);
 	alarm->is_set = true;
+	if (__schedule_needed(alarm))
+		__schedule_root();
 	mutex_unlock(&alarms_mutex);
 }
 
 __always_inline void alarm_set(alarm_t *alarm, period_ms_t period,
 	work_t *cb, void *data)
 {
-	if (period == 0)
-		period = 1; //TODO(tempow): quickfix..
 	alarm_attach(alarm, period, cb, data, &default_callback_queue);
 }
 
@@ -389,9 +386,8 @@ void alarm_unregister(blocking_queue_t *queue)
 	/* Cancel all alarms that are using this queue */
 	mutex_lock(&alarms_mutex);
 	list_for_each_entry_safe(alarm_entry, tmp, alarm_t, &alarms, list_alarm) {
-		if (alarm_entry->queue == queue) {
+		if (alarm_entry->queue == queue)
 			__cancel(alarm_entry);
-		}
 	}
 	mutex_unlock(&alarms_mutex);
 }
@@ -413,10 +409,10 @@ void alarm_cleanup(void)
 	thread_destroy(&default_callback_thread);
 #ifdef HAS_TIMER
 	if (timer_delete(wakeup_timer))
-		LOG_ERROR("timer_delet wakeup_timer %m");
+		LOG_ERROR("timer_delete wakeup_timer %m");
 	wakeup_timer = NULL;
 	if (timer_delete(timer))
-		LOG_ERROR("timer_delet wakeup_timer %m");
+		LOG_ERROR("timer_delete timer %m");
 	timer = NULL;
 #endif
 	sema_destroy(&alarm_expired);

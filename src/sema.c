@@ -42,7 +42,7 @@ bool sema_trywait(sema_t *sema)
 	return event_tryread(&sema->event, &value);
 }
 
-void sema_post(sema_t *sema)
+int sema_post(sema_t *sema)
 {
-	event_write(&sema->event, 1ULL);
+	return event_write(&sema->event, 1ULL);
 }

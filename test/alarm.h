@@ -50,13 +50,14 @@ static inline void *cb(void *data)
 }
 static inline void *cb2(void *data)
 {
+	static int count = 0;
 	(void) data;
+	printf("INSIDE cb2: %d\n", ++count);
 	sema_wait(&semaphore2);
 	++cb_counter2;
 	printf("counter2: %d\n", cb_counter2);
 	return NULL;
 }
-
 static inline void *ordered_cb(void *data)
 {
 	int i = PTR_TO_INT(data);

@@ -91,7 +91,7 @@ __api__ bool sema_trywait(sema_t *sema);
  *
  * @param sema
  */
-__api__ void sema_post(sema_t *sema);
+__api__ int sema_post(sema_t *sema);
 
 #endif /* __OSI_SEMA_H */
 /*!@} */
