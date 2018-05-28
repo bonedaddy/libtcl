@@ -39,9 +39,7 @@ static void *__repeat(void *context)
 
 	while (task->running) {
 		task->work(task->context);
-#ifndef OSI_THREADING
-		fiber_schedule();
-#endif
+		task_schedule();
 	}
 
 	task->joined = true;
@@ -61,9 +59,7 @@ static void *__spawn(void *context)
 	sema_post(&arg->start_sem);
 
 	task->work(task->context);
-#ifndef OSI_THREADING
-	fiber_schedule();
-#endif
+	task_schedule();
 
 	task->running = false;
 	task->joined = true;

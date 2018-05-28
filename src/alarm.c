@@ -54,7 +54,7 @@ static bool __timer_init(const clockid_t clock_id, timer_t *timer)
 	pthread_attr_setschedparam(&thread_attr, &param);
 	bzero(&sigevent, sizeof(sigevent));
 	sigevent.sigev_notify = SIGEV_THREAD;
-	sigevent.sigev_notify_function = (void (*)(__sigval_t))sema_post;
+	sigevent.sigev_notify_function = (void (*)(union sigval))sema_post;
 	sigevent.sigev_notify_attributes = &thread_attr;
 	sigevent.sigev_value.sival_ptr = &alarm_expired;
 	if (timer_create(clock_id, &sigevent, timer) == -1) {
@@ -182,8 +182,10 @@ static void *__schedule_loop(void *context)
 #ifdef HAS_TIMER
 		sema_wait(&alarm_expired);
 #endif
-	if (!__dispatcher_active)
+	if (!__dispatcher_active) {
+		task_stop(&__dispatcher);
 		return NULL;
+	}
 	mutex_lock(&alarms_mutex);
 	if (list_empty(&alarms) ||
 		(alarm = list_first_entry(&alarms, alarm_t, list_alarm))->deadline >
@@ -263,13 +265,14 @@ static bool __lazyinit(void)
 		goto error4;
 	alarm_register(&default_callback_queue,
 		&default_callback_thread);
+	__dispatcher_active = true;
 	if (task_repeat(&__dispatcher, __schedule_loop, NULL))
 		goto error5;
-	__dispatcher_active = true;
 	is_ready = true;
 	mutex_unlock(&alarms_mutex);
 	return true;
 error5:
+	__dispatcher_active = false;
 	blocking_queue_destroy(&default_callback_queue, NULL);
 error4:
 	thread_destroy(&default_callback_thread);
@@ -407,14 +410,18 @@ void alarm_cleanup(void)
 		return;
 	is_ready = false;
 	__dispatcher_active = false;
+
 	sema_post(&alarm_expired);
 	task_destroy(&__dispatcher);
 	mutex_lock(&alarms_mutex);
 	blocking_queue_destroy(&default_callback_queue, NULL);
 	thread_destroy(&default_callback_thread);
 #ifdef HAS_TIMER
-	timer_delete(wakeup_timer);
-	timer_delete(timer);
+//	LOG_ERROR("Hy !");
+	if (-1 == timer_delete(wakeup_timer))
+		LOG_ERROR("timer_delet wakeup_timer %m");
+	if (-1 == timer_delete(timer))
+		LOG_ERROR("timer_delet wakeup_timer %m");
 #endif
 	sema_destroy(&alarm_expired);
 	list_for_each_entry_safe(alarm_entry, tmp, alarm_t, &alarms, list_alarm)

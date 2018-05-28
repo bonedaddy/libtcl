@@ -45,5 +45,6 @@ int main(void)
 
 	alarm_destroy(alarm);
 	alarm_destroy(alarm + 1);
+	alarm_cleanup();
 	return 0;
 }
