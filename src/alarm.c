@@ -296,13 +296,9 @@ static __always_inline int __init(alarm_t *alarm, const char *name,
 		return -1;
 
 	bzero(alarm, sizeof(alarm_t));
-
-	/* TODO(uael): strcpy */
-	if (!(alarm->name = strdup(name)))
-		return -1;
+	strncpy(alarm->name, name, ALARM_NAME_MAX);
 	if (mutex_init(&alarm->callback_mutex))
 		return -1;
-
 	INIT_LIST_HEAD(&alarm->list_alarm);
 	alarm->is_periodic = is_periodic;
 	alarm->is_set = false;
@@ -332,24 +328,19 @@ int alarm_init_periodic(alarm_t *alarm, const char *name)
 	return __init(alarm, name, true);
 }
 
-void alarm_destroy(alarm_t *alarm)
+__always_inline void alarm_destroy(alarm_t *alarm)
 {
 	alarm_cancel(alarm);
 	mutex_destroy(&alarm->callback_mutex);
-	free((void *) alarm->name);  /* TODO(uael): strcpy, no free */
 }
 
-bool alarm_is_scheduled(const alarm_t *alarm)
+__always_inline bool alarm_is_scheduled(const alarm_t *alarm)
 {
-	if (alarm == NULL)  /* TODO(uael): must segfault */
-		return false;
-	return (alarm->callback != NULL);
+	return (alarm && alarm->callback);
 }
 
-void alarm_cancel(alarm_t *alarm)
+__always_inline void alarm_cancel(alarm_t *alarm)
 {
-	if (!alarm) /* TODO(uael): must segfault */
-		return;
 	mutex_lock(&alarms_mutex);
 	__cancel(alarm);
 	mutex_unlock(&alarms_mutex);
@@ -379,7 +370,7 @@ __always_inline void alarm_set(alarm_t *alarm, period_ms_t period,
 	alarm_attach(alarm, period, cb, data, &default_callback_queue);
 }
 
-void alarm_register(blocking_queue_t *queue, thread_t *thread)
+__always_inline void alarm_register(blocking_queue_t *queue, thread_t *thread)
 {
 	blocking_queue_listen(queue, thread, __dispatch_ready);
 }
