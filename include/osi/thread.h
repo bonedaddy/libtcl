@@ -47,7 +47,7 @@ typedef struct thread thread_t;
  */
 struct thread {
 
-	char name[THREAD_NAME_MAX + 1];
+	char name[THREAD_NAME_MAX];
 
 	blocking_queue_t work_queue;
 

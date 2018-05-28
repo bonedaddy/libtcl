@@ -185,13 +185,13 @@ __api__ size_t eager_reader_read(eager_reader_t *reader, uint8_t *buffer,
 /*!@public
  * 
  * @brief
- * Returns the inbound read thread for a given |reader| or NULL if the thread
- * is not running.
+ * Set the priority of the reading thread on which the reader is executed.
  * 
- * @param reader 
- * @return 
+ * @param reader   The reader to set the priority for.
+ * @param priority The priority to set.
+ * @return         0 on success, non-zero otherwise.
  */
-__api__ thread_t *eager_reader_get_read_thread(eager_reader_t *reader);
+__api__ int eager_reader_setpriority(eager_reader_t *reader, int priority);
 
 #endif /* __OSI_READER_H */
 /*!@} */

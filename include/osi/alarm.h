@@ -32,6 +32,8 @@
 #include "osi/thread.h"
 #include "osi/time.h"
 
+#define ALARM_NAME_MAX 16
+
 /*!@public
  *
  * @brief
@@ -47,7 +49,7 @@ typedef struct alarm alarm_t;
 struct alarm {
 
 	/*! The alarm cute name. */
-	const char *name;
+	char name[ALARM_NAME_MAX];
 
 	/*! The alarm deadline, must be scheduled after. */
 	period_ms_t deadline;
