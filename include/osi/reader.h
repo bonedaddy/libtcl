@@ -185,11 +185,11 @@ __api__ size_t eager_reader_read(eager_reader_t *reader, uint8_t *buffer,
 /*!@public
  * 
  * @brief
- * TODO
+ * Set the priority of the reading thread on which the reader is executed.
  * 
- * @param reader 
- * @param priority
- * @return
+ * @param reader   The reader to set the priority for.
+ * @param priority The priority to set.
+ * @return         0 on success, non-zero otherwise.
  */
 __api__ int eager_reader_setpriority(eager_reader_t *reader, int priority);
 
