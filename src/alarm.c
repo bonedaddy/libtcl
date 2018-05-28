@@ -38,8 +38,8 @@ static blocking_queue_t default_callback_queue;
 static sema_t alarm_expired;
 
 #ifdef HAS_TIMER
-static timer_t timer;
-static timer_t wakeup_timer;
+static timer_t timer = NULL;
+static timer_t wakeup_timer = NULL;
 static bool timer_set = false;
 
 static bool __timer_init(const clockid_t clock_id, timer_t *timer)
@@ -408,11 +408,12 @@ void alarm_cleanup(void)
 	blocking_queue_destroy(&default_callback_queue, NULL);
 	thread_destroy(&default_callback_thread);
 #ifdef HAS_TIMER
-//	LOG_ERROR("Hy !");
-	if (-1 == timer_delete(wakeup_timer))
+	if (timer_delete(wakeup_timer))
 		LOG_ERROR("timer_delet wakeup_timer %m");
-	if (-1 == timer_delete(timer))
+	wakeup_timer = NULL;
+	if (timer_delete(timer))
 		LOG_ERROR("timer_delet wakeup_timer %m");
+	timer = NULL;
 #endif
 	sema_destroy(&alarm_expired);
 	list_for_each_entry_safe(alarm_entry, tmp, alarm_t, &alarms, list_alarm)
