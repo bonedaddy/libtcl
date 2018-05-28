@@ -87,7 +87,7 @@ void eager_reader_register(eager_reader_t *reader, thread_t *thread,
 	assert(reader != NULL);
 	assert(thread != NULL);
 	assert(read_cb != NULL);
-	
+
 	eager_reader_unregister(reader);
 	reader->outbound_read_ready = read_cb;
 	reader->outbound_context = context;
@@ -149,6 +149,12 @@ size_t eager_reader_read(eager_reader_t *reader, uint8_t *buffer,
 	}
 
 	return bytes_consumed;
+}
+
+__always_inline int eager_reader_setpriority(eager_reader_t *reader,
+	int priority)
+{
+	return task_setpriority(&reader->inbound_read_task, priority);
 }
 
 static bool __has_byte(const eager_reader_t *reader)
