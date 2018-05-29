@@ -370,6 +370,19 @@ __always_inline size_t vector_indexof(vector_t *vector, void *item);
 /*!@public
  *
  * @brief
+ * Iterate through `vector'.
+ *
+ * @param vector The vector to iterate.
+ * @paran item   A variable where to stock each items.
+ */
+#define vector_iforeach(vector, idx, item) \
+	for (idx = 0, item = vector_begin(vector); \
+		item && (void *)item != vector_end(vector); \
+		++idx, item = (void *)((char *)item + (vector)->isize))
+
+/*!@public
+ *
+ * @brief
  * Reverse iterate through `vector'.
  *
  * @param vector The vector to reverse iterate.
