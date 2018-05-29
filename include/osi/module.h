@@ -28,6 +28,39 @@
 
 #include "osi/future.h"
 
+#define MODULE_STATE_NONE (0)
+#define MODULE_STATE_INITIALIZED (1 << 0)
+#define MODULE_STATE_STARTED  (1 << 1)
+
+#ifdef OSI_LOGGING
+#define ITER_OVER_DEPENDENCIES(fn) do \
+{ \
+	int i = -1; \
+	++nested; \
+	while (module->dependencies[++i]) { \
+		if (!fn(module->dependencies[i])) { \
+			--nested; \
+			return (false); \
+		} \
+	} \
+	--nested; \
+} while (0)
+#else
+#define ITER_OVER_DEPENDENCIES(fn) do \
+{ \
+	i = -1; \
+	while (module->dependencies[++i]) { \
+		if (!fn(module->dependencies[i])) { \
+			return (false); \
+		} \
+	} \
+} while (0)
+#endif
+
+
+
+typedef bool (*module_lifecycle_fn)(future_t *future);
+
 /*!@public
  *
  * @brief
@@ -42,21 +75,38 @@ typedef struct module module_t;
  */
 struct module {
 
-	/*! TODO. */
-	future_t *(*init)(void);
+	/*! no comments, var name is too explicit */
+	uint8_t state;
+
+#ifdef OSI_LOGGING
+	/*! no comments, var name is too explicit */
+	char *name;
+#endif
 
 	/*! TODO. */
-	future_t *(*start_up)(void);
+	module_lifecycle_fn init;
 
 	/*! TODO. */
-	future_t *(*shut_down)(void);
+	module_lifecycle_fn start_up;
 
 	/*! TODO. */
-	future_t *(*clean_up)(void);
+	module_lifecycle_fn shut_down;
 
 	/*! TODO. */
-	module_t const *dependencies[];
+	module_lifecycle_fn clean_up;
+
+	/*! TODO. */
+	module_t *dependencies[];
 };
 
+bool module_init(module_t *module);
+
+/* will call module_init if needed */
+bool module_start_up(module_t *module);
+
+bool module_shut_down(module_t *module);
+
+/* will call module_shut_down if needed */
+bool module_clean_up(module_t *module);
 #endif /* __OSI_MODULE_H */
 /*!@} */
