@@ -50,20 +50,6 @@ typedef struct fiber_attr fiber_attr_t;
  */
 typedef void *(work_t)(void *arg);
 
-/*!@public
- *
- * @brief
- * Change the behavior of a fiber
- */
-enum fiber_flags {
-
-	/*! Act normally */
-	FIBER_FL_NONE = 1 << 0,
-
-	/*! Loop through the fiber work without ending context */
-	FIBER_FL_LOOP = 1 << 1
-};
-
 typedef enum {
 
 	/*! The fiber was just created so ready */
@@ -94,9 +80,6 @@ struct fiber_attr {
 
 	/*! The fiber priority. */
 	int priority;
-
-	/*! Can be `FIBER_FL_LOOP' or 0. */
-	uint8_t flags;
 
 	/*! Desired stack size, 1024 by default. */
 	uint16_t stack_size;
@@ -191,15 +174,6 @@ __api__ bool fiber_isdone(fid_t fiber);
  * @return    The argument of `fiber_call' after yielding.
  */
 __api__ void *fiber_yield(void *context);
-
-/*!@private
- *
- * @brief
- * TODO
- *
- * @return
- */
-__api__ fid_t fiber_getfid(void);
 
 /*!@public
  *

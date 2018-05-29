@@ -16,9 +16,6 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "osi_fiber"
-
-#include "osi/log.h"
 #include "osi/fiber.h"
 #include "osi/string.h"
 #include "osi/vector.h"
@@ -88,7 +85,7 @@ typedef struct {
 #elif defined(OS_PROVENCORE)
 
 	/** ProveNCore coroutine */
-	struct coroutine *coroutine;
+	struct context *coroutine;
 #endif
 } fiber_t;
 
@@ -135,12 +132,9 @@ static fid_t __createfiber(void)
 
 	for (i = 1; i < __fibers.len; ++i) {
 		fiber = __getfiber(i);
-		if (fiber->status == FIBER_DESTROYED) {
-			LOG_DEBUG("fiber reuse destroyed: %d", fiber->fid);
+		if (fiber->status == FIBER_DESTROYED)
 			goto got_one;
-		}
 		if (fiber->status == FIBER_DONE) {
-			LOG_DEBUG("fiber reuse done: %d", fiber->fid);
 #ifdef USE_CORO
 			(void)coro_destroy(&fiber->coroutine);
 #endif
@@ -162,27 +156,12 @@ got_one:
 	return i;
 }
 
-static CALLBACK_RETURN_TY __fn(fid_t *fid)
+static CALLBACK_RETURN_TY __fn(fid_t const *fid)
 {
 	fiber_t *fiber;
 
 	fiber = __getfiber(*fid);
 	fiber->result = fiber->fn(fiber->context);
-	fiber->status = FIBER_DONE;
-	LOG_DEBUG("fiber exited: %d", fiber->fid);
-	fiber_yield(fiber->result);
-#ifdef OS_PROVENCORE
-	return 0;
-#endif
-}
-
-static CALLBACK_RETURN_TY __fn_loop(fid_t *fid)
-{
-	fiber_t *fiber;
-
-	fiber = __getfiber(*fid);
-	while (fiber->status == FIBER_RUNNING)
-		fiber_yield(fiber->result = fiber->fn(fiber->context));
 	fiber->status = FIBER_DONE;
 	fiber_yield(fiber->result);
 #ifdef OS_PROVENCORE
@@ -242,7 +221,7 @@ void fiber_init(fid_t *fid, work_t *work, fiber_attr_t attr)
 	fiber = __getfiber(*fid);
 	if (!attr.stack_size)
 		attr.stack_size = (uint16_t)DEFAULT_FIBER_STACK_SIZE;
-	fn = (attr.flags & FIBER_FL_LOOP) ? __fn_loop : __fn;
+	fn = __fn;
 	if (!fiber->coroutine_ctx)
 		fiber->coroutine_ctx = malloc(sizeof(fid_t));
 	*fiber->coroutine_ctx = *fid;
@@ -264,7 +243,6 @@ void fiber_init(fid_t *fid, work_t *work, fiber_attr_t attr)
 	fiber->ss = attr.stack_size;
 	fiber->priority = attr.priority;
 	(fiber->priority_idx ? __updatepriority : __setpriority)(*fid);
-	LOG_DEBUG("fiber created: %d", fiber->fid);
 }
 
 void fiber_destroy(fid_t fid)
@@ -273,7 +251,6 @@ void fiber_destroy(fid_t fid)
 
 	fiber = __getfiber(fid);
 	__deletepriority(fid);
-	LOG_DEBUG("fiber destroyed: %d", fiber->fid);
 	assert(fiber->status == FIBER_DONE);
 #ifdef USE_CORO
 	(void)coro_destroy(&fiber->coroutine);
@@ -329,7 +306,6 @@ void *fiber_call(fid_t fid, void *context)
 	if (resume(fiber->coroutine, &dummy))
 		fiber->status = FIBER_DONE;
 #else
-	LOG_DEBUG("fiber call: %d > %d", current->fid, fiber->fid);
 	coro_transfer(&current->coroutine, &fiber->coroutine);
 #endif
 	return fiber->result;
@@ -379,7 +355,7 @@ void *fiber_yield(void *context)
 	assert(caller->status == FIBER_PENDING
 		|| caller->status == FIBER_BLOCKING
 		|| caller->status == FIBER_DONE);
-	while (caller && caller->status != FIBER_PENDING)
+	while (caller->fid && caller->status != FIBER_PENDING)
 		caller = __getfiber(caller->caller);
 	assert(caller);
 	assert(caller->status == FIBER_PENDING);
@@ -403,16 +379,10 @@ void *fiber_yield(void *context)
 		yield();
 	}
 # else
-	LOG_DEBUG("fiber yield: %d > %d", fiber->fid, caller->fid);
 	coro_transfer(&fiber->coroutine, &caller->coroutine);
 # endif
 	return fiber->context;
 #endif
-}
-
-__always_inline fid_t fiber_getfid(void)
-{
-	return __fiber_current;
 }
 
 __always_inline fid_t fiber_lock(void)
@@ -420,7 +390,7 @@ __always_inline fid_t fiber_lock(void)
 	fiber_t *fiber;
 
 	fiber = __getfiber(__fiber_current);
-	assert(fiber->status != FIBER_BLOCKING);
+	assert(fiber->status == FIBER_RUNNING);
 	fiber->status = FIBER_BLOCKING;
 	return __fiber_current;
 }
