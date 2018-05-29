@@ -48,7 +48,7 @@
 #else
 #define ITER_OVER_DEPENDENCIES(fn) do \
 { \
-	i = -1; \
+	int i = -1; \
 	while (module->dependencies[++i]) { \
 		if (!fn(module->dependencies[i])) { \
 			return (false); \
