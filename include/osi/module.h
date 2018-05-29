@@ -38,7 +38,7 @@
 	int i = -1; \
 	++nested; \
 	while (module->dependencies[++i]) { \
-		if (!fn(module->dependencies[i])) { \
+		if (!fn(*module->dependencies[i])) { \
 			--nested; \
 			return (false); \
 		} \
@@ -50,7 +50,7 @@
 { \
 	int i = -1; \
 	while (module->dependencies[++i]) { \
-		if (!fn(module->dependencies[i])) { \
+		if (!fn(*module->dependencies[i])) { \
 			return (false); \
 		} \
 	} \
@@ -96,7 +96,7 @@ struct module {
 	module_lifecycle_fn clean_up;
 
 	/*! TODO. */
-	module_t *dependencies[];
+	module_t **dependencies[];
 };
 
 bool module_init(module_t *module);
