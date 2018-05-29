@@ -62,4 +62,6 @@ __api__ void osi_init(void);
  */
 __api__ void osi_cleanup(void);
 
+#define OSI_NO_INTR(fn)  do {} while ((fn) == -1 && errno == EINTR)
+
 #endif /* __OSI_H */
