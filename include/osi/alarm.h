@@ -44,6 +44,14 @@ typedef struct alarm alarm_t;
 /*!@public
  *
  * @brief
+ * TODO
+ */
+typedef void (proc_t)(void *context);
+
+
+/*!@public
+ *
+ * @brief
  * The alarm structure definition.
  */
 struct alarm {
@@ -69,8 +77,8 @@ struct alarm {
 	/*! The `callback' argument. */
 	void *data;
 
-	/*! The alarm work. */
-	work_t *callback;
+	/*! The alarm procedure. */
+	proc_t *callback;
 
 	/*! Must lock the call of `callback'. */
 	mutex_t callback_mutex;
@@ -151,7 +159,7 @@ __api__ void alarm_cancel(alarm_t *alarm);
  * @param data   The `cb' argument.
  * @param queue  The queue where alarm is queued when ready.
  */
-__api__ void alarm_attach(alarm_t *alarm, period_ms_t period, work_t *cb,
+__api__ void alarm_attach(alarm_t *alarm, period_ms_t period, proc_t *cb,
 	void *data, blocking_queue_t *queue);
 
 /*!@public
@@ -167,7 +175,7 @@ __api__ void alarm_attach(alarm_t *alarm, period_ms_t period, work_t *cb,
  * @param cb     The alarm work.
  * @param data   The `cb' argument.
  */
-__api__ void alarm_set(alarm_t *alarm, period_ms_t period, work_t *cb,
+__api__ void alarm_set(alarm_t *alarm, period_ms_t period, proc_t *cb,
 	void *data);
 
 /*!@public

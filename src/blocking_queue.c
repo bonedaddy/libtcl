@@ -102,6 +102,18 @@ void *blocking_queue_peek(blocking_queue_t *queue)
 	return item;
 }
 
+void *blocking_queue_back(blocking_queue_t *queue)
+{
+	void *item;
+
+	sema_wait(&queue->consumer);
+	mutex_lock(&queue->lock);
+	item = *(void **)vector_back(&queue->base.base);
+	mutex_unlock(&queue->lock);
+	sema_post(&queue->producer);
+	return item;
+}
+
 bool blocking_queue_trypush(blocking_queue_t *queue, const void *item)
 {
 	if (!sema_trywait(&queue->producer))
@@ -135,6 +147,19 @@ void *blocking_queue_trypeek(blocking_queue_t *queue)
 		return NULL;
 	mutex_lock(&queue->lock);
 	item = *(void **)queue_peek(&queue->base);
+	mutex_unlock(&queue->lock);
+	sema_post(&queue->producer);
+	return item;
+}
+
+void *blocking_queue_tryback(blocking_queue_t *queue)
+{
+	void *item;
+
+	if (!sema_trywait(&queue->consumer))
+		return NULL;
+	mutex_lock(&queue->lock);
+	item = *(void **)vector_back(&queue->base.base);
 	mutex_unlock(&queue->lock);
 	sema_post(&queue->producer);
 	return item;

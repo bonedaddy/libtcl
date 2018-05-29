@@ -205,7 +205,7 @@ static void *__schedule_loop(void *context)
 static void __dispatch_ready(blocking_queue_t *queue)
 {
 	alarm_t *alarm;
-	work_t *callback;
+	proc_t *callback;
 	void *data;
 
 	if (!__dispatcher_active)
@@ -343,7 +343,7 @@ __always_inline void alarm_cancel(alarm_t *alarm)
 	mutex_unlock(&alarms_mutex);
 }
 
-void alarm_attach(alarm_t *alarm, period_ms_t period, work_t *cb, void *data,
+void alarm_attach(alarm_t *alarm, period_ms_t period, proc_t *cb, void *data,
 	blocking_queue_t *queue)
 {
 	assert(!alarm->is_set);
@@ -366,7 +366,7 @@ void alarm_attach(alarm_t *alarm, period_ms_t period, work_t *cb, void *data,
 }
 
 __always_inline void alarm_set(alarm_t *alarm, period_ms_t period,
-	work_t *cb, void *data)
+	proc_t *cb, void *data)
 {
 	alarm_attach(alarm, period, cb, data, &default_callback_queue);
 }

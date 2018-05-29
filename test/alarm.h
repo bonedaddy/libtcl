@@ -40,15 +40,14 @@ static int cb_counter;
 static int cb_counter2;
 static int cb_misordered_counter;
 
-static inline void *cb(void *data)
+static inline void cb(void *data)
 {
 	(void) data;
 	++cb_counter;
 	printf("counter: %d\n", cb_counter);
 	sema_post(&semaphore);
-	return NULL;
 }
-static inline void *cb2(void *data)
+static inline void cb2(void *data)
 {
 	static int count = 0;
 	(void) data;
@@ -56,9 +55,8 @@ static inline void *cb2(void *data)
 	sema_wait(&semaphore2);
 	++cb_counter2;
 	printf("counter2: %d\n", cb_counter2);
-	return NULL;
 }
-static inline void *ordered_cb(void *data)
+static inline void ordered_cb(void *data)
 {
 	int i = PTR_TO_INT(data);
 	if (i != cb_counter)
@@ -66,7 +64,6 @@ static inline void *ordered_cb(void *data)
 	++cb_counter;
 	printf("counter: %d\n", cb_counter);
 	sema_post(&semaphore);
-	return NULL;
 }
 
 static inline void msleep(uint64_t ms)
