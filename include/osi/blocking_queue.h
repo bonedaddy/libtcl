@@ -173,6 +173,16 @@ __api__ void *blocking_queue_peek(blocking_queue_t *queue);
  * TODO
  *
  * @param queue
+ * @return
+ */
+__api__ void *blocking_queue_back(blocking_queue_t *queue);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param queue
  * @param node
  * @return
  */
@@ -197,6 +207,16 @@ __api__ void *blocking_queue_trypop(blocking_queue_t *queue);
  * @return
  */
 __api__ void *blocking_queue_trypeek(blocking_queue_t *queue);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param queue
+ * @return
+ */
+__api__ void *blocking_queue_tryback(blocking_queue_t *queue);
 
 /*!@public
  *

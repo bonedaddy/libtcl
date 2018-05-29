@@ -38,10 +38,6 @@ static void *__repeat(void *context)
 	arg = (start_arg_t *)context;
 	task = arg->task;
 	task->running = true;
-#ifdef OSI_THREADING
-	/* TODO: don't syscall, find something more portable */
-	task->tid = (id_t)syscall(SYS_gettid);
-#endif
 	LOG_INFO("task repeat started %p", task);
 	sema_post(&arg->start_sem);
 
@@ -63,10 +59,6 @@ static void *__spawn(void *context)
 	arg = (start_arg_t *)context;
 	task = arg->task;
 	task->running = true;
-#ifdef OSI_THREADING
-	/* TODO: don't syscall, find something more portable */
-	task->tid = (id_t)syscall(SYS_gettid);
-#endif
 	LOG_INFO("task spawn started %p", task);
 	sema_post(&arg->start_sem);
 
@@ -127,10 +119,8 @@ __always_inline bool task_running(task_t *task)
 __always_inline int task_setpriority(task_t *task, int priority)
 {
 #ifdef OSI_THREADING
-	const int rc = setpriority(PRIO_PROCESS, task->tid, priority);
-
-	if (rc < 0) {
-		LOG_ERROR("Unable to set thread priority %d, error %d", priority, rc);
+	if (pthread_setschedprio(task->pthread, priority)) {
+		LOG_ERROR("Unable to set thread priority %d, %m", priority);
 		return -1;
 	}
 #else

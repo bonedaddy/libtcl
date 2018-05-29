@@ -53,8 +53,6 @@ struct task {
 #ifdef OSI_THREADING
 
 	pthread_t pthread;
-
-	id_t tid;
 #else
 
 	fid_t fiber;
