@@ -35,7 +35,7 @@
 #include "osi/map.h"
 #include "osi/module.h"
 #include "osi/mutex.h"
-#include "osi/poll.h"
+#include "osi/poller.h"
 #include "osi/properties.h"
 #include "osi/queue.h"
 #include "osi/reader.h"

@@ -27,7 +27,7 @@
 
 #include "osi/fiber.h"
 #include "osi/set.h"
-#include "osi/poll.h"
+#include "osi/poller.h"
 #include "osi/mutex.h"
 
 /*!@public
@@ -66,7 +66,7 @@ typedef void (reactor_ready_t)(void *context);
 struct reactor {
 
 	/*! TODO */
-	poll_t poll;
+	poller_t poller;
 
 	/*! TODO */
 	event_t stopev;

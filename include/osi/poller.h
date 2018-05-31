@@ -16,26 +16,26 @@
 
 #pragma once
 
-/*!@file osi/poll.h
+/*!@file osi/poller.h
  * @author uael
  *
  * @addtogroup osi.reactor @{
  */
-#ifndef __OSI_POLL_H
-# define __OSI_POLL_H
+#ifndef __OSI_POLLER_H
+# define __OSI_POLLER_H
 
 #include "osi/event.h"
 #include "osi/map.h"
 
-#define POLL_IN_ (1 << 0)
-#define POLL_OUT_ (1 << 1)
+#define POLLER_IN (1 << 0)
+#define POLLER_OUT (1 << 1)
 
 /*!@public
  *
  * @brief
- * The poll structure declaration.
+ * The poller structure declaration.
  */
-typedef struct poll poll_t;
+typedef struct poller poller_t;
 
 /*!@public
  *
@@ -47,9 +47,9 @@ typedef struct pollev pollev_t;
 /*!@public
  *
  * @brief
- * The reactor poll structure definition.
+ * The poller structure definition.
  */
-struct poll {
+struct poller {
 
 #ifdef OSI_THREADING
 
@@ -74,15 +74,15 @@ struct pollev {
 	void *ptr;
 };
 
-__api int poll_init(poll_t *poll, size_t size);
+__api int poller_init(poller_t *poller, size_t size);
 
-__api void poll_destroy(poll_t *poll);
+__api void poller_destroy(poller_t *poller);
 
-__api int poll_add(poll_t *poll, event_t *event, pollev_t attr);
+__api int poller_add(poller_t *poller, event_t *event, pollev_t attr);
 
-__api int poll_del(poll_t *poll, event_t *event);
+__api int poller_del(poller_t *poller, event_t *event);
 
-__api int poll_wait(poll_t *poll, pollev_t *events, int size);
+__api int poller_wait(poller_t *poller, pollev_t *events, int size);
 
-#endif /* !__OSI_POLL_H */
+#endif /* !__OSI_POLLER_H */
 /*!@} */

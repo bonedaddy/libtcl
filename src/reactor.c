@@ -32,7 +32,7 @@ int reactor_init(reactor_t *reactor)
 {
 	pollev_t event;
 
-	if (poll_init(&reactor->poll, __max_events)) {
+	if (poller_init(&reactor->poller, __max_events)) {
 		LOG_ERROR("unable to create epoll instance: %m");
 		return -1;
 	}
@@ -41,9 +41,9 @@ int reactor_init(reactor_t *reactor)
 		return -1;
 	}
 	bzero(&event, sizeof(event));
-	event.events = POLL_IN_;
+	event.events = POLLER_IN;
 	event.ptr = NULL;
-	if (poll_add(&reactor->poll, &reactor->stopev, event)) {
+	if (poller_add(&reactor->poller, &reactor->stopev, event)) {
 		LOG_ERROR("unable to register eventfd with epoll set: %m");
 		return -1;
 	}
@@ -52,7 +52,7 @@ int reactor_init(reactor_t *reactor)
 
 void reactor_destroy(reactor_t *reactor)
 {
-	poll_destroy(&reactor->poll);
+	poller_destroy(&reactor->poller);
 	event_destroy(&reactor->stopev);
 }
 
@@ -85,10 +85,10 @@ reactor_object_t *reactor_register(reactor_t *reactor, event_t *ev,
 	object->write_ready = write_ready;
 	object->is_processed = false;
 	bzero(&event, sizeof(event));
-	if (read_ready) event.events |= POLL_IN_;
-	if (write_ready) event.events |= POLL_OUT_;
+	if (read_ready) event.events |= POLLER_IN;
+	if (write_ready) event.events |= POLLER_OUT;
 	event.ptr = object;
-	if (poll_add(&reactor->poll, ev, event)) {
+	if (poller_add(&reactor->poller, ev, event)) {
 		LOG_ERROR("unable to register ev to epoll set: %m");
 		free(object);
 		return NULL;
@@ -101,7 +101,7 @@ void reactor_unregister(reactor_object_t *obj)
 {
 	reactor_t *reactor = obj->reactor;
 
-	poll_del(&reactor->poll, obj->ev);
+	poller_del(&reactor->poller, obj->ev);
 	obj->read_ready = NULL;
 	obj->write_ready = NULL;
 	if (obj->is_processed) {
@@ -121,9 +121,9 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 	reactor->is_running = true;
 	for (i = 0; iterations == 0 || i < iterations; ++i) {
 
-		ret = poll_wait(&reactor->poll, events, (int)__max_events);
+		ret = poller_wait(&reactor->poller, events, (int)__max_events);
 		if (ret < 0) {
-			LOG_ERROR("error in epoll_wait: %m");
+			LOG_ERROR("error in epoller_wait: %m");
 			reactor->is_running = false;
 			return REACTOR_STATUS_ERROR;
 		}
@@ -147,9 +147,9 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 			/* Downgrade the list lock to an object lock. */
 			mutex_lock(&object->lock);
 			reactor->object_removed = false;
-			if ((events[j].events & POLL_IN_) && object->read_ready)
+			if ((events[j].events & POLLER_IN) && object->read_ready)
 				object->read_ready(object->context);
-			if (!reactor->object_removed && (events[j].events & POLL_OUT_)
+			if (!reactor->object_removed && (events[j].events & POLLER_OUT)
 				&& object->write_ready)
 				object->write_ready(object->context);
 			mutex_unlock(&object->lock);
