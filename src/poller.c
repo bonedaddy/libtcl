@@ -20,10 +20,10 @@
 #include "osi/poller.h"
 #include "osi/log.h"
 
-int poller_init(poller_t *poller, size_t size)
+int poller_init(poller_t *poller, unsigned size)
 {
 #ifdef OSI_THREADING
-	if ((poller->fd = epoll_create(size)) < 0)
+	if ((poller->fd = epoll_create((int)size)) < 0)
 		return -1;
 #else
 	poller->size = size;

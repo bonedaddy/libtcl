@@ -61,7 +61,7 @@ struct poller {
 	map_t events;
 
 	/*! TODO */
-	size_t size;
+	unsigned size;
 #endif
 };
 
@@ -74,7 +74,7 @@ struct pollev {
 	void *ptr;
 };
 
-__api int poller_init(poller_t *poller, size_t size);
+__api int poller_init(poller_t *poller, unsigned size);
 
 __api void poller_destroy(poller_t *poller);
 
