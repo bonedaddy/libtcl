@@ -291,7 +291,7 @@ void *fiber_call(fid_t fid, void *context)
 	if (current->status == FIBER_RUNNING)
 		current->status = FIBER_PENDING;
 #ifdef USE_PICORO
-	fiber->result = resume(fiber->coroutine, (void *)(size_t)*fid);
+	fiber->result = resume(fiber->coroutine, (void *)(size_t)fid);
 #elif defined(OS_PROVENCORE)
 	int dummy;
 

@@ -100,31 +100,31 @@ if (OSI_THREADING)
 endif ()
 
 target_compile_definitions(osi
-  INTERFACE OSI_COMPILE)
+  PRIVATE OSI_COMPILE)
 if (MSVC)
   target_compile_options(osi
-    INTERFACE /MT$<$<CONFIG:Debug>:d> /Oy /Za /W3
-    INTERFACE /D_CRT_SECURE_NO_WARNINGS
-    INTERFACE /O$<$<CONFIG:Debug>:d>$<$<CONFIG:Release>:x>)
+    PRIVATE /MT$<$<CONFIG:Debug>:d> /Oy /Za /W3
+    PRIVATE /D_CRT_SECURE_NO_WARNINGS
+    PRIVATE /O$<$<CONFIG:Debug>:d>$<$<CONFIG:Release>:x>)
   if (CMAKE_BUILD_TYPE MATCHES Release)
-    target_compile_options(osi INTERFACE /Ox)
+    target_compile_options(osi PRIVATE /Ox)
   else ()
-    target_compile_options(osi INTERFACE /Od)
+    target_compile_options(osi PRIVATE /Od)
   endif ()
 else ()
   target_compile_options(osi
-    INTERFACE -Wall -Werror -Wextra -fomit-frame-pointer
-    INTERFACE -Wno-implicit-function-declaration
-    INTERFACE -Wno-missing-field-initializers
-    INTERFACE -Wno-pointer-to-int-cast
-    INTERFACE -Wno-implicit-fallthrough)
+    PRIVATE -Wall -Werror -Wextra -fomit-frame-pointer
+    PRIVATE -Wno-implicit-function-declaration
+    PRIVATE -Wno-missing-field-initializers
+    PRIVATE -Wno-pointer-to-int-cast
+    PRIVATE -Wno-implicit-fallthrough)
   if (CMAKE_BUILD_TYPE MATCHES Release)
     target_compile_options(osi PRIVATE -O3)
   else ()
-    target_compile_options(osi INTERFACE -O0 -g3)
+    target_compile_options(osi PRIVATE -O0 -g3)
     if (CMAKE_BUILD_TYPE MATCHES San)
-      target_link_libraries(osi INTERFACE "-fsanitize=address")
-      target_compile_options(osi INTERFACE "-fsanitize=address")
+      target_link_libraries(osi PRIVATE "-fsanitize=address")
+      target_compile_options(osi PRIVATE "-fsanitize=address")
     endif ()
   endif ()
 endif ()
