@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +25,8 @@
 #ifndef __OSI_PROPERTIES_H
 # define __OSI_PROPERTIES_H
 
-#include "osi/conf.h"
+#include "osi/compat.h"
+#include "osi/string.h"
 
 #define PROPERTY_VALUE_MAX 92
 
@@ -45,7 +45,7 @@
  * @param default_value
  * @return
  */
-__api__ int property_get(const char *key, char *value, const char *dft_value);
+__api int property_get(const char *key, char *value, const char *dft_value);
 
 /*!@public
  *
@@ -57,7 +57,7 @@ __api__ int property_get(const char *key, char *value, const char *dft_value);
  * @param value
  * @return
  */
-__api__ int property_set(const char *key, const char *value);
+__api int property_set(const char *key, const char *value);
 
 #endif /* !__OSI_PROPERTIES_H */
 /*!@} */

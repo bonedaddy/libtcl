@@ -1,7 +1,5 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +24,8 @@
 #ifndef __OSI_MAP_H
 # define __OSI_MAP_H
 
-#include "osi/conf.h"
+#include "osi/compat.h"
+#include "osi/string.h"
 
 /*!@public
  *
@@ -101,7 +100,7 @@ struct map {
  * @param hash
  * @param eq
  */
-__api__ void map_init(map_t *map, hash_fn_t *hash, hash_eq_t *eq);
+__api void map_init(map_t *map, hash_fn_t *hash, hash_eq_t *eq);
 
 /*!@public
  *
@@ -111,7 +110,7 @@ __api__ void map_init(map_t *map, hash_fn_t *hash, hash_eq_t *eq);
  * @param map
  * @param idtor
  */
-__api__ void map_destroy(map_t *map, map_dtor_t *idtor);
+__api void map_destroy(map_t *map, map_dtor_t *idtor);
 
 /*!@public
  *
@@ -121,7 +120,7 @@ __api__ void map_destroy(map_t *map, map_dtor_t *idtor);
  * @param map
  * @param idtor
  */
-__api__ void map_clear(map_t *map, map_dtor_t *idtor);
+__api void map_clear(map_t *map, map_dtor_t *idtor);
 
 /*!@public
  *
@@ -131,7 +130,7 @@ __api__ void map_clear(map_t *map, map_dtor_t *idtor);
  * @param map
  * @return
  */
-__api__ size_t map_length(const map_t *map);
+__api size_t map_length(const map_t *map);
 
 /*!@public
  *
@@ -142,7 +141,7 @@ __api__ size_t map_length(const map_t *map);
  * @param key
  * @return
  */
-__api__ bool map_contains(const map_t *map, const void *key);
+__api bool map_contains(const map_t *map, const void *key);
 
 /*!@public
  *
@@ -153,7 +152,7 @@ __api__ bool map_contains(const map_t *map, const void *key);
  * @param key
  * @return
  */
-__api__ void *map_get(const map_t *map, const void *key);
+__api void *map_get(const map_t *map, const void *key);
 
 /*!@public
  *
@@ -165,7 +164,7 @@ __api__ void *map_get(const map_t *map, const void *key);
  * @param value
  * @return
  */
-__api__ int map_set(map_t *map, const void *key, const void *value);
+__api int map_set(map_t *map, const void *key, const void *value);
 
 /*!@public
  *
@@ -175,7 +174,7 @@ __api__ int map_set(map_t *map, const void *key, const void *value);
  * @param map
  * @param x
  */
-__api__ bool map_remove(map_t *map, const void *key);
+__api bool map_remove(map_t *map, const void *key);
 
 #endif /* __OSI_MAP_H */
 /*!@} */

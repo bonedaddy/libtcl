@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +94,7 @@ struct blocking_queue {
  * @param capacity The capacity to init the queue with.
  * @return         0 on success, non-zero otherwise.
  */
-__api__ int blocking_queue_init(blocking_queue_t *queue, unsigned capacity);
+__api int blocking_queue_init(blocking_queue_t *queue, unsigned capacity);
 
 /*!@public
  *
@@ -105,7 +104,7 @@ __api__ int blocking_queue_init(blocking_queue_t *queue, unsigned capacity);
  * @param queue The blocking queue to destroy.
  * @param dtor  The callback which is called on every remaining items.
  */
-__api__ void blocking_queue_destroy(blocking_queue_t *queue, fifo_dtor_t *dtor);
+__api void blocking_queue_destroy(blocking_queue_t *queue, fifo_dtor_t *dtor);
 
 /*!@public
  *
@@ -115,7 +114,7 @@ __api__ void blocking_queue_destroy(blocking_queue_t *queue, fifo_dtor_t *dtor);
  * @param queue
  * @return
  */
-__api__ bool blocking_queue_empty(blocking_queue_t *queue);
+__api bool blocking_queue_empty(blocking_queue_t *queue);
 
 /*!@public
  *
@@ -125,7 +124,7 @@ __api__ bool blocking_queue_empty(blocking_queue_t *queue);
  * @param queue
  * @return
  */
-__api__ unsigned blocking_queue_length(blocking_queue_t *queue);
+__api unsigned blocking_queue_length(blocking_queue_t *queue);
 
 /*!@public
  *
@@ -135,7 +134,7 @@ __api__ unsigned blocking_queue_length(blocking_queue_t *queue);
  * @param queue
  * @return
  */
-__api__ unsigned blocking_queue_capacity(blocking_queue_t *queue);
+__api unsigned blocking_queue_capacity(blocking_queue_t *queue);
 
 /*!@public
  *
@@ -145,7 +144,7 @@ __api__ unsigned blocking_queue_capacity(blocking_queue_t *queue);
  * @param queue
  * @param ev
  */
-__api__ void blocking_queue_push(blocking_queue_t *queue, void const *item);
+__api void blocking_queue_push(blocking_queue_t *queue, void const *item);
 
 /*!@public
  *
@@ -155,7 +154,7 @@ __api__ void blocking_queue_push(blocking_queue_t *queue, void const *item);
  * @param queue
  * @return
  */
-__api__ void *blocking_queue_pop(blocking_queue_t *queue);
+__api void *blocking_queue_pop(blocking_queue_t *queue);
 
 /*!@public
  *
@@ -165,7 +164,7 @@ __api__ void *blocking_queue_pop(blocking_queue_t *queue);
  * @param queue
  * @return
  */
-__api__ void *blocking_queue_peek(blocking_queue_t *queue);
+__api void *blocking_queue_peek(blocking_queue_t *queue);
 
 /*!@public
  *
@@ -175,7 +174,7 @@ __api__ void *blocking_queue_peek(blocking_queue_t *queue);
  * @param queue
  * @return
  */
-__api__ void *blocking_queue_back(blocking_queue_t *queue);
+__api void *blocking_queue_back(blocking_queue_t *queue);
 
 /*!@public
  *
@@ -186,7 +185,7 @@ __api__ void *blocking_queue_back(blocking_queue_t *queue);
  * @param node
  * @return
  */
-__api__ bool blocking_queue_trypush(blocking_queue_t *queue, void const *data);
+__api bool blocking_queue_trypush(blocking_queue_t *queue, void const *data);
 
 /*!@public
  *
@@ -196,7 +195,7 @@ __api__ bool blocking_queue_trypush(blocking_queue_t *queue, void const *data);
  * @param queue
  * @return
  */
-__api__ void *blocking_queue_trypop(blocking_queue_t *queue);
+__api void *blocking_queue_trypop(blocking_queue_t *queue);
 
 /*!@public
  *
@@ -206,7 +205,7 @@ __api__ void *blocking_queue_trypop(blocking_queue_t *queue);
  * @param queue
  * @return
  */
-__api__ void *blocking_queue_trypeek(blocking_queue_t *queue);
+__api void *blocking_queue_trypeek(blocking_queue_t *queue);
 
 /*!@public
  *
@@ -216,7 +215,7 @@ __api__ void *blocking_queue_trypeek(blocking_queue_t *queue);
  * @param queue
  * @return
  */
-__api__ void *blocking_queue_tryback(blocking_queue_t *queue);
+__api void *blocking_queue_tryback(blocking_queue_t *queue);
 
 /*!@public
  *
@@ -227,7 +226,7 @@ __api__ void *blocking_queue_tryback(blocking_queue_t *queue);
  * @param thread
  * @param listener
  */
-__api__ void blocking_queue_listen(blocking_queue_t *queue,
+__api void blocking_queue_listen(blocking_queue_t *queue,
 	struct thread *thread, listener_t *listener);
 
 /*!@public
@@ -237,7 +236,7 @@ __api__ void blocking_queue_listen(blocking_queue_t *queue,
  *
  * @param queue
  */
-__api__ void blocking_queue_unlisten(blocking_queue_t *queue);
+__api void blocking_queue_unlisten(blocking_queue_t *queue);
 
 /*!@public
  *
@@ -248,7 +247,7 @@ __api__ void blocking_queue_unlisten(blocking_queue_t *queue);
  * @param item 
  * @return 
  */
-__api__ bool blocking_queue_remove(blocking_queue_t *queue, void *item);
+__api bool blocking_queue_remove(blocking_queue_t *queue, void *item);
 
 #endif /* !__OSI_BLOCKING_QUEUE_H */
 /*!@} */

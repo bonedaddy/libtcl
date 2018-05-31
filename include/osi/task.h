@@ -1,7 +1,5 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,21 +57,21 @@ struct task {
 #endif
 };
 
-__api__ int task_spawn(task_t *task, work_t *work, void *context);
+__api int task_spawn(task_t *task, work_t *work, void *context);
 
-__api__ int task_repeat(task_t *task, work_t *work, void *context);
+__api int task_repeat(task_t *task, work_t *work, void *context);
 
-__api__ void task_destroy(task_t *task);
+__api void task_destroy(task_t *task);
 
-__api__ bool task_running(task_t *task);
+__api bool task_running(task_t *task);
 
-__api__ int task_setpriority(task_t *task, int priority);
+__api int task_setpriority(task_t *task, int priority);
 
-__api__ void task_stop(task_t *task);
+__api void task_stop(task_t *task);
 
-__api__ void task_join(task_t *task);
+__api void task_join(task_t *task);
 
-__api__ void task_schedule(void);
+__api void task_schedule(void);
 
 #endif /* __OSI_TASK_H */
 /*!@} */

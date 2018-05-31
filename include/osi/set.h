@@ -1,7 +1,5 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +24,8 @@
 #ifndef __OSI_SET_H
 # define __OSI_SET_H
 
-#include "osi/conf.h"
+#include "osi/compat.h"
+#include "osi/string.h"
 
 /*!@public
  *
@@ -90,7 +89,7 @@ struct set {
  * @param hash
  * @param eq
  */
-__api__ void set_init(set_t *set, hash_fn_t *hash, hash_eq_t *eq);
+__api void set_init(set_t *set, hash_fn_t *hash, hash_eq_t *eq);
 
 /*!@public
  *
@@ -100,7 +99,7 @@ __api__ void set_init(set_t *set, hash_fn_t *hash, hash_eq_t *eq);
  * @param set
  * @param idtor
  */
-__api__ void set_destroy(set_t *set);
+__api void set_destroy(set_t *set);
 
 /*!@public
  *
@@ -110,7 +109,7 @@ __api__ void set_destroy(set_t *set);
  * @param set
  * @param idtor
  */
-__api__ void set_clear(set_t *set);
+__api void set_clear(set_t *set);
 
 /*!@public
  *
@@ -120,7 +119,7 @@ __api__ void set_clear(set_t *set);
  * @param set
  * @return
  */
-__api__ size_t set_length(const set_t *set);
+__api size_t set_length(const set_t *set);
 
 /*!@public
  *
@@ -131,7 +130,7 @@ __api__ size_t set_length(const set_t *set);
  * @param key
  * @return
  */
-__api__ bool set_contains(const set_t *set, const void *key);
+__api bool set_contains(const set_t *set, const void *key);
 
 /*!@public
  *
@@ -143,7 +142,7 @@ __api__ bool set_contains(const set_t *set, const void *key);
  * @param value
  * @return
  */
-__api__ int set_put(set_t *set, const void *key);
+__api int set_put(set_t *set, const void *key);
 
 /*!@public
  *
@@ -153,7 +152,7 @@ __api__ int set_put(set_t *set, const void *key);
  * @param set
  * @param x
  */
-__api__ bool set_remove(set_t *set, const void *key);
+__api bool set_remove(set_t *set, const void *key);
 
 #endif /* __OSI_SET_H */
 /*!@} */

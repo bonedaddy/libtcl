@@ -1,7 +1,5 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,15 +74,15 @@ struct pollev {
 	void *ptr;
 };
 
-__api__ int poll_init(poll_t *poll, size_t size);
+__api int poll_init(poll_t *poll, size_t size);
 
-__api__ void poll_destroy(poll_t *poll);
+__api void poll_destroy(poll_t *poll);
 
-__api__ int poll_add(poll_t *poll, event_t *event, pollev_t attr);
+__api int poll_add(poll_t *poll, event_t *event, pollev_t attr);
 
-__api__ int poll_del(poll_t *poll, event_t *event);
+__api int poll_del(poll_t *poll, event_t *event);
 
-__api__ int poll_wait(poll_t *poll, pollev_t *events, int size);
+__api int poll_wait(poll_t *poll, pollev_t *events, int size);
 
 #endif /* !__OSI_POLL_H */
 /*!@} */

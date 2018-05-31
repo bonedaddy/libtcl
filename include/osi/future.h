@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +62,7 @@ struct future {
  * @param future
  * @return
  */
-__api__ int future_init(future_t *future);
+__api int future_init(future_t *future);
 
 /*!@public
  *
@@ -74,7 +73,7 @@ __api__ int future_init(future_t *future);
  * @param value
  * @return
  */
-__api__ void future_immediate(future_t *future, void const *value);
+__api void future_immediate(future_t *future, void const *value);
 
 /*!@public
  *
@@ -84,7 +83,7 @@ __api__ void future_immediate(future_t *future, void const *value);
  * @param future
  * @param value
  */
-__api__ void future_ready(future_t *future, void *value);
+__api void future_ready(future_t *future, void *value);
 
 /*!@public
  *
@@ -94,7 +93,7 @@ __api__ void future_ready(future_t *future, void *value);
  * @param future
  * @return
  */
-__api__ void *future_await(future_t *future);
+__api void *future_await(future_t *future);
 
 #endif /* __OSI_FUTURE_H */
 /*!@} */

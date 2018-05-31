@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +64,7 @@ struct dispatcher {
  * @param dispatcher
  * @param name
  */
-__api__ void dispatcher_init(dispatcher_t *dispatcher, const char *name);
+__api void dispatcher_init(dispatcher_t *dispatcher, const char *name);
 
 /*!@public
  *
@@ -75,7 +74,7 @@ __api__ void dispatcher_init(dispatcher_t *dispatcher, const char *name);
  *
  * @param dispatcher
  */
-__api__ void dispatcher_destroy(dispatcher_t *dispatcher);
+__api void dispatcher_destroy(dispatcher_t *dispatcher);
 
 /*!@public
  *
@@ -89,7 +88,7 @@ __api__ void dispatcher_destroy(dispatcher_t *dispatcher);
  * @param type
  * @param queue
  */
-__api__ void dispatcher_register(dispatcher_t *dispatcher, uintptr_t type,
+__api void dispatcher_register(dispatcher_t *dispatcher, uintptr_t type,
 	blocking_queue_t *queue);
 
 /*!@public
@@ -103,7 +102,7 @@ __api__ void dispatcher_register(dispatcher_t *dispatcher, uintptr_t type,
  * @param dispatcher
  * @param queue
  */
-__api__ void dispatcher_register_default(dispatcher_t *dispatcher,
+__api void dispatcher_register_default(dispatcher_t *dispatcher,
 	blocking_queue_t *queue);
 
 /*!@public
@@ -119,7 +118,7 @@ __api__ void dispatcher_register_default(dispatcher_t *dispatcher,
  * @param data
  * @return
  */
-__api__ bool dispatcher_dispatch(dispatcher_t *dispatcher, uintptr_t type,
+__api bool dispatcher_dispatch(dispatcher_t *dispatcher, uintptr_t type,
 	void *data);
 
 #endif /* !__OSI_DISPATCHER_H */

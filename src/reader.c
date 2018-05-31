@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -151,7 +150,7 @@ size_t eager_reader_read(eager_reader_t *reader, uint8_t *buffer,
 	return bytes_consumed;
 }
 
-__always_inline int eager_reader_setpriority(eager_reader_t *reader,
+FORCEINLINE int eager_reader_setpriority(eager_reader_t *reader,
 	int priority)
 {
 	return task_setpriority(&reader->inbound_read_task, priority);

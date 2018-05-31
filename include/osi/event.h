@@ -1,7 +1,5 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,15 +77,15 @@ struct event {
 #endif /* OSI_THREADING */
 };
 
-__api__ int event_init(event_t *event, event_value_t value, unsigned flags);
+__api int event_init(event_t *event, event_value_t value, unsigned flags);
 
-__api__ void event_destroy(event_t *event);
+__api void event_destroy(event_t *event);
 
-__api__ bool event_tryread(event_t *event, event_value_t *value);
+__api bool event_tryread(event_t *event, event_value_t *value);
 
-__api__ int event_read(event_t *event, event_value_t *value);
+__api int event_read(event_t *event, event_value_t *value);
 
-__api__ int event_write(event_t *event, event_value_t value);
+__api int event_write(event_t *event, event_value_t value);
 
 #endif /* !__OSI_EVENT_H */
 /*!@} */

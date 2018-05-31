@@ -1,7 +1,5 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +52,7 @@ struct sema {
  * @param value
  * @return
  */
-__api__ int sema_init(sema_t *sema, unsigned value);
+__api int sema_init(sema_t *sema, unsigned value);
 
 /*!@public
  *
@@ -63,7 +61,7 @@ __api__ int sema_init(sema_t *sema, unsigned value);
  *
  * @param sema
  */
-__api__ void sema_destroy(sema_t *sema);
+__api void sema_destroy(sema_t *sema);
 
 /*!@public
  *
@@ -72,7 +70,7 @@ __api__ void sema_destroy(sema_t *sema);
  *
  * @param sema
  */
-__api__ void sema_wait(sema_t *sema);
+__api void sema_wait(sema_t *sema);
 
 /*!@public
  *
@@ -82,7 +80,7 @@ __api__ void sema_wait(sema_t *sema);
  * @param sema
  * @return
  */
-__api__ bool sema_trywait(sema_t *sema);
+__api bool sema_trywait(sema_t *sema);
 
 /*!@public
  *
@@ -91,7 +89,7 @@ __api__ bool sema_trywait(sema_t *sema);
  *
  * @param sema
  */
-__api__ int sema_post(sema_t *sema);
+__api int sema_post(sema_t *sema);
 
 #endif /* __OSI_SEMA_H */
 /*!@} */

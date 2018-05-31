@@ -1,5 +1,6 @@
 
 #define LOG_TAG "module"
+
 #include "osi/module.h"
 #include "osi/mutex.h"
 #include "osi/map.h"

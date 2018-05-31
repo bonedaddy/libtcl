@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,9 +67,6 @@ typedef struct {
 	/*! Fiber stack size. */
 	uint16_t ss;
 
-	/*! Used to pass fiber id to coroutine. */
-	fid_t *coroutine_ctx;
-
 #if defined(USE_CORO)
 
 	/** Coroutine context */
@@ -117,7 +113,7 @@ static int __lazyinit(void)
 	return 0;
 }
 
-static __always_inline fiber_t *__getfiber(fid_t fid)
+static FORCEINLINE fiber_t *__getfiber(fid_t fid)
 {
 	__lazyinit();
 	assert(fid < __fibers.len);
@@ -156,11 +152,11 @@ got_one:
 	return i;
 }
 
-static CALLBACK_RETURN_TY __fn(fid_t const *fid)
+static NOINLINE REGPARAM(0) CALLBACK_RETURN_TY __fn(void *context)
 {
 	fiber_t *fiber;
 
-	fiber = __getfiber(*fid);
+	fiber = __getfiber((fid_t)context);
 	fiber->result = fiber->fn(fiber->context);
 	fiber->status = FIBER_DONE;
 	fiber_yield(fiber->result);
@@ -169,7 +165,7 @@ static CALLBACK_RETURN_TY __fn(fid_t const *fid)
 #endif
 }
 
-static __always_inline void __setpriority(fid_t fid)
+static FORCEINLINE void __setpriority(fid_t fid)
 {
 	fid_t i;
 	fiber_t *a, *b;
@@ -189,7 +185,7 @@ static __always_inline void __setpriority(fid_t fid)
 	a->priority_idx = i;
 }
 
-static __always_inline void __deletepriority(fid_t fid)
+static FORCEINLINE void __deletepriority(fid_t fid)
 {
 	fid_t i;
 	fiber_t *b;
@@ -205,7 +201,7 @@ static __always_inline void __deletepriority(fid_t fid)
 	__fibers.queue[i] = 0;
 }
 
-static __always_inline void __updatepriority(fid_t fid)
+static FORCEINLINE void __updatepriority(fid_t fid)
 {
 	__deletepriority(fid);
 	__setpriority(fid);
@@ -214,28 +210,25 @@ static __always_inline void __updatepriority(fid_t fid)
 void fiber_init(fid_t *fid, work_t *work, fiber_attr_t attr)
 {
 	fiber_t *fiber;
-	void *fn;
+	void *context;
 
 	assert(!__lazyinit()); /* TODO: log an error and return if fail */
 	*fid = __createfiber();
 	fiber = __getfiber(*fid);
 	if (!attr.stack_size)
 		attr.stack_size = (uint16_t)DEFAULT_FIBER_STACK_SIZE;
-	fn = __fn;
-	if (!fiber->coroutine_ctx)
-		fiber->coroutine_ctx = malloc(sizeof(fid_t));
-	*fiber->coroutine_ctx = *fid;
+	context = (void *)(size_t)*fid;
 #ifdef OS_PROVENCORE
-	fiber->coroutine = create_context(ss, 0, 0, 0, fn, fiber->coroutine_ctx);
+	fiber->coroutine = create_context(ss, 0, 0, 0, __fn, context);
 #elif defined(USE_CORO)
 	if (fiber->ss < attr.stack_size) {
 		coro_stack_free(&fiber->stack);
 		coro_stack_alloc(&fiber->stack, attr.stack_size);
 	}
-	coro_create(&fiber->coroutine, fn, fiber->coroutine_ctx, fiber->stack.sptr,
+	coro_create(&fiber->coroutine, __fn, context, fiber->stack.sptr,
 		fiber->stack.ssze);
 #else
-	fiber->coroutine = coroutine(fn);
+	fiber->coroutine = coroutine(__fn);
 #endif
 	fiber->fn = work;
 	fiber->status = FIBER_PENDING;
@@ -256,7 +249,6 @@ void fiber_destroy(fid_t fid)
 	(void)coro_destroy(&fiber->coroutine);
 	coro_stack_free(&fiber->stack);
 #endif
-	free(fiber->coroutine_ctx);
 	bzero(fiber, sizeof(fiber_t));
 	fiber->fid = fid;
 	fiber->status = FIBER_DESTROYED;
@@ -299,7 +291,7 @@ void *fiber_call(fid_t fid, void *context)
 	if (current->status == FIBER_RUNNING)
 		current->status = FIBER_PENDING;
 #ifdef USE_PICORO
-	fiber->result = resume(fiber->coroutine, fiber->coroutine_ctx);
+	fiber->result = resume(fiber->coroutine, (void *)(size_t)*fid);
 #elif defined(OS_PROVENCORE)
 	int dummy;
 
@@ -311,12 +303,12 @@ void *fiber_call(fid_t fid, void *context)
 	return fiber->result;
 }
 
-__always_inline bool fiber_isdone(fid_t fid)
+FORCEINLINE bool fiber_isdone(fid_t fid)
 {
 	return __getfiber(fid)->status >= FIBER_DONE;
 }
 
-__always_inline void fiber_schedule(void)
+FORCEINLINE void fiber_schedule(void)
 {
 	uint16_t begin;
 	fiber_t *fiber;
@@ -336,7 +328,7 @@ __always_inline void fiber_schedule(void)
 	fiber_call(fiber->fid, fiber->context);
 }
 
-__always_inline void fiber_join(fid_t fid)
+FORCEINLINE void fiber_join(fid_t fid)
 {
 	while (!fiber_isdone(fid))
 		fiber_schedule();
@@ -385,7 +377,7 @@ void *fiber_yield(void *context)
 #endif
 }
 
-__always_inline fid_t fiber_lock(void)
+FORCEINLINE fid_t fiber_lock(void)
 {
 	fiber_t *fiber;
 
@@ -395,7 +387,7 @@ __always_inline fid_t fiber_lock(void)
 	return __fiber_current;
 }
 
-__always_inline void fiber_unlock(fid_t fid)
+FORCEINLINE void fiber_unlock(fid_t fid)
 {
 	fiber_t *fiber;
 
@@ -403,7 +395,7 @@ __always_inline void fiber_unlock(fid_t fid)
 	fiber->status = FIBER_PENDING;
 }
 
-__always_inline void fiber_setpriority(fid_t fid, int priority)
+FORCEINLINE void fiber_setpriority(fid_t fid, int priority)
 {
 	fiber_t *fiber;
 

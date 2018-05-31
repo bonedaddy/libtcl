@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,14 +46,14 @@ static bool CONST PURE __eq(const void *x, const void *y)
 	return x == y;
 }
 
-__always_inline void map_init(map_t *map, hash_fn_t *hash, hash_eq_t *eq)
+FORCEINLINE void map_init(map_t *map, hash_fn_t *hash, hash_eq_t *eq)
 {
 	bzero(map, sizeof(map_t));
 	map->hash = hash ? hash : __hash;
 	map->eq = eq ? eq : __eq;
 }
 
-__always_inline void map_destroy(map_t *map, map_dtor_t *idtor)
+FORCEINLINE void map_destroy(map_t *map, map_dtor_t *idtor)
 {
 	size_t it;
 
@@ -71,7 +70,7 @@ __always_inline void map_destroy(map_t *map, map_dtor_t *idtor)
 	}
 }
 
-__always_inline void map_clear(map_t *map, map_dtor_t *idtor)
+FORCEINLINE void map_clear(map_t *map, map_dtor_t *idtor)
 {
 	size_t it;
 
@@ -87,12 +86,12 @@ __always_inline void map_clear(map_t *map, map_dtor_t *idtor)
 	}
 }
 
-__always_inline size_t map_length(const map_t *map)
+FORCEINLINE size_t map_length(const map_t *map)
 {
 	return map->length;
 }
 
-static __always_inline bool __getidx(const map_t *map, const void *key,
+static FORCEINLINE bool __getidx(const map_t *map, const void *key,
 	size_t *idx)
 {
 	size_t k, i, last, mask, step;

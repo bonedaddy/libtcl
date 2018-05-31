@@ -1,7 +1,5 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,11 +64,27 @@
 #ifndef HAS_UNISTD_H
 #cmakedefine HAS_UNISTD_H
 #endif
+#ifndef HAS_FCNTL_H
+#cmakedefine HAS_FCNTL_H
+#endif
 #ifndef HAS_TIME_H
 #cmakedefine HAS_TIME_H
 #endif
 #ifndef HAS_SIGNAL_H
 #cmakedefine HAS_SIGNAL_H
+#endif
+#ifndef HAS_STDBOOL_H
+#cmakedefine HAS_STDBOOL_H
+#endif
+#ifndef HAS_STDINT_H
+#cmakedefine HAS_STDINT_H
+#endif
+#ifndef HAS_STRINGS_H
+#cmakedefine HAS_STRINGS_H
+#endif
+
+#ifndef NDEBUG
+# include <assert.h>
 #endif
 
 #ifndef OSI_LOGGING
@@ -84,6 +98,7 @@
 #ifdef OSI_THREADING
 # include <pthread.h>
 # include <unistd.h>
+# include <fcntl.h>
 # include <sys/epoll.h>
 # include <sys/eventfd.h>
 # include <sys/prctl.h>
@@ -94,8 +109,6 @@
 #   include <time.h>
 # endif
 #endif
-
-#include <pp.h>
 
 #ifndef INVALID_FD
 # define INVALID_FD (-1)

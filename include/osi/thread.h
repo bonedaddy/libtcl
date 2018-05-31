@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,17 +55,17 @@ struct thread {
 	task_t task;
 };
 
-__api__ int thread_init(thread_t *thread, char const *name);
+__api int thread_init(thread_t *thread, char const *name);
 
-__api__ void thread_destroy(thread_t *thread);
+__api void thread_destroy(thread_t *thread);
 
-__api__ bool thread_setpriority(thread_t *thread, int priority);
+__api bool thread_setpriority(thread_t *thread, int priority);
 
-__api__ void thread_join(thread_t *thread);
+__api void thread_join(thread_t *thread);
 
-__api__ bool thread_post(thread_t *thread, work_t *work, void *context);
+__api bool thread_post(thread_t *thread, work_t *work, void *context);
 
-__api__ void thread_stop(thread_t *thread);
+__api void thread_stop(thread_t *thread);
 
 #endif /* __OSI_THREAD_H */
 /*!@} */

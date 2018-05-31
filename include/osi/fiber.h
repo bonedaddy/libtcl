@@ -1,7 +1,5 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +24,7 @@
 #ifndef __OSI_FIBER_H
 # define __OSI_FIBER_H
 
-#include "osi/conf.h"
+#include "osi/compat.h"
 
 /*!@public
  *
@@ -98,7 +96,7 @@ struct fiber_attr {
  * @param ss   The stack size of the new fiber.
  * @param attr The fiber creation attributes.
  */
-__api__ void fiber_init(fid_t *fid, work_t *work, fiber_attr_t attr);
+__api void fiber_init(fid_t *fid, work_t *work, fiber_attr_t attr);
 
 /*!@public
  *
@@ -107,7 +105,7 @@ __api__ void fiber_init(fid_t *fid, work_t *work, fiber_attr_t attr);
  *
  * @param fid The fiber to delete.
  */
-__api__ void fiber_destroy(fid_t fid);
+__api void fiber_destroy(fid_t fid);
 
 
 /*!@public
@@ -123,7 +121,7 @@ __api__ void fiber_destroy(fid_t fid);
  * @param context   The argument to send to `fiber'.
  * @return      The yielded argument of the final result of the fiber callback.
  */
-__api__ void *fiber_call(fid_t fid, void *context);
+__api void *fiber_call(fid_t fid, void *context);
 
 /*!@public
  *
@@ -137,7 +135,7 @@ __api__ void *fiber_call(fid_t fid, void *context);
  *
  * @param fiber The fiber to join.
  */
-__api__ void fiber_join(fid_t fiber);
+__api void fiber_join(fid_t fiber);
 
 /*!@public
  *
@@ -146,7 +144,7 @@ __api__ void fiber_join(fid_t fiber);
  *
  * @param fid
  */
-__api__ void fiber_unlock(fid_t fid);
+__api void fiber_unlock(fid_t fid);
 
 /*!@public
  *
@@ -156,7 +154,7 @@ __api__ void fiber_unlock(fid_t fid);
  * @param fiber The fiber to check for done.
  * @return      If the fiber is done.
  */
-__api__ bool fiber_isdone(fid_t fiber);
+__api bool fiber_isdone(fid_t fiber);
 
 /*!@public
  *
@@ -173,20 +171,20 @@ __api__ bool fiber_isdone(fid_t fiber);
  * @param context The argument which is the result of `fiber_call'.
  * @return    The argument of `fiber_call' after yielding.
  */
-__api__ void *fiber_yield(void *context);
+__api void *fiber_yield(void *context);
 
 /*!@public
  *
  * @brief
  * TODO
  */
-__api__ void fiber_cleanup(void);
+__api void fiber_cleanup(void);
 
-__api__ void fiber_schedule(void);
+__api void fiber_schedule(void);
 
-__api__ fid_t fiber_lock(void);
+__api fid_t fiber_lock(void);
 
-__api__ void fiber_setpriority(fid_t fid, int priority);
+__api void fiber_setpriority(fid_t fid, int priority);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */

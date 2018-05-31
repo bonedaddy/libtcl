@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +63,7 @@ struct buffer {
  *
  * @param size
  */
-__api__ buffer_t *buffer_new(size_t size);
+__api buffer_t *buffer_new(size_t size);
 
 /*!@public
  *
@@ -78,7 +77,7 @@ __api__ buffer_t *buffer_new(size_t size);
  * @param buf
  * @return
  */
-__api__ buffer_t *buffer_newref(const buffer_t *buf);
+__api buffer_t *buffer_newref(const buffer_t *buf);
 
 /*!@public
  *
@@ -92,7 +91,7 @@ __api__ buffer_t *buffer_newref(const buffer_t *buf);
  * @param slice_size
  * @return
  */
-__api__ buffer_t *buffer_newslice(const buffer_t *buf, size_t slice_size);
+__api buffer_t *buffer_newslice(const buffer_t *buf, size_t slice_size);
 
 /*!@public
  *
@@ -101,7 +100,7 @@ __api__ buffer_t *buffer_newslice(const buffer_t *buf, size_t slice_size);
  *
  * @param buf
  */
-__api__ void buffer_free(buffer_t *buf);
+__api void buffer_free(buffer_t *buf);
 
 /*!@public
  *
@@ -115,7 +114,7 @@ __api__ void buffer_free(buffer_t *buf);
  * @param buf
  * @return
  */
-__api__ void *buffer_ptr(const buffer_t *buf);
+__api void *buffer_ptr(const buffer_t *buf);
 
 /*!@public
  *
@@ -126,7 +125,7 @@ __api__ void *buffer_ptr(const buffer_t *buf);
  * @param buf
  * @return
  */
-__api__ size_t buffer_length(const buffer_t *buf);
+__api size_t buffer_length(const buffer_t *buf);
 
 #endif /* !__OSI_BUFFER_H */
 /*!@} */

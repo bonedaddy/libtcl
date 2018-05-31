@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +101,7 @@ struct alarm {
  * @param name  The alarm name.
  * @return      0 on success, non zero otherwise.
  */
-__api__ int alarm_init(alarm_t *alarm, const char *name);
+__api int alarm_init(alarm_t *alarm, const char *name);
 
 /*!@public
  *
@@ -115,7 +114,7 @@ __api__ int alarm_init(alarm_t *alarm, const char *name);
  * @param name  The alarm name.
  * @return      0 on success, non zero otherwise.
  */
-__api__ int alarm_init_periodic(alarm_t *alarm, const char *name);
+__api int alarm_init_periodic(alarm_t *alarm, const char *name);
 
 /*!@public
  *
@@ -124,7 +123,7 @@ __api__ int alarm_init_periodic(alarm_t *alarm, const char *name);
  *
  * @param alarm The alarm to destroy.
  */
-__api__ void alarm_destroy(alarm_t *alarm);
+__api void alarm_destroy(alarm_t *alarm);
 
 /*!@public
  *
@@ -134,7 +133,7 @@ __api__ void alarm_destroy(alarm_t *alarm);
  * @param alarm The alarm to check for.
  * @return      If `alarm' is scheduled or not.
  */
-__api__ bool alarm_is_scheduled(const alarm_t *alarm);
+__api bool alarm_is_scheduled(const alarm_t *alarm);
 
 /*!@public
  *
@@ -143,7 +142,7 @@ __api__ bool alarm_is_scheduled(const alarm_t *alarm);
  *
  * @param alarm The alarm to cancel.
  */
-__api__ void alarm_cancel(alarm_t *alarm);
+__api void alarm_cancel(alarm_t *alarm);
 
 /*!@public
  *
@@ -159,7 +158,7 @@ __api__ void alarm_cancel(alarm_t *alarm);
  * @param data   The `cb' argument.
  * @param queue  The queue where alarm is queued when ready.
  */
-__api__ void alarm_attach(alarm_t *alarm, period_ms_t period, proc_t *cb,
+__api void alarm_attach(alarm_t *alarm, period_ms_t period, proc_t *cb,
 	void *data, blocking_queue_t *queue);
 
 /*!@public
@@ -175,7 +174,7 @@ __api__ void alarm_attach(alarm_t *alarm, period_ms_t period, proc_t *cb,
  * @param cb     The alarm work.
  * @param data   The `cb' argument.
  */
-__api__ void alarm_set(alarm_t *alarm, period_ms_t period, proc_t *cb,
+__api void alarm_set(alarm_t *alarm, period_ms_t period, proc_t *cb,
 	void *data);
 
 /*!@public
@@ -188,7 +187,7 @@ __api__ void alarm_set(alarm_t *alarm, period_ms_t period, proc_t *cb,
  * @param queue  The queue to listen.
  * @param thread The thread o schedule alarm on.
  */
-__api__ void alarm_register(blocking_queue_t *queue, thread_t *thread);
+__api void alarm_register(blocking_queue_t *queue, thread_t *thread);
 
 /*!@public
  *
@@ -197,7 +196,7 @@ __api__ void alarm_register(blocking_queue_t *queue, thread_t *thread);
  *
  * @param queue The queue to unlisten.
  */
-__api__ void alarm_unregister(blocking_queue_t *queue);
+__api void alarm_unregister(blocking_queue_t *queue);
 
 /*!@public
  *
@@ -206,7 +205,7 @@ __api__ void alarm_unregister(blocking_queue_t *queue);
  * Must be called before exiting.
  * `osi_cleanup' trigger the alarm cleanup.
  */
-__api__ void alarm_cleanup(void);
+__api void alarm_cleanup(void);
 
 #endif /* !__OSI_ALARM_H */
 /*!@} */

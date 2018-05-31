@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,14 +115,14 @@ int event_write(event_t *event, event_value_t value)
 	fid_t current;
 
 	ucnt = value;
-	if (ucnt == ULLONG_MAX) {
+	if (ucnt == U64_MAX) {
 		errno = EINVAL;
 		return -1;
 	}
-	if (ULLONG_MAX - event->count <= ucnt) {
+	if (U64_MAX - event->count <= ucnt) {
 		*(fid_t *)queue_push(&event->wq) = fiber_lock();
 		while (true) {
-			if (ULLONG_MAX - event->count > ucnt)
+			if (U64_MAX - event->count > ucnt)
 				break;
 			fiber_schedule();
 		}

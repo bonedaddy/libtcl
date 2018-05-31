@@ -46,7 +46,11 @@ check_include_file(sys/_system_properties.h HAS_SYS__SYSTEM_PROPERTIES_H)
 check_include_file(pthread.h HAS_PTHREAD_H)
 check_include_file(unistd.h HAS_UNISTD_H)
 check_include_file(time.h HAS_TIME_H)
+check_include_file(fcntl.h HAS_FCNTL_H)
 check_include_file(signal.h HAS_SIGNAL_H)
+check_include_file(stdbool.h HAS_STDBOOL_H)
+check_include_file(stdint.h HAS_STDINT_H)
+check_include_file(strings.h HAS_STRINGS_H)
 
 include(CheckFunctionExists)
 check_function_exists(bzero HAS_BZERO)
@@ -60,7 +64,8 @@ check_function_exists(wakelock_acquire HAS_WAKELOCK_ACQUIRE)
 check_function_exists(wakelock_release HAS_WAKELOCK_RELEASE)
 
 if (OSI_THREADING AND (NOT HAS_SYS_EVENTFD_H OR NOT HAS_SYS_EPOLL_H
-  OR NOT HAS_PTHREAD_H OR NOT HAS_UNISTD_H OR NOT HAS_SYS_PRCTL_H))
+  OR NOT HAS_PTHREAD_H OR NOT HAS_UNISTD_H OR NOT HAS_SYS_PRCTL_H
+  OR NOT HAS_FCNTL_H))
   set(OSI_THREADING OFF)
 endif ()
 
@@ -76,8 +81,7 @@ add_library(osi ${osi_SRCS} ${osi_HDRS} ${osi_HDR})
 target_include_directories(osi
   PUBLIC ${osi_INC_DIR} ${CMAKE_BINARY_DIR}/include
   PRIVATE ${osi_SRC_DIR})
-target_link_libraries(osi PUBLIC pp rt)
-add_dependencies(osi pp)
+target_link_libraries(osi PUBLIC rt)
 
 if (USE_CORO)
   target_link_libraries(osi PUBLIC coro)
@@ -92,6 +96,36 @@ if (OSI_THREADING)
   find_package(Threads)
   if (Threads_FOUND)
     target_link_libraries(osi PUBLIC Threads::Threads)
+  endif ()
+endif ()
+
+target_compile_definitions(osi
+  INTERFACE OSI_COMPILE)
+if (MSVC)
+  target_compile_options(osi
+    INTERFACE /MT$<$<CONFIG:Debug>:d> /Oy /Za /W3
+    INTERFACE /D_CRT_SECURE_NO_WARNINGS
+    INTERFACE /O$<$<CONFIG:Debug>:d>$<$<CONFIG:Release>:x>)
+  if (CMAKE_BUILD_TYPE MATCHES Release)
+    target_compile_options(osi INTERFACE /Ox)
+  else ()
+    target_compile_options(osi INTERFACE /Od)
+  endif ()
+else ()
+  target_compile_options(osi
+    INTERFACE -Wall -Werror -Wextra -fomit-frame-pointer
+    INTERFACE -Wno-implicit-function-declaration
+    INTERFACE -Wno-missing-field-initializers
+    INTERFACE -Wno-pointer-to-int-cast
+    INTERFACE -Wno-implicit-fallthrough)
+  if (CMAKE_BUILD_TYPE MATCHES Release)
+    target_compile_options(osi PRIVATE -O3)
+  else ()
+    target_compile_options(osi INTERFACE -O0 -g3)
+    if (CMAKE_BUILD_TYPE MATCHES San)
+      target_link_libraries(osi INTERFACE "-fsanitize=address")
+      target_compile_options(osi INTERFACE "-fsanitize=address")
+    endif ()
   endif ()
 endif ()
 

@@ -1,7 +1,5 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,7 +80,7 @@ union lifo {
  * @param stack The stack to initialize.
  * @param isize The size of an item.
  */
-__api__ void stack_init(lifo_t *stack, size_t isize);
+__api void stack_init(lifo_t *stack, size_t isize);
 
 /*!@public
  *
@@ -93,7 +91,7 @@ __api__ void stack_init(lifo_t *stack, size_t isize);
  * @param stack The stack to destroy.
  * @param idtor The item callback destructor.
  */
-__api__ void stack_destroy(lifo_t *stack, lifo_dtor_t *idtor);
+__api void stack_destroy(lifo_t *stack, lifo_dtor_t *idtor);
 
 /*!@public
  *
@@ -105,7 +103,7 @@ __api__ void stack_destroy(lifo_t *stack, lifo_dtor_t *idtor);
  * @param stack The stack to clear.
  * @param idtor The item callback destructor.
  */
-__api__ void stack_clear(lifo_t *stack, lifo_dtor_t *idtor);
+__api void stack_clear(lifo_t *stack, lifo_dtor_t *idtor);
 
 /*!@public
  *
@@ -115,7 +113,7 @@ __api__ void stack_clear(lifo_t *stack, lifo_dtor_t *idtor);
  * @param stack The stack.
  * @return      The stack length.
  */
-__api__ size_t stack_length(lifo_t *stack);
+__api size_t stack_length(lifo_t *stack);
 
 /*!@public
  *
@@ -126,7 +124,7 @@ __api__ size_t stack_length(lifo_t *stack);
  * @param stack The stack.
  * @return      The stack begin pointer or `NULL'.
  */
-__api__ void *stack_peek(lifo_t *stack);
+__api void *stack_peek(lifo_t *stack);
 
 /*!@public
  *
@@ -138,7 +136,7 @@ __api__ void *stack_peek(lifo_t *stack);
  * @param stack The stack to ensure.
  * @param n     The number of items to ensure.
  */
-__api__ void stack_ensure(lifo_t *stack, size_t n);
+__api void stack_ensure(lifo_t *stack, size_t n);
 
 /*!@public
  *
@@ -150,7 +148,7 @@ __api__ void stack_ensure(lifo_t *stack, size_t n);
  * @param stack The stack to grow.
  * @param n     The number of additional items to ensure.
  */
-__api__ void stack_grow(lifo_t *stack, size_t n_added);
+__api void stack_grow(lifo_t *stack, size_t n_added);
 
 /*!@public
  *
@@ -163,7 +161,7 @@ __api__ void stack_grow(lifo_t *stack, size_t n_added);
  * @param n     The number of items in the new space.
  * @return      A pointer to the begin of this new space.
  */
-__api__ void *stack_npush(lifo_t *stack, size_t n);
+__api void *stack_npush(lifo_t *stack, size_t n);
 
 /*!@public
  *
@@ -178,7 +176,7 @@ __api__ void *stack_npush(lifo_t *stack, size_t n);
  * @param out   Nullable pointer to receive removed items.
  * @return      Return the number of items which have been actually removed.
  */
-__api__ size_t stack_npop(lifo_t *stack, size_t n, void *out);
+__api size_t stack_npop(lifo_t *stack, size_t n, void *out);
 
 /*!@public
  *
@@ -190,7 +188,7 @@ __api__ size_t stack_npop(lifo_t *stack, size_t n, void *out);
  * @param stack The stack where to push.
  * @return      A pointer to the begin of the new item.
  */
-__api__ void *stack_push(lifo_t *stack);
+__api void *stack_push(lifo_t *stack);
 
 /*!@public
  *
@@ -203,7 +201,7 @@ __api__ void *stack_push(lifo_t *stack);
  * @param out   Nullable pointer to receive removed item.
  * @return      Return if an item have been actually removed.
  */
-__api__ bool stack_pop(lifo_t *stack, void *out);
+__api bool stack_pop(lifo_t *stack, void *out);
 
 #endif /* !__OSI_STACK_H */
 /*!@} */

@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +72,7 @@ static bool __timer_init(const clockid_t clock_id, timer_t *timer)
 }
 #endif
 
-static __always_inline bool __schedule_needed(alarm_t *alarm)
+static FORCEINLINE bool __schedule_needed(alarm_t *alarm)
 {
 	return !list_empty(&alarms) &&
 		list_first_entry(&alarms, alarm_t, list_alarm) == alarm;
@@ -286,7 +285,7 @@ error:
 	return false;
 }
 
-static __always_inline int __init(alarm_t *alarm, const char *name,
+static FORCEINLINE int __init(alarm_t *alarm, const char *name,
 	bool is_periodic)
 {
 	if (!__lazyinit())
@@ -325,18 +324,18 @@ int alarm_init_periodic(alarm_t *alarm, const char *name)
 	return __init(alarm, name, true);
 }
 
-__always_inline void alarm_destroy(alarm_t *alarm)
+FORCEINLINE void alarm_destroy(alarm_t *alarm)
 {
 	alarm_cancel(alarm);
 	mutex_destroy(&alarm->callback_mutex);
 }
 
-__always_inline bool alarm_is_scheduled(const alarm_t *alarm)
+FORCEINLINE bool alarm_is_scheduled(const alarm_t *alarm)
 {
 	return (alarm && alarm->callback);
 }
 
-__always_inline void alarm_cancel(alarm_t *alarm)
+FORCEINLINE void alarm_cancel(alarm_t *alarm)
 {
 	mutex_lock(&alarms_mutex);
 	__cancel(alarm);
@@ -365,13 +364,13 @@ void alarm_attach(alarm_t *alarm, period_ms_t period, proc_t *cb, void *data,
 	mutex_unlock(&alarms_mutex);
 }
 
-__always_inline void alarm_set(alarm_t *alarm, period_ms_t period,
+FORCEINLINE void alarm_set(alarm_t *alarm, period_ms_t period,
 	proc_t *cb, void *data)
 {
 	alarm_attach(alarm, period, cb, data, &default_callback_queue);
 }
 
-__always_inline void alarm_register(blocking_queue_t *queue, thread_t *thread)
+FORCEINLINE void alarm_register(blocking_queue_t *queue, thread_t *thread)
 {
 	blocking_queue_listen(queue, thread, __dispatch_ready);
 }

@@ -1,7 +1,5 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +24,8 @@
 #ifndef __OSI_VECTOR_H
 # define __OSI_VECTOR_H
 
-#include "osi/conf.h"
+#include "osi/compat.h"
+#include "osi/string.h"
 
 /*!@public
  *
@@ -71,7 +70,7 @@ struct vector {
  * @param vector The vector to initialize.
  * @param isize  The size of an item.
  */
-__api__ void vector_init(vector_t *vector, size_t isize);
+__api void vector_init(vector_t *vector, size_t isize);
 
 /*!@public
  *
@@ -82,7 +81,7 @@ __api__ void vector_init(vector_t *vector, size_t isize);
  * @param vector The vector to destroy.
  * @param idtor  The item callback destructor.
  */
-__api__ void vector_destroy(vector_t *vector, vector_dtor_t *idtor);
+__api void vector_destroy(vector_t *vector, vector_dtor_t *idtor);
 
 /*!@public
  *
@@ -94,7 +93,7 @@ __api__ void vector_destroy(vector_t *vector, vector_dtor_t *idtor);
  * @param vector The vector to clear.
  * @param idtor  The item callback destructor.
  */
-__api__ void vector_clear(vector_t *vector, vector_dtor_t *idtor);
+__api void vector_clear(vector_t *vector, vector_dtor_t *idtor);
 
 /*!@public
  *
@@ -104,7 +103,7 @@ __api__ void vector_clear(vector_t *vector, vector_dtor_t *idtor);
  * @param vector The vector.
  * @return       The vector length.
  */
-__api__ size_t vector_length(vector_t *vector);
+__api size_t vector_length(vector_t *vector);
 
 /*!@public
  *
@@ -115,7 +114,7 @@ __api__ size_t vector_length(vector_t *vector);
  * @param vector The vector.
  * @return       The vector begin pointer or `NULL'.
  */
-__api__ void *vector_begin(vector_t *vector);
+__api void *vector_begin(vector_t *vector);
 
 /*!@public
  *
@@ -127,7 +126,7 @@ __api__ void *vector_begin(vector_t *vector);
  * @param vector The vector.
  * @return       The vector end pointer or `NULL'.
  */
-__api__ void *vector_end(vector_t *vector);
+__api void *vector_end(vector_t *vector);
 
 /*!@public
  *
@@ -139,7 +138,7 @@ __api__ void *vector_end(vector_t *vector);
  * @param vector The vector.
  * @return       The vector back pointer or `NULL'.
  */
-__api__ void *vector_back(vector_t *vector);
+__api void *vector_back(vector_t *vector);
 
 /*!@public
  *
@@ -153,7 +152,7 @@ __api__ void *vector_back(vector_t *vector);
  * @param idx    The index where to retrieve an item.
  * @return       The vector `idx' pointer or `NULL'.
  */
-__api__ void *vector_at(vector_t *vector, size_t idx);
+__api void *vector_at(vector_t *vector, size_t idx);
 
 /*!@public
  *
@@ -165,7 +164,7 @@ __api__ void *vector_at(vector_t *vector, size_t idx);
  * @param vector The vector to ensure.
  * @param n      The number of items to ensure.
  */
-__api__ void vector_ensure(vector_t *vector, size_t n);
+__api void vector_ensure(vector_t *vector, size_t n);
 
 /*!@public
  *
@@ -177,7 +176,7 @@ __api__ void vector_ensure(vector_t *vector, size_t n);
  * @param vector The vector to grow.
  * @param n      The number of additional items to ensure.
  */
-__api__ void vector_grow(vector_t *vector, size_t n);
+__api void vector_grow(vector_t *vector, size_t n);
 
 /*!@public
  *
@@ -190,7 +189,7 @@ __api__ void vector_grow(vector_t *vector, size_t n);
  * @param n      The number of items in the new space.
  * @return       A pointer to the begin of this new space.
  */
-__api__ void *vector_npush_back(vector_t *vector, size_t n);
+__api void *vector_npush_back(vector_t *vector, size_t n);
 
 /*!@public
  *
@@ -203,7 +202,7 @@ __api__ void *vector_npush_back(vector_t *vector, size_t n);
  * @param n      The number of items in the new space.
  * @return       A pointer to the begin of this new space.
  */
-__api__ void *vector_npush_front(vector_t *vector, size_t n);
+__api void *vector_npush_front(vector_t *vector, size_t n);
 
 /*!@public
  *
@@ -217,7 +216,7 @@ __api__ void *vector_npush_front(vector_t *vector, size_t n);
  * @param idx    The index where the new space should begin.
  * @return       A pointer to the begin of this new space.
  */
-__api__ void *vector_npush_at(vector_t *vector, size_t n, size_t idx);
+__api void *vector_npush_at(vector_t *vector, size_t n, size_t idx);
 
 /*!@public
  *
@@ -232,7 +231,7 @@ __api__ void *vector_npush_at(vector_t *vector, size_t n, size_t idx);
  * @param out    Nullable pointer to receive removed items.
  * @return       Return the number of items which have been actually removed.
  */
-__api__ size_t vector_npop_back(vector_t *vector, size_t n, void *out);
+__api size_t vector_npop_back(vector_t *vector, size_t n, void *out);
 
 /*!@public
  *
@@ -247,7 +246,7 @@ __api__ size_t vector_npop_back(vector_t *vector, size_t n, void *out);
  * @param out    Nullable pointer to receive removed items.
  * @return       Return the number of items which have been actually removed.
  */
-__api__ size_t vector_npop_front(vector_t *vector, size_t n, void *out);
+__api size_t vector_npop_front(vector_t *vector, size_t n, void *out);
 
 /*!@public
  *
@@ -263,7 +262,7 @@ __api__ size_t vector_npop_front(vector_t *vector, size_t n, void *out);
  * @param out    Nullable pointer to receive removed items.
  * @return       Return the number of items which have been actually removed.
  */
-__api__ size_t vector_npop_at(vector_t *vector, size_t n, size_t idx,
+__api size_t vector_npop_at(vector_t *vector, size_t n, size_t idx,
 	void *out);
 
 /*!@public
@@ -276,7 +275,7 @@ __api__ size_t vector_npop_at(vector_t *vector, size_t n, size_t idx,
  * @param vector The vector where to push.
  * @return       A pointer to the begin of the new item.
  */
-__api__ void *vector_push_back(vector_t *vector);
+__api void *vector_push_back(vector_t *vector);
 
 /*!@public
  *
@@ -288,7 +287,7 @@ __api__ void *vector_push_back(vector_t *vector);
  * @param vector The vector where to push.
  * @return       A pointer to the begin of the new item.
  */
-__api__ void *vector_push_front(vector_t *vector);
+__api void *vector_push_front(vector_t *vector);
 
 /*!@public
  *
@@ -301,7 +300,7 @@ __api__ void *vector_push_front(vector_t *vector);
  * @param idx    The index where to add the new item.
  * @return       A pointer to the begin of the new item.
  */
-__api__ void *vector_push_at(vector_t *vector, size_t i);
+__api void *vector_push_at(vector_t *vector, size_t i);
 
 /*!@public
  *
@@ -314,7 +313,7 @@ __api__ void *vector_push_at(vector_t *vector, size_t i);
  * @param out    Nullable pointer to receive removed item.
  * @return       Return if an item have been actually removed.
  */
-__api__ bool vector_pop_back(vector_t *vector, void *out);
+__api bool vector_pop_back(vector_t *vector, void *out);
 
 /*!@public
  *
@@ -327,7 +326,7 @@ __api__ bool vector_pop_back(vector_t *vector, void *out);
  * @param out    Nullable pointer to receive removed item.
  * @return       Return if an item have been actually removed.
  */
-__api__ bool vector_pop_front(vector_t *vector, void *out);
+__api bool vector_pop_front(vector_t *vector, void *out);
 
 /*!@public
  *
@@ -341,7 +340,7 @@ __api__ bool vector_pop_front(vector_t *vector, void *out);
  * @param out    Nullable pointer to receive removed item.
  * @return       Return if an item have been actually removed.
  */
-__api__ bool vector_pop_at(vector_t *vector, size_t idx, void *out);
+__api bool vector_pop_at(vector_t *vector, size_t idx, void *out);
 
 /*!@public
  *
@@ -352,7 +351,7 @@ __api__ bool vector_pop_at(vector_t *vector, size_t idx, void *out);
  * @param item   The item to find index
  * @return
  */
-__always_inline size_t vector_indexof(vector_t *vector, void *item);
+__api size_t vector_indexof(vector_t *vector, void *item);
 
 /*!@public
  *

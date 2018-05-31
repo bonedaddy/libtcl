@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +25,11 @@
 #ifndef __OSI_TIME_H
 # define __OSI_TIME_H
 
-#include "osi/conf.h"
+#include "osi/compat.h"
+
+#ifdef HAS_TIME_H
+# include <time.h>
+#endif
 
 typedef uint64_t period_ms_t;
 

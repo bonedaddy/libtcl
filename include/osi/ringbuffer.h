@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +65,7 @@ struct ringbuffer {
  * @param p
  * @param size
  */
-__api__ void ringbuffer_init(ringbuffer_t *p, size_t size);
+__api void ringbuffer_init(ringbuffer_t *p, size_t size);
 
 /*!@public
  *
@@ -75,17 +74,7 @@ __api__ void ringbuffer_init(ringbuffer_t *p, size_t size);
  *
  * @param rb
  */
-__api__ void ringbuffer_destroy(ringbuffer_t *rb);
-
-/*!@public
- *
- * @brief
- * TODO
- *
- * @param rb
- * @return
- */
-__api__ size_t ringbuffer_available(const ringbuffer_t *rb);
+__api void ringbuffer_destroy(ringbuffer_t *rb);
 
 /*!@public
  *
@@ -95,7 +84,17 @@ __api__ size_t ringbuffer_available(const ringbuffer_t *rb);
  * @param rb
  * @return
  */
-__api__ size_t ringbuffer_size(const ringbuffer_t *rb);
+__api size_t ringbuffer_available(const ringbuffer_t *rb);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param rb
+ * @return
+ */
+__api size_t ringbuffer_size(const ringbuffer_t *rb);
 
 /*!@public
  *
@@ -107,7 +106,7 @@ __api__ size_t ringbuffer_size(const ringbuffer_t *rb);
  * @param length
  * @return
  */
-__api__ size_t ringbuffer_insert(ringbuffer_t *rb, const uint8_t *p,
+__api size_t ringbuffer_insert(ringbuffer_t *rb, const uint8_t *p,
 	size_t length);
 
 /*!@public
@@ -119,7 +118,7 @@ __api__ size_t ringbuffer_insert(ringbuffer_t *rb, const uint8_t *p,
  * @param length
  * @return
  */
-__api__ size_t ringbuffer_delete(ringbuffer_t *rb, size_t length);
+__api size_t ringbuffer_delete(ringbuffer_t *rb, size_t length);
 
 /*!@public
  *
@@ -132,7 +131,7 @@ __api__ size_t ringbuffer_delete(ringbuffer_t *rb, size_t length);
  * @param length
  * @return
  */
-__api__ size_t ringbuffer_peek(const ringbuffer_t *rb, off_t offset, uint8_t *p,
+__api size_t ringbuffer_peek(const ringbuffer_t *rb, off_t offset, uint8_t *p,
 	size_t length);
 
 /*!@public
@@ -145,7 +144,7 @@ __api__ size_t ringbuffer_peek(const ringbuffer_t *rb, off_t offset, uint8_t *p,
  * @param length
  * @return
  */
-__api__ size_t ringbuffer_pop(ringbuffer_t *rb, uint8_t *p, size_t length);
+__api size_t ringbuffer_pop(ringbuffer_t *rb, uint8_t *p, size_t length);
 
 #endif /* __OSI_RINGBUFFER_H */
 /*!@} */

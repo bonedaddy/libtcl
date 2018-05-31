@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +70,7 @@ static void *__spawn(void *context)
 	return NULL;
 }
 
-static __always_inline int __init(task_t *task, work_t *work, void *context,
+static FORCEINLINE int __init(task_t *task, work_t *work, void *context,
 	bool repeat)
 {
 	start_arg_t start;
@@ -106,17 +105,17 @@ int task_repeat(task_t *task, work_t *work, void *context)
 	return __init(task, work, context, true);
 }
 
-__always_inline void task_destroy(task_t *task)
+FORCEINLINE void task_destroy(task_t *task)
 {
 	task_join(task);
 }
 
-__always_inline bool task_running(task_t *task)
+FORCEINLINE bool task_running(task_t *task)
 {
 	return !task->joined;
 }
 
-__always_inline int task_setpriority(task_t *task, int priority)
+FORCEINLINE int task_setpriority(task_t *task, int priority)
 {
 #ifdef OSI_THREADING
 	if (pthread_setschedprio(task->pthread, priority)) {
@@ -129,12 +128,12 @@ __always_inline int task_setpriority(task_t *task, int priority)
 	return 1;
 }
 
-__always_inline void task_stop(task_t *task)
+FORCEINLINE void task_stop(task_t *task)
 {
 	task->running = false;
 }
 
-__always_inline void task_join(task_t *task)
+FORCEINLINE void task_join(task_t *task)
 {
 	if (!task->joined) {
 		task_stop(task);
@@ -146,7 +145,7 @@ __always_inline void task_join(task_t *task)
 	}
 }
 
-__always_inline void task_schedule(void)
+FORCEINLINE void task_schedule(void)
 {
 #ifdef OSI_THREADING
 	sched_yield();

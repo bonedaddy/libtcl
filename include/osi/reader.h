@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,7 +124,7 @@ struct eager_reader {
  * @param thread_name 
  * @return
  */
-__api__ int eager_reader_init(eager_reader_t *reader, int fd_to_read,
+__api int eager_reader_init(eager_reader_t *reader, int fd_to_read,
 	const allocator_t *allocator, unsigned buffer_size,
 	unsigned max_buffer_count, const char *thread_name);
 
@@ -137,7 +136,7 @@ __api__ int eager_reader_init(eager_reader_t *reader, int fd_to_read,
  * 
  * @param reader 
  */
-__api__ void eager_reader_destroy(eager_reader_t *reader);
+__api void eager_reader_destroy(eager_reader_t *reader);
 
 /*!@public
  * 
@@ -152,7 +151,7 @@ __api__ void eager_reader_destroy(eager_reader_t *reader);
  * @param read_cb 
  * @param context 
  */
-__api__ void eager_reader_register(eager_reader_t *reader, thread_t *thread,
+__api void eager_reader_register(eager_reader_t *reader, thread_t *thread,
 	eager_reader_cb_t *read_cb, void *context);
 
 /*!@public
@@ -163,7 +162,7 @@ __api__ void eager_reader_register(eager_reader_t *reader, thread_t *thread,
  * 
  * @param reader 
  */
-__api__ void eager_reader_unregister(eager_reader_t *reader);
+__api void eager_reader_unregister(eager_reader_t *reader);
 
 
 /*!@public
@@ -179,7 +178,7 @@ __api__ void eager_reader_unregister(eager_reader_t *reader);
  * @param max_size 
  * @return 
  */
-__api__ size_t eager_reader_read(eager_reader_t *reader, uint8_t *buffer,
+__api size_t eager_reader_read(eager_reader_t *reader, uint8_t *buffer,
 	size_t max_size);
 
 /*!@public
@@ -191,7 +190,7 @@ __api__ size_t eager_reader_read(eager_reader_t *reader, uint8_t *buffer,
  * @param priority The priority to set.
  * @return         0 on success, non-zero otherwise.
  */
-__api__ int eager_reader_setpriority(eager_reader_t *reader, int priority);
+__api int eager_reader_setpriority(eager_reader_t *reader, int priority);
 
 #endif /* __OSI_READER_H */
 /*!@} */

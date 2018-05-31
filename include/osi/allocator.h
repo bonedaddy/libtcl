@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +25,7 @@
 #ifndef __OSI_ALLOCATOR_H
 # define __OSI_ALLOCATOR_H
 
-#include "osi/conf.h"
+#include "osi/compat.h"
 
 /*!@public
  *
@@ -68,7 +67,7 @@ struct allocator {
  * @brief
  * The default allocator.
  */
-__api__ allocator_t const *DFT_ALLOCATOR;
+__api allocator_t const *DFT_ALLOCATOR;
 
 /*!@public
  *
@@ -76,7 +75,7 @@ __api__ allocator_t const *DFT_ALLOCATOR;
  *
  * @param pptr
  */
-__api__ void pfree(void *pptr);
+__api void pfree(void *pptr);
 
 #endif /* !__OSI_ALLOCATOR_H */
 /*!@} */

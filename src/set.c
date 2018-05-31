@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,14 +46,14 @@ static bool CONST PURE __eq(const void *x, const void *y)
 	return x == y;
 }
 
-__always_inline void set_init(set_t *set, hash_fn_t *hash, hash_eq_t *eq)
+FORCEINLINE void set_init(set_t *set, hash_fn_t *hash, hash_eq_t *eq)
 {
 	bzero(set, sizeof(set_t));
 	set->hash = hash ? hash : __hash;
 	set->eq = eq ? eq : __eq;
 }
 
-__always_inline void set_destroy(set_t *set)
+FORCEINLINE void set_destroy(set_t *set)
 {
 	if (set->flags) {
 		free((void *)set->keys);
@@ -62,7 +61,7 @@ __always_inline void set_destroy(set_t *set)
 	}
 }
 
-__always_inline void set_clear(set_t *set)
+FORCEINLINE void set_clear(set_t *set)
 {
 	if (set->flags) {
 		memset(set->flags, __ac_bit_empty, set->capacity);
@@ -70,12 +69,12 @@ __always_inline void set_clear(set_t *set)
 	}
 }
 
-__always_inline size_t set_length(const set_t *set)
+FORCEINLINE size_t set_length(const set_t *set)
 {
 	return set->length;
 }
 
-static __always_inline bool __getidx(const set_t *set, const void *key,
+static FORCEINLINE bool __getidx(const set_t *set, const void *key,
 	size_t *idx)
 {
 	size_t k, i, last, mask, step;

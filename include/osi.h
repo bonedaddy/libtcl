@@ -1,7 +1,5 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +25,12 @@
 #include "osi/allocator.h"
 #include "osi/blocking_queue.h"
 #include "osi/buffer.h"
+#include "osi/compat.h"
 #include "osi/dispatcher.h"
 #include "osi/event.h"
 #include "osi/fiber.h"
 #include "osi/future.h"
+#include "osi/io.h"
 #include "osi/list.h"
 #include "osi/map.h"
 #include "osi/module.h"
@@ -53,14 +53,14 @@
  * @brief
  * TODO
  */
-__api__ void osi_init(void);
+__api void osi_init(void);
 
 /*!@public
  *
  * @brief
  * TODO
  */
-__api__ void osi_cleanup(void);
+__api void osi_cleanup(void);
 
 #define OSI_NO_INTR(fn)  do {} while ((fn) == -1 && errno == EINTR)
 

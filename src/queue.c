@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,65 +17,65 @@
 
 #include "osi/queue.h"
 
-__always_inline void queue_init(fifo_t *queue, size_t isize)
+FORCEINLINE void queue_init(fifo_t *queue, size_t isize)
 {
 	vector_init(&queue->base, isize);
 }
 
-__always_inline void queue_destroy(fifo_t *queue, fifo_dtor_t *idtor)
+FORCEINLINE void queue_destroy(fifo_t *queue, fifo_dtor_t *idtor)
 {
 	vector_destroy(&queue->base, idtor);
 }
 
-__always_inline void queue_clear(fifo_t *queue, fifo_dtor_t *idtor)
+FORCEINLINE void queue_clear(fifo_t *queue, fifo_dtor_t *idtor)
 {
 	vector_clear(&queue->base, idtor);
 }
 
-__always_inline size_t queue_length(fifo_t *queue)
+FORCEINLINE size_t queue_length(fifo_t *queue)
 {
 	return vector_length(&queue->base);
 }
 
-__always_inline void *queue_peek(fifo_t *queue)
+FORCEINLINE void *queue_peek(fifo_t *queue)
 {
 	return vector_begin(&queue->base);
 }
 
-__always_inline void queue_ensure(fifo_t *queue, size_t n)
+FORCEINLINE void queue_ensure(fifo_t *queue, size_t n)
 {
 	vector_ensure(&queue->base, n);
 }
 
-__always_inline void queue_grow(fifo_t *queue, size_t n_added)
+FORCEINLINE void queue_grow(fifo_t *queue, size_t n_added)
 {
 	vector_grow(&queue->base, n_added);
 }
 
-__always_inline void *queue_npush(fifo_t *queue, size_t n)
+FORCEINLINE void *queue_npush(fifo_t *queue, size_t n)
 {
 	return vector_npush_back(&queue->base, n);
 }
 
-__always_inline size_t queue_npop(fifo_t *queue, size_t n, void *out)
+FORCEINLINE size_t queue_npop(fifo_t *queue, size_t n, void *out)
 {
 	return vector_npop_front(&queue->base, n, out);
 }
 
-__always_inline void *queue_push(fifo_t *queue)
+FORCEINLINE void *queue_push(fifo_t *queue)
 {
 	return queue_npush(queue, 1);
 }
 
-__always_inline bool queue_pop(fifo_t *queue, void *out)
+FORCEINLINE bool queue_pop(fifo_t *queue, void *out)
 {
 	return queue_npop(queue, 1, out) == 1;
 }
 
-__always_inline size_t queue_index_of(fifo_t *queue, void *item) {
+FORCEINLINE size_t queue_index_of(fifo_t *queue, void *item) {
 	return vector_indexof(&queue->base, item);
 }
 
-__always_inline bool queue_pop_at(fifo_t *queue, size_t idx, void *out) {
+FORCEINLINE bool queue_pop_at(fifo_t *queue, size_t idx, void *out) {
 	return vector_pop_at(&queue->base, idx, out);
 }

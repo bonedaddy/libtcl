@@ -1,7 +1,5 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +26,9 @@
 
 #include "osi/conf.h"
 
-#ifdef OS_PROVENCORE
-# include <string.h>
+#include <string.h>
+
+#ifdef HAS_STRINGS_H
 # include <strings.h>
 #endif
 

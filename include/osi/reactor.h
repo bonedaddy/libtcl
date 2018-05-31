@@ -1,7 +1,6 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2014 Google, Inc.
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,7 +133,7 @@ enum reactor_st {
  * @param reactor The reactor to initialize.
  * @return 0 on success -1 otherwise.
  */
-__api__ int reactor_init(reactor_t *reactor);
+__api int reactor_init(reactor_t *reactor);
 
 /*!@public
  *
@@ -143,7 +142,7 @@ __api__ int reactor_init(reactor_t *reactor);
  *
  * @param reactor The reactor to destroy.
  */
-__api__ void reactor_destroy(reactor_t *reactor);
+__api void reactor_destroy(reactor_t *reactor);
 
 /*!@public
  *
@@ -154,7 +153,7 @@ __api__ void reactor_destroy(reactor_t *reactor);
  * @param reactor The reactor to start.
  * @return        The start status.
  */
-__api__ reactor_st_t reactor_start(reactor_t *reactor);
+__api reactor_st_t reactor_start(reactor_t *reactor);
 
 /*!@public
  *
@@ -165,7 +164,7 @@ __api__ reactor_st_t reactor_start(reactor_t *reactor);
  * @param reactor The reactor to run once.
  * @return        The run once status.
  */
-__api__ reactor_st_t reactor_run_once(reactor_t *reactor);
+__api reactor_st_t reactor_run_once(reactor_t *reactor);
 
 /*!@public
  *
@@ -175,7 +174,7 @@ __api__ reactor_st_t reactor_run_once(reactor_t *reactor);
  *
  * @param reactor The reactor to stop.
  */
-__api__ void reactor_stop(reactor_t *reactor);
+__api void reactor_stop(reactor_t *reactor);
 
 /*!@public
  *
@@ -198,7 +197,7 @@ __api__ void reactor_stop(reactor_t *reactor);
  * @param write_ready Function to call when the fd becomes writeable.
  * @return            A fresh reactor object on success, NULL otherwise.
  */
-__api__ reactor_object_t *reactor_register(reactor_t *reactor, event_t *ev,
+__api reactor_object_t *reactor_register(reactor_t *reactor, event_t *ev,
 	void *context, reactor_ready_t *read_ready, reactor_ready_t *write_ready);
 
 /*!@public
@@ -210,7 +209,7 @@ __api__ reactor_object_t *reactor_register(reactor_t *reactor, event_t *ev,
  *
  * @param obj The reactor object to unregister.
  */
-__api__ void reactor_unregister(reactor_object_t *obj);
+__api void reactor_unregister(reactor_object_t *obj);
 
 #endif /* !__OSI_REACTOR_H */
 /*!@} */

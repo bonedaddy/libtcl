@@ -1,7 +1,5 @@
 /*
- * Copyright 2018 Tempow
- *
- * Author - 2018 uael <abel@tempow.com>
+ * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +61,7 @@ struct mutex {
  * @param mutex
  * @return
  */
-__api__ int mutex_init(mutex_t *mutex);
+__api int mutex_init(mutex_t *mutex);
 
 /*!@public
  *
@@ -72,7 +70,7 @@ __api__ int mutex_init(mutex_t *mutex);
  *
  * @param mutex
  */
-__api__ void mutex_destroy(mutex_t *mutex);
+__api void mutex_destroy(mutex_t *mutex);
 
 /*!@public
  *
@@ -81,7 +79,7 @@ __api__ void mutex_destroy(mutex_t *mutex);
  *
  * @param mutex
  */
-__api__ void mutex_lock(mutex_t *mutex);
+__api void mutex_lock(mutex_t *mutex);
 
 /*!@public
  *
@@ -91,7 +89,7 @@ __api__ void mutex_lock(mutex_t *mutex);
  * @param mutex
  * @return
  */
-__api__ void mutex_unlock(mutex_t *mutex);
+__api void mutex_unlock(mutex_t *mutex);
 
 /*!@public
  *
@@ -100,28 +98,28 @@ __api__ void mutex_unlock(mutex_t *mutex);
  *
  * @return
  */
-__api__ int mutex_global_init(void);
+__api int mutex_global_init(void);
 
 /*!@public
  *
  * @brief
  * TODO
  */
-__api__ void mutex_global_cleanup(void);
+__api void mutex_global_cleanup(void);
 
 /*!@public
  *
  * @brief
  * TODO
  */
-__api__ void mutex_global_lock(void);
+__api void mutex_global_lock(void);
 
 /*!@public
  *
  * @brief
  * TODO
  */
-__api__ void mutex_global_unlock(void);
+__api void mutex_global_unlock(void);
 
 #endif /* __OSI_MUTEX_H */
 /*!@} */
