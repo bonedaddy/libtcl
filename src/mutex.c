@@ -26,8 +26,7 @@ int mutex_init(mutex_t *mutex)
 	if ((st = pthread_mutex_init(&mutex->mutex, NULL)))
 		return st;
 #else
-	queue_init(&mutex->queue, sizeof(fid_t));
-	mutex->islocked = false;
+	event_init(&mutex->ev, 1, EVENT_SEMAPHORE);
 #endif /* OSI_THREADING */
 	return 0;
 }
@@ -37,8 +36,10 @@ void mutex_destroy(mutex_t *mutex)
 #ifdef OSI_THREADING
 	pthread_mutex_destroy(&mutex->mutex);
 #else
-	assert(!mutex->islocked);
-	queue_destroy(&mutex->queue, NULL);
+	event_value_t val;
+
+	assert(event_tryread(&mutex->ev, &val));
+	event_destroy(&mutex->ev);
 #endif /* OSI_THREADING */
 }
 
@@ -47,7 +48,10 @@ void mutex_lock(mutex_t *mutex)
 #ifdef OSI_THREADING
 	pthread_mutex_lock(&mutex->mutex);
 #else
-	mutex->islocked = true;
+	event_value_t val;
+
+	do event_read(&mutex->ev, &val);
+	while (val != 1);
 #endif /* OSI_THREADING */
 }
 
@@ -56,7 +60,7 @@ void mutex_unlock(mutex_t *mutex)
 #ifdef OSI_THREADING
 	pthread_mutex_unlock(&mutex->mutex);
 #else
-	mutex->islocked = false;
+	event_write(&mutex->ev, 1UL);
 #endif /* OSI_THREADING */
 }
 

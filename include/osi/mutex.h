@@ -25,6 +25,7 @@
 # define __OSI_MUTEX_H
 
 #include "osi/conf.h"
+#include "osi/event.h"
 #include "osi/queue.h"
 #include "osi/fiber.h"
 
@@ -47,9 +48,7 @@ struct mutex {
 	pthread_mutex_t mutex;
 #else
 
-	fifo_t queue;
-
-	bool islocked;
+	event_t ev;
 #endif /* OSI_THREADING */
 };
 

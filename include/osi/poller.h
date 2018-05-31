@@ -40,7 +40,7 @@ typedef struct poller poller_t;
 /*!@public
  *
  * @brief
- * The poll event structure declaration.
+ * The poller event structure declaration.
  */
 typedef struct pollev pollev_t;
 
@@ -65,6 +65,11 @@ struct poller {
 #endif
 };
 
+/*!@public
+ *
+ * @brief
+ * The poller event structure definition.
+ */
 struct pollev {
 
 	/*! TODO */
