@@ -42,6 +42,18 @@
 #ifndef HAS_REALLOC
 #cmakedefine HAS_REALLOC
 #endif
+#ifndef HAS_SIGALTSTACK
+#cmakedefine HAS_SIGALTSTACK
+#endif
+#ifndef HAS_MMAP
+#cmakedefine HAS_MMAP
+#endif
+#ifndef HAS_MUNMAP
+#cmakedefine HAS_MUNMAP
+#endif
+#ifndef HAS_MPROTECT
+#cmakedefine HAS_MPROTECT
+#endif
 
 #ifndef HAS_SYS_EVENTFD_H
 #cmakedefine HAS_SYS_EVENTFD_H
@@ -82,6 +94,22 @@
 #ifndef HAS_STRINGS_H
 #cmakedefine HAS_STRINGS_H
 #endif
+#ifndef HAS_UCONTEXT_H
+#cmakedefine HAS_UCONTEXT_H
+#endif
+#ifndef HAS_SETJMP_H
+#cmakedefine HAS_SETJMP_H
+#endif
+
+#cmakedefine CORO_X86_64
+#cmakedefine CORO_X86_32
+#cmakedefine CORO_ARM
+#cmakedefine CORO_UCONTEXT
+#cmakedefine CORO_WIN
+#cmakedefine CORO_SJLJ
+
+#cmakedefine CORO_POOL_MMAP
+#cmakedefine CORO_POOL_MALLOC
 
 #ifndef NDEBUG
 # include <assert.h>

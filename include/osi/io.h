@@ -22,8 +22,9 @@
  * @addtogroup osi.io @{
  */
 #ifndef __OSI_IO_H
-#define __OSI_IO_H
+# define __OSI_IO_H
 
 #include <stdio.h>
 
-#endif
+#endif /* !__OSI_IO_H */
+/*!@} */

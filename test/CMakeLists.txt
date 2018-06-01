@@ -19,6 +19,9 @@ macro (osi_register_test name)
   add_dependencies(test_osi_${name} osi)
 endmacro ()
 
+osi_register_suite(coro)
+osi_register_test(coro_init)
+
 osi_register_suite(vector)
 osi_register_test(vector_init)
 osi_register_test(vector_push_pop)

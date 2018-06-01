@@ -17,31 +17,28 @@
 
 #include "test.h"
 
-#include "osi/fiber.h"
+#include "osi/coroutine.h"
 
-static void *call_fiber(void *arg)
+static void *hello(void *arg)
 {
-	static char *adjectives[] = { "small", "clean", NULL, "fast", NULL };
-	char **adjective = adjectives;
-
 	(void)arg;
-	while (*adjective) {
-		fiber_yield(*adjective);
-		++adjective;
-	}
-	return adjectives[3];
+	write(1, "Hello", 5);
+	coro_yield(NULL);
+	write(1, "Zob", 3);
+	coro_yield(NULL);
+	write(1, "World !", 7);
+	return NULL;
 }
 
 int main(void)
 {
-	fid_t fiber;
+	coro_t coro;
 
-	fiber_init(&fiber, call_fiber, (fiber_attr_t){ });
-	while (!fiber_isdone(fiber)) {
-		char *lol = (char *)fiber_call(fiber, NULL);
-		printf("%s\n", lol);
-	}
-	fiber_destroy(fiber);
-	fiber_cleanup();
+	coro_init(&coro, hello);
+	coro_resume(coro, NULL);
+	write(1, " ", 1);
+	coro_resume(coro, NULL);
+	write(1, " ", 1);
+	coro_resume(coro, NULL);
 	return 0;
 }

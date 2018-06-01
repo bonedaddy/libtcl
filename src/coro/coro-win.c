@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2014 Google, Inc.
  * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,33 +14,5 @@
  * limitations under the License.
  */
 
-#include "test.h"
+#include "coro/internal.h"
 
-#include "osi/fiber.h"
-
-static void *call_fiber(void *arg)
-{
-	static char *adjectives[] = { "small", "clean", NULL, "fast", NULL };
-	char **adjective = adjectives;
-
-	(void)arg;
-	while (*adjective) {
-		fiber_yield(*adjective);
-		++adjective;
-	}
-	return adjectives[3];
-}
-
-int main(void)
-{
-	fid_t fiber;
-
-	fiber_init(&fiber, call_fiber, (fiber_attr_t){ });
-	while (!fiber_isdone(fiber)) {
-		char *lol = (char *)fiber_call(fiber, NULL);
-		printf("%s\n", lol);
-	}
-	fiber_destroy(fiber);
-	fiber_cleanup();
-	return 0;
-}

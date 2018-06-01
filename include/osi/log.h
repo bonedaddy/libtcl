@@ -23,12 +23,12 @@
  * @addtogroup osi.log @{
  */
 #ifndef __OSI_LOG_H
-#define __OSI_LOG_H
+# define __OSI_LOG_H
 
 #include "osi/conf.h"
 #include <stdio.h>
 
-#if defined(OSI_LOGGING)
+#ifdef OSI_LOGGING
 # if !defined(LOG_TAG)
 #   warning "LOG_TAG must be defined"
 #   define LOG_TAG __FILE__
@@ -56,12 +56,13 @@
 #   define LOG_WARN(fmt, args...) LOGWRAP(LOG_WARN, fmt, ## args)
 #   define LOG_ERROR(fmt, args...) LOGWRAP(LOG_ERROR, fmt, ## args)
 # endif /* defined(OS_PROVENCORE) */
-#else /* !defined(OSI_LOGGING) */
+#else /* !OSI_LOGGING */
 # define LOG_VERBOSE(fmt, args...) do {} while (0)
 # define LOG_DEBUG(fmt, args...) do {} while (0)
 # define LOG_INFO(fmt, args...) do {} while (0)
 # define LOG_WARN(fmt, args...) do {} while (0)
 # define LOG_ERROR(fmt, args...) do {} while (0)
-#endif /* defined(OSI_LOGGING) */
+#endif /* OSI_LOGGING */
 
-#endif
+#endif /* !__OSI_LOG_H */
+/*!@} */

@@ -18,10 +18,6 @@
 #include "osi/string.h"
 
 #ifndef HAS_BZERO
-# ifdef OS_PROVENCORE
-#   include <sizes.h>
-# endif
-
 void bzero(void *ptr, size_t n)
 {
 	memset(ptr, 0, n);

@@ -175,7 +175,7 @@ static bool __has_byte(const eager_reader_t *reader)
 		int ret = select(FD_SETSIZE, &read_fds, NULL, NULL, &timeout);
 #else
 		int ret = select(FD_SETSIZE, &read_fds, NULL, NULL);
-#endif
+#endif /* !OS_PROVENCORE */
 		if (ret == -1 && errno == EINTR)
 			continue;
 		break;

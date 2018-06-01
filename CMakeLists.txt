@@ -48,6 +48,8 @@ check_include_file(unistd.h HAS_UNISTD_H)
 check_include_file(time.h HAS_TIME_H)
 check_include_file(fcntl.h HAS_FCNTL_H)
 check_include_file(signal.h HAS_SIGNAL_H)
+check_include_file(ucontext.h HAS_UCONTEXT_H)
+check_include_file(setjmp.h HAS_SETJMP_H)
 check_include_file(stdbool.h HAS_STDBOOL_H)
 check_include_file(stdint.h HAS_STDINT_H)
 check_include_file(strings.h HAS_STRINGS_H)
@@ -59,9 +61,14 @@ check_function_exists(realloc HAS_REALLOC)
 check_function_exists(strnlen HAS_STRNLEN)
 check_function_exists(strlcpy HAS_STRLCPY)
 check_function_exists(strncpy HAS_STRNCPY)
-
 check_function_exists(wakelock_acquire HAS_WAKELOCK_ACQUIRE)
 check_function_exists(wakelock_release HAS_WAKELOCK_RELEASE)
+
+include(CheckSymbolExists)
+check_symbol_exists(sigaltstack "signal.h" HAS_SIGALTSTACK)
+check_symbol_exists(mmap "sys/mman.h" HAS_MMAP)
+check_symbol_exists(munmap "sys/mman.h" HAS_MUNMAP)
+check_symbol_exists(mprotect "sys/mman.h" HAS_MPROTECT)
 
 if (OSI_THREADING AND (NOT HAS_SYS_EVENTFD_H OR NOT HAS_SYS_EPOLL_H
   OR NOT HAS_PTHREAD_H OR NOT HAS_UNISTD_H OR NOT HAS_SYS_PRCTL_H
@@ -69,10 +76,12 @@ if (OSI_THREADING AND (NOT HAS_SYS_EVENTFD_H OR NOT HAS_SYS_EPOLL_H
   set(OSI_THREADING OFF)
 endif ()
 
+add_subdirectory(${osi_SRC_DIR}/coro)
+
 configure_file(${osi_INC_DIR}/osi/conf.h.in
   ${CMAKE_BINARY_DIR}/include/osi/conf.h @ONLY)
 
-file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.c)
+file(GLOB osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/[a-z_]*.c)
 file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.h)
 file(GLOB_RECURSE osi_HDRS ${osi_HDRS} ${osi_INC_DIR}/osi/*.h)
 set(osi_HDR ${osi_INC_DIR}/osi.h ${CMAKE_BINARY_DIR}/include/osi/conf.h)
@@ -103,28 +112,28 @@ target_compile_definitions(osi
   PRIVATE OSI_COMPILE)
 if (MSVC)
   target_compile_options(osi
-    PRIVATE /MT$<$<CONFIG:Debug>:d> /Oy /Za /W3
-    PRIVATE /D_CRT_SECURE_NO_WARNINGS
-    PRIVATE /O$<$<CONFIG:Debug>:d>$<$<CONFIG:Release>:x>)
+    PUBLIC /MT$<$<CONFIG:Debug>:d> /Oy /Za /W3
+    PUBLIC /D_CRT_SECURE_NO_WARNINGS
+    PUBLIC /O$<$<CONFIG:Debug>:d>$<$<CONFIG:Release>:x>)
   if (CMAKE_BUILD_TYPE MATCHES Release)
-    target_compile_options(osi PRIVATE /Ox)
+    target_compile_options(osi PUBLIC /Ox)
   else ()
-    target_compile_options(osi PRIVATE /Od)
+    target_compile_options(osi PUBLIC /Od)
   endif ()
 else ()
   target_compile_options(osi
-    PRIVATE -Wall -Werror -Wextra -fomit-frame-pointer
-    PRIVATE -Wno-implicit-function-declaration
-    PRIVATE -Wno-missing-field-initializers
-    PRIVATE -Wno-pointer-to-int-cast
-    PRIVATE -Wno-implicit-fallthrough)
+    PUBLIC -Wall -Werror -Wextra -fomit-frame-pointer
+    PUBLIC -Wno-implicit-function-declaration
+    PUBLIC -Wno-missing-field-initializers
+    PUBLIC -Wno-pointer-to-int-cast
+    PUBLIC -Wno-implicit-fallthrough)
   if (CMAKE_BUILD_TYPE MATCHES Release)
-    target_compile_options(osi PRIVATE -O3)
+    target_compile_options(osi PUBLIC -O2)
   else ()
-    target_compile_options(osi PRIVATE -O0 -g3)
+    target_compile_options(osi PUBLIC -g3)
     if (CMAKE_BUILD_TYPE MATCHES San)
-      target_link_libraries(osi PRIVATE "-fsanitize=address")
-      target_compile_options(osi PRIVATE "-fsanitize=address")
+      target_link_libraries(osi PUBLIC "-fsanitize=address -fno-omit-frame-pointer")
+      target_compile_options(osi PUBLIC "-fsanitize=address")
     endif ()
   endif ()
 endif ()
