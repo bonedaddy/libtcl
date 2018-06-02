@@ -80,9 +80,6 @@ endif ()
 
 add_subdirectory(${osi_SRC_DIR}/coro)
 
-configure_file(${osi_INC_DIR}/osi/conf.h.in
-  ${CMAKE_BINARY_DIR}/include/osi/conf.h @ONLY)
-
 file(GLOB osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/[a-z_]*.c)
 file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.h)
 file(GLOB_RECURSE osi_HDRS ${osi_HDRS} ${osi_INC_DIR}/osi/*.h)
@@ -99,8 +96,13 @@ if (OSI_THREADING)
   find_package(Threads)
   if (Threads_FOUND)
     target_link_libraries(osi PUBLIC Threads::Threads)
+  else ()
+    set(OSI_THREADING OFF)
   endif ()
 endif ()
+
+configure_file(${osi_INC_DIR}/osi/conf.h.in
+  ${CMAKE_BINARY_DIR}/include/osi/conf.h @ONLY)
 
 target_compile_definitions(osi
   PRIVATE OSI_COMPILE)
@@ -126,7 +128,8 @@ else ()
   else ()
     target_compile_options(osi PUBLIC -O0 -g3)
     if (CMAKE_BUILD_TYPE MATCHES San)
-      target_link_libraries(osi PUBLIC "-fsanitize=address -fno-omit-frame-pointer")
+      target_link_libraries(osi
+        PUBLIC "-fsanitize=address -fno-omit-frame-pointer")
       target_compile_options(osi PUBLIC "-fsanitize=address")
     endif ()
   endif ()

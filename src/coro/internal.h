@@ -24,16 +24,14 @@
 
 #include "osi/coro.h"
 
-#if defined(CORO_X86_64) \
-	|| defined (CORO_X86_32) \
-	|| defined (CORO_ARM) \
-	|| defined (CORO_UCONTEXT)
+#if defined(CORO_X86_64) || defined (CORO_X86_32) || \
+	defined (CORO_ARM) || defined (CORO_UCONTEXT)
 
 __ext coro_t __coroalloc(size_t stack_size);
 __ext void __cororelease(coro_t coro);
 __ext void __coromake(coro_t from, routine_t *fn);
-__ext NOINLINE REGPARAM(0) REGPARAM(1) void __coroswitch(coro_t from, coro_t to);
-__ext NOINLINE REGPARAM(0) void __coromain(routine_t *fn);
+__ext void __coroswitch(coro_t from, coro_t to);
+__ext void __coromain(routine_t *fn);
 
 struct coro {
 
