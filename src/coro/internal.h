@@ -37,11 +37,10 @@
 #   define CORO_POOL_SIZE (100UL)
 # endif
 
-__ext coro_t __corolocate(void *ptr);
-__ext coro_t __coroalloc(void);
-__ext void __corofree(coro_t coro);
+__ext coro_t __coroalloc(size_t stack_size);
+__ext void __cororelease(coro_t coro);
 
-__ext void __coromake(coro_t from, uint16_t stack_size, fn_t *fn);
+__ext void __coromake(coro_t from, fn_t *fn);
 __ext void __coroswitch(coro_t from, coro_t to);
 __ext void __coromain(fn_t *fn);
 
@@ -53,17 +52,24 @@ struct coro {
 	ucontext_t ctx;
 # else
 
-	/*! Stack origin pointer. */
+	/*! Stack pointer origin. */
 	void *sp;
 # endif
 
+	/*! Stack size. */
+	size_t ssize;
+
 	/*! Coroutine linked list. */
-	coro_t prev, next;
+	coro_t caller;
 
 	/*! Last ret. */
 	void *ret;
 
 	unsigned int flag;
+
+#ifdef RUNNING_ON_VALGRIND
+	int valgrind_id;
+#endif
 };
 
 #endif

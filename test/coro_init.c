@@ -19,26 +19,37 @@
 
 #include "osi/coroutine.h"
 
+#define CYCLE (1000)
+
+static size_t __counter;
+
 static void *hello(void *arg)
 {
+	int i;
+
 	(void)arg;
-	write(1, "Hello", 5);
-	coro_yield(NULL);
-	write(1, "Zob", 3);
-	coro_yield(NULL);
-	write(1, "World !", 7);
+	for (i = 0; i < CYCLE - 1; ++i) {
+		++__counter;
+		coro_yield(NULL);
+	}
+	++__counter;
 	return NULL;
 }
 
 int main(void)
 {
-	coro_t coro;
+	int i, j;
+	coro_t coros[CYCLE];
 
-	coro_init(&coro, hello);
-	coro_resume(coro, NULL);
-	write(1, " ", 1);
-	coro_resume(coro, NULL);
-	write(1, " ", 1);
-	coro_resume(coro, NULL);
+	for (i = 0; i < CYCLE; ++i)
+		coro_init(&coros[i], hello, 32);
+	for (i = 0; i < CYCLE; ++i)
+		for (j = 0; j < CYCLE; ++j) {
+			++__counter;
+			coro_resume(&coros[i], NULL);
+		}
+	for (i = 0; i < CYCLE; ++i)
+		ASSERT_NULL(coros[i]);
+	ASSERT_EQ(CYCLE * CYCLE * 2, __counter);
 	return 0;
 }

@@ -30,11 +30,11 @@ typedef void *(fn_t)(void *);
 
 typedef struct coro *coro_t;
 
-__api int coro_init(coro_t *coro, fn_t *fn);
+__api int coro_init(coro_t *coro, fn_t *fn, size_t stack_size);
 
-__api void coro_destroy(coro_t coro);
+__api void coro_destroy(coro_t *coro);
 
-__api void *coro_resume(coro_t coro, void *arg);
+__api void *coro_resume(coro_t *coro, void *arg);
 
 __api void *coro_yield(void *arg);
 

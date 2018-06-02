@@ -18,41 +18,39 @@
 
 void __coromake(coro_t ctx, uint16_t stack_size, fn_t *fn)
 {
-	unsigned long *stack;
+	uintptr_t *stack;
 
-	stack = (void *)ctx + stack_size - sizeof(unsigned long);
-	/* now stack point to the last word of the context space */
-	*stack = 0UL;
+	stack = (uintptr_t *)((char *)ctx + ctx->ssize - 1);
 
 	/* make stack-frame of coro_main 16-byte aligned
 	 * for amd64-ABI and some systems (such as Mac OS) require this
 	 */
-	stack = (void *)((unsigned long)stack & ~0x0fUL);
+	stack = (void *)((uintptr_t)stack & ~0x0fUL);
 
 #ifdef __SANITIZE_ADDRESS__
-	stack[0] = (unsigned long)__coromain;
+	stack[0] = (uintptr_t)__coromain;
 	/* here is 16-byte alignment boundary */
 	stack[-1] = 0UL; // IP
-	stack[-2] = (unsigned long)fn;
+	stack[-2] = (uintptr_t)fn;
 	stack[-3] = 0UL; // BP
 	stack[-4] = 0; // BX
-	stack[-5] = (unsigned long)&stack[-3]; // BP
+	stack[-5] = (uintptr_t)&stack[-3]; // BP
 	stack[-6] = stack[-2]; // DI
 #else
-	stack[0] = (unsigned long)fn;
+	stack[0] = (uintptr_t)fn;
 	/* here is 16-byte alignment boundary */
 	stack[-1] = 0UL; // IP
-	stack[-2] = (unsigned long)__coromain;
-	stack[-3] = (unsigned long)__coromain; // BP
+	stack[-2] = (uintptr_t)__coromain;
+	stack[-3] = (uintptr_t)__coromain; // BP
 	stack[-4] = 0; // BX
-	stack[-5] = (unsigned long)&stack[-3]; // BP
+	stack[-5] = (uintptr_t)&stack[-3]; // BP
 	stack[-6] = stack[0]; // DI
 #endif
 	stack[-7] = 0UL; // SI
 	ctx->sp = &stack[-7];
 }
 
-NOINLINE REGPARAM(0)
+NOINLINE REGPARAM(0) REGPARAM(1)
 void __coroswitch(coro_t from, coro_t to)
 {
 	asm volatile (

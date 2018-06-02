@@ -54,6 +54,12 @@
 #ifndef HAS_MPROTECT
 #cmakedefine HAS_MPROTECT
 #endif
+#ifndef HAS_SYSCONF
+#cmakedefine HAS_SYSCONF
+#endif
+#ifndef HAS_GETPAGESIZE
+#cmakedefine HAS_GETPAGESIZE
+#endif
 
 #ifndef HAS_SYS_EVENTFD_H
 #cmakedefine HAS_SYS_EVENTFD_H
@@ -107,9 +113,6 @@
 #cmakedefine CORO_UCONTEXT
 #cmakedefine CORO_WIN
 #cmakedefine CORO_SJLJ
-
-#cmakedefine CORO_POOL_MMAP
-#cmakedefine CORO_POOL_MALLOC
 
 #ifndef NDEBUG
 # include <assert.h>

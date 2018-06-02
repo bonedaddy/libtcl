@@ -23,78 +23,69 @@
 
 static struct coro __main, *__self = &__main;
 
-void *coro_resume(coro_t coro, void *arg)
+int coro_init(coro_t *coro, fn_t *fn, size_t stack_size)
 {
-	struct coro *cur, *to = coro;
+	if (!(*coro = __coroalloc(stack_size)))
+		return -1;
+
+	__coromake(*coro, fn);
+
+	return 0;
+}
+
+void *coro_resume(coro_t *coro, void *arg)
+{
+	coro_t cur;
 
 	cur = __self;
 
-	cur->next = to;
-	to->prev = cur;
-	to->ret = arg;
+	(*coro)->caller = cur;
+	(*coro)->ret = arg;
 
-	__self = to;
-	__coroswitch(cur, to);
+	__self = (*coro);
+	__coroswitch(cur, (*coro));
 
-	if (to->flag & CORO_FLAG_END) {
-		memset(to, 0, sizeof(struct coro));
-		/* give a chance to avoid dead-locking */
-		__corofree(to);
+	if ((*coro)->flag & CORO_FLAG_END) {
+		__cororelease(*coro);
+		*coro = NULL;
 	}
 
 	return cur->ret;
 }
 
-NOINLINE
-static void *do_coro_yield(void *arg, unsigned int flag)
+void* coro_yield(void *arg)
 {
-	struct coro *to, *cur = NULL;
+	coro_t to, cur = NULL;
 
 	cur = __self;
-	to = cur->prev;
-	cur->prev = NULL;
-	to->next = NULL;
+
+	to = cur->caller;
+	cur->caller = NULL;
 	to->ret = arg;
-	cur->flag = flag;
+
 	__self = to;
 	__coroswitch(cur, to);
+
 	return cur->ret;
 }
 
-void* coro_yield(void *arg)
-{
-	return do_coro_yield(arg, 0);
-}
-
 NOINLINE REGPARAM(0)
-void __coromain(void *(*f)(void *))
+void __coromain(fn_t *fn)
 {
-	struct coro *cur;
 	void *arg, *ret;
 
-	cur = __self;
-	arg = cur->ret;
-	ret = f(arg);
-	do_coro_yield(ret, CORO_FLAG_END);
+	arg = __self->ret;
+	ret = fn(arg);
+	__self->flag = CORO_FLAG_END;
+	coro_yield(ret);
 }
 
-int coro_init(coro_t *coro, void *(*f)(void*))
+void coro_destroy(coro_t *coro)
 {
-	struct coro *ctx;
-
-	if (!(ctx = __coroalloc()))
-		return -1;
-	memset(ctx, 0, sizeof(struct coro));
-
-	__coromake(ctx, CORO_STACK_SIZE, f);
-
-	*coro = ctx;
-	return 0;
-}
-
-void coro_destroy(coro_t coro)
-{
-	(void)coro;
+	if (*coro) {
+		__cororelease(*coro);
+		*coro = NULL;
+	}
 }
 
 coro_t coro_self(void)

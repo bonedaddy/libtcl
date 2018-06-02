@@ -69,6 +69,8 @@ check_symbol_exists(sigaltstack "signal.h" HAS_SIGALTSTACK)
 check_symbol_exists(mmap "sys/mman.h" HAS_MMAP)
 check_symbol_exists(munmap "sys/mman.h" HAS_MUNMAP)
 check_symbol_exists(mprotect "sys/mman.h" HAS_MPROTECT)
+check_symbol_exists(sysconf "unistd.h" HAS_SYSCONF)
+check_symbol_exists(getpagesize "unistd.h" HAS_GETPAGESIZE)
 
 if (OSI_THREADING AND (NOT HAS_SYS_EVENTFD_H OR NOT HAS_SYS_EPOLL_H
   OR NOT HAS_PTHREAD_H OR NOT HAS_UNISTD_H OR NOT HAS_SYS_PRCTL_H

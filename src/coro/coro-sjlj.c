@@ -81,20 +81,31 @@ static void __start(void)
 	__root(stack);
 }
 
-NOINLINE
-int coro_init(coro_t *coro, fn_t *fn)
-{
-	if (__idle == NULL && !setjmp(__self->state))
-		__start();
-	*coro = coro_resume(__pop(&__idle), fn);
-	return 0;
-}
-
-void *coro_resume(coro_t c, void *arg)
+static void *__resume(coro_t c, void *arg)
 {
 	assert(__resumable(c));
 	__push(&__self, c);
 	return(__pass(c->next, arg));
+}
+
+NOINLINE
+int coro_init(coro_t *coro, fn_t *fn, size_t stack_size)
+{
+	(void)stack_size;
+	if (__idle == NULL && !setjmp(__self->state))
+		__start();
+	*coro = __resume(__pop(&__idle), fn);
+	return 0;
+}
+
+void *coro_resume(coro_t *c, void *arg)
+{
+	void *ret;
+
+	ret = __resume(*c, arg);
+	if (!__resumable(*c))
+		*c = NULL;
+	return ret;
 }
 
 void *coro_yield(void *arg)

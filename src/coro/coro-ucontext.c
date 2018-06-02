@@ -18,29 +18,27 @@
 
 #include <ucontext.h>
 
-static void uctx_coro_main(int arg1, int arg2)
+static void __uctxmain(int arg1, int arg2)
 {
 	__coromain((void*(*)(void*))(
 		((uintptr_t)(unsigned int)arg1) +
-			((uintptr_t)(unsigned int)arg2 << (sizeof(int)*8))
-	));
+			((uintptr_t)(unsigned int)arg2 << (sizeof(int) * 8))));
 }
 
-void __coromake(coro_t coro, uint16_t stack_size, fn_t *fn)
+void __coromake(coro_t coro, fn_t *fn)
 {
 	if (getcontext(&coro->ctx) < 0) {
 		abort();
 	}
 	coro->ctx.uc_stack.ss_sp = (void *)coro + sizeof(struct coro);
-	coro->ctx.uc_stack.ss_size = stack_size - sizeof(struct coro);
+	coro->ctx.uc_stack.ss_size = coro->ssize - sizeof(struct coro);
 	coro->ctx.uc_link = NULL;
-	makecontext(&coro->ctx, (void(*)())uctx_coro_main, 2,
-		(int)fn, (int)((uintptr_t)fn >> (sizeof(int)*8)));
+	makecontext(&coro->ctx, (void(*)())__uctxmain, 2,
+		(int)fn, (int)((uintptr_t)fn >> (sizeof(int) * 8)));
 }
 
 void __coroswitch(coro_t from, coro_t to)
 {
-	if (swapcontext(&from->ctx, &to->ctx) < 0) {
+	if (swapcontext(&from->ctx, &to->ctx) < 0)
 		abort();
-	}
 }
