@@ -40,5 +40,3 @@ fiber_t waitq_pop(waitq_t *waitq)
 		return NULL;
 	return fiber;
 }
-
-

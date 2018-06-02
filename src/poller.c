@@ -94,7 +94,6 @@ int poller_wait(poller_t *poller, pollev_t *events, int size)
 			events[i].events |= POLLER_OUT;
 		events[i].ptr = epoll_events[i].data.ptr;
 	}
-	
 #else
 	int ret;
 	size_t it;

@@ -66,26 +66,29 @@ struct {
 
 static void __initmain(void)
 {
-	static int init;
-	struct fiber *head;
-
-	if (init)
+	if (__scope.head)
 		return;
-	init = 1;
+	__scope.fibers[0].coroutine = coro_self();
+	__scope.head = &__scope.fibers[0];
+	__scope.self = &__scope.fibers[0];
+	++__scope.fibers_idx;
+}
 
-	head = __scope.fibers + __scope.fibers_idx;
-	head->id = __scope.fibers_idx++;
+FORCEINLINE
+static struct fiber *__fiber(fiber_t fiber)
+{
+	return __scope.fibers + (uint16_t)(uintptr_t)coro_getdata(fiber);
+}
 
-	head->coroutine = coro_self();
-	head->state = FIBER_ACTIVE;
-	head->priority = 0;
-	head->arg = NULL;
-	head->ret = NULL;
-	head->next = NULL;
-
-	coro_setdata(coro_self(), (void *)(uintptr_t)head->id);
-
-	__scope.head = head;
+int fiber_attr_init(fiber_attr_t *attr, int prio, uint16_t stack_size)
+{
+	if (prio < -20 || prio > 20) {
+		errno = EINVAL;
+		return -1;
+	}
+	attr->prio = (int8_t)prio;
+	attr->stack_size = stack_size;
+	return 0;
 }
 
 int fiber_create(fiber_t *fiber, const fiber_attr_t *attr,
@@ -118,18 +121,13 @@ int fiber_create(fiber_t *fiber, const fiber_attr_t *attr,
 
 	coro_setdata(*fiber, (void *)(uintptr_t)node->id);
 
-	if (!__scope.head || __scope.head->priority >= node->priority) {
-		node->next = __scope.head;
-		__scope.head = node;
-	} else {
-		head = __scope.head;
-		while (head->next
-			&& head->next->priority < node->priority) {
-			head = head->next;
-		}
-		node->next = head->next;
-		head->next = node;
+	head = __scope.head;
+	while (head->next
+		&& head->next->priority < node->priority) {
+		head = head->next;
 	}
+	node->next = head->next;
+	head->next = node;
 
 	return 0;
 }
@@ -143,7 +141,7 @@ int fiber_cancel(fiber_t fiber)
 		return -1;
 	}
 
-	data = __scope.fibers + (uint16_t)(uintptr_t)coro_getdata(fiber);
+	data = __fiber(fiber);
 	if (data->state == FIBER_DONE) {
 		errno = EINVAL;
 		return -1;
@@ -168,7 +166,7 @@ int fiber_join(fiber_t fiber, void **retval)
 		return -1;
 	}
 
-	data = __scope.fibers + (uint16_t)(uintptr_t)coro_getdata(fiber);
+	data = __fiber(fiber);
 	if (data->state == FIBER_DONE) {
 		errno = EINVAL;
 		return -1;
@@ -194,7 +192,7 @@ int fiber_setschedprio(fiber_t fiber, int prio)
 FORCEINLINE
 void fiber_exit(void *retval)
 {
-	assert(__scope.self);
+	assert(__scope.self != __scope.head);
 
 	__scope.self->state = FIBER_DONE;
 	coro_exit(__scope.self->ret = retval);
@@ -210,7 +208,7 @@ void fiber_lock(waitq_t *wqueue)
 {
 	struct fiber *data;
 
-	data = __scope.fibers + (uint16_t)(uintptr_t)coro_getdata(fiber_self());
+	data =__fiber(fiber_self());
 	data->state = FIBER_BLOCKING;
 	waitq_push(wqueue, fiber_self());
 }
@@ -221,7 +219,7 @@ void fiber_unlock(waitq_t *wqueue)
 	struct fiber *data;
 
 	if ((fiber = waitq_pop(wqueue))) {
-		data = __scope.fibers + (uint16_t)(uintptr_t)coro_getdata(fiber);
+		data = __fiber(fiber);
 		data->state = FIBER_ACTIVE;
 	}
 }
@@ -231,13 +229,7 @@ void fiber_yield(void)
 	struct fiber *begin;
 
 	begin = __scope.self;
-
-	if (!__scope.self || !__scope.self->next)
-		__scope.self = __scope.head;
-	else
-		__scope.self = __scope.self->next;
-
-	assert(__scope.self);
+	__scope.self = __scope.self->next ? __scope.self->next : __scope.head;
 
 	while (__scope.self->state != FIBER_ACTIVE) {
 		if (__scope.self->next == begin)
@@ -246,7 +238,6 @@ void fiber_yield(void)
 	}
 	__scope.self->ret =
 		coro_resume(&__scope.self->coroutine, __scope.self->arg);
-	if (!__scope.self->coroutine) {
+	if (!__scope.self->coroutine)
 		__scope.self->state = FIBER_DONE;
-	}
 }

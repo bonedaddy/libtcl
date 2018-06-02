@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "osi.c"
 #include <osi.h>
 
 void osi_init(void)
