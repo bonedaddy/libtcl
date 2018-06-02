@@ -24,7 +24,7 @@
 #ifndef __OSI_EVENT_H
 # define __OSI_EVENT_H
 
-#include "osi/queue.h"
+#include "osi/waitq.h"
 #include "osi/fiber.h"
 
 /*!@public
@@ -67,7 +67,7 @@ struct event {
 #else
 
 	/*! TODO. */
-	fifo_t wq;
+	waitq_t wq;
 
 	/*! TODO. */
 	event_value_t count;

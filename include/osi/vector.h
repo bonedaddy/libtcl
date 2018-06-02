@@ -52,14 +52,14 @@ struct vector {
 	/*! Dynamic buffer to store items. */
 	void *buffer;
 
-	/*! Size of an item which is passed to `vector_init'. */
-	size_t isize;
+	/*! The vector length, represent the number of items stored in `buffer'. */
+	size_t length;
 
 	/*! The vector capacity, or size of the allocated `buffer'. */
 	size_t capacity;
 
-	/*! The vector length, represent the number of items stored in `buffer'. */
-	size_t length;
+	/*! Size of an item which is passed to `vector_init'. */
+	size_t isize;
 };
 
 /*!@public

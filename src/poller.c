@@ -119,7 +119,7 @@ int poller_wait(poller_t *poller, pollev_t *events, int size)
 		}
 		if (ret)
 			break;
-		fiber_schedule();
+		fiber_yield();
 	}
 #endif
 	return ret;

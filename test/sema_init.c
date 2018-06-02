@@ -26,6 +26,5 @@ int main(void)
 
 	ASSERT_EQ(0, sema_init(&sema, 0));
 	sema_destroy(&sema);
-	fiber_cleanup();
 	return 0;
 }

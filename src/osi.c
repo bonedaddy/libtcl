@@ -26,6 +26,5 @@ void osi_init(void)
 void osi_cleanup(void)
 {
 	mutex_global_cleanup();
-	fiber_cleanup();
 	alarm_cleanup();
 }

@@ -32,7 +32,7 @@ typedef struct {
 } start_arg_t;
 
 typedef struct {
-	work_t *func;
+	routine_t *func;
 	void *context;
 } work_item_t;
 
@@ -121,7 +121,7 @@ void thread_join(thread_t *thread)
 	task_join(&thread->task);
 }
 
-bool thread_post(thread_t *thread, work_t *work, void *context)
+bool thread_post(thread_t *thread, routine_t *work, void *context)
 {
 	work_item_t *item;
 

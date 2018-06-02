@@ -22,27 +22,18 @@
 #ifndef __CORO_INTERNAL_H
 # define __CORO_INTERNAL_H
 
-#include "osi/coroutine.h"
-
-#ifndef CORO_STACK_SIZE
-# define CORO_STACK_SIZE (4096UL)
-#endif
+#include "osi/coro.h"
 
 #if defined(CORO_X86_64) \
 	|| defined (CORO_X86_32) \
 	|| defined (CORO_ARM) \
 	|| defined (CORO_UCONTEXT)
 
-# ifndef CORO_POOL_SIZE
-#   define CORO_POOL_SIZE (100UL)
-# endif
-
 __ext coro_t __coroalloc(size_t stack_size);
 __ext void __cororelease(coro_t coro);
-
-__ext void __coromake(coro_t from, fn_t *fn);
-__ext void __coroswitch(coro_t from, coro_t to);
-__ext void __coromain(fn_t *fn);
+__ext void __coromake(coro_t from, routine_t *fn);
+__ext NOINLINE REGPARAM(0) REGPARAM(1) void __coroswitch(coro_t from, coro_t to);
+__ext NOINLINE REGPARAM(0) void __coromain(routine_t *fn);
 
 struct coro {
 
@@ -64,6 +55,9 @@ struct coro {
 
 	/*! Last ret. */
 	void *ret;
+
+	/*! User data. */
+	void *data;
 
 	unsigned int flag;
 

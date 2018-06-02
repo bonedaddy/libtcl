@@ -17,24 +17,24 @@
 
 #include "test.h"
 
-#include "osi/fiber.h"
+#include "osi/coro.h"
 
-void *call_to_return_parameter(void *arg)
+void *call_return_value(void *arg)
 {
+	static char result[] = "result";
+
 	(void)arg;
-	ASSERT(!strcmp("result", arg));
-	return (NULL);
+	return result;
 }
 
 int main(void)
 {
-	fid_t fiber;
+	coro_t coro;
 	char *result;
 
-	fiber_init(&fiber, call_to_return_parameter, (fiber_attr_t){ });
-	(void)(result = fiber_call(fiber, "result"));
-	ASSERT(!result);
-	fiber_destroy(fiber);
-	fiber_cleanup();
+	coro_init(&coro, call_return_value, 32);
+	(void)(result = coro_resume(&coro, NULL));
+	ASSERT(!strcmp("result", result));
+	ASSERT_NULL(coro);
 	return 0;
 }

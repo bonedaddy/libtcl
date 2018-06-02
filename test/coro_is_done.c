@@ -17,31 +17,36 @@
 
 #include "test.h"
 
-#include "osi/fiber.h"
+#include "osi/coro.h"
 
 static int counter = 0;
 
-static void *call(void *arg)
+void *call(void *arg)
 {
 	(void)arg;
 	++counter;
 	ASSERT(counter == 2);
+	coro_yield(NULL);
+	++counter;
+	ASSERT(counter == 4);
 	return NULL;
 }
 
 int main(void)
 {
-	fid_t fiber;
-	char *result;
+	coro_t coro;
 
-	fiber_init(&fiber, call, (fiber_attr_t){ });
+	coro_init(&coro, call, 32);
+	ASSERT(coro);
 	++counter;
 	ASSERT(counter == 1);
-	(void)(result = fiber_call(fiber, NULL));
+	coro_resume(&coro, NULL);
 	++counter;
 	ASSERT(counter == 3);
-	ASSERT(!result);
-	fiber_destroy(fiber);
-	fiber_cleanup();
+	ASSERT(coro);
+	coro_resume(&coro, NULL);
+	++counter;
+	ASSERT(counter == 5);
+	ASSERT_NULL(coro);
 	return 0;
 }

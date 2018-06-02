@@ -84,7 +84,7 @@ reactor_object_t *reactor_register(reactor_t *reactor, event_t *ev,
 	object->read_ready = read_ready;
 	object->write_ready = write_ready;
 	object->is_processed = false;
-	bzero(&event, sizeof(event));
+	event.events = 0;
 	if (read_ready) event.events |= POLLER_IN;
 	if (write_ready) event.events |= POLLER_OUT;
 	event.ptr = object;

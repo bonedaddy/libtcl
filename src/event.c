@@ -33,7 +33,7 @@ int event_init(event_t *event, event_value_t value,
 	}
 	event->count = value;
 	event->flags = flags;
-	queue_init(&event->wq, sizeof(fid_t));
+	waitq_init(&event->wq);
 #endif /* OSI_THREADING */
 	return 0;
 }
@@ -44,7 +44,7 @@ void event_destroy(event_t *event)
 	if (event->fd >= 0)
 		close(event->fd);
 #else
-	queue_destroy(&event->wq, NULL);
+	waitq_destroy(&event->wq);
 #endif /* OSI_THREADING */
 }
 
@@ -83,24 +83,21 @@ int event_read(event_t *event, event_value_t *value)
 #else
 	int res;
 	event_value_t ucnt;
-	fid_t current;
 
 	if (event->count > 0) res = sizeof(ucnt);
 	else {
-		*(fid_t *)queue_push(&event->wq) = fiber_lock();
+		fiber_lock(&event->wq);
 		while (true) {
 			if (event->count > 0) {
 				res = sizeof(ucnt);
 				break;
 			}
-			fiber_schedule();
+			fiber_yield();
 		}
 	}
 	ucnt = (event->flags & EVENT_SEMAPHORE) ? 1 : event->count;
-	if ((event->count -= ucnt)) {
-		if (queue_pop(&event->wq, &current))
-			fiber_unlock(current);
-	}
+	if ((event->count -= ucnt))
+		fiber_unlock(&event->wq);
 	if (value) *value = ucnt;
 	return res;
 #endif /* OSI_THREADING */
@@ -112,7 +109,6 @@ int event_write(event_t *event, event_value_t value)
 	return eventfd_write(event->fd, value);
 #else
 	event_value_t ucnt;
-	fid_t current;
 
 	ucnt = value;
 	if (ucnt == U64_MAX) {
@@ -120,16 +116,15 @@ int event_write(event_t *event, event_value_t value)
 		return -1;
 	}
 	if (U64_MAX - event->count <= ucnt) {
-		*(fid_t *)queue_push(&event->wq) = fiber_lock();
+		fiber_lock(&event->wq);
 		while (true) {
 			if (U64_MAX - event->count > ucnt)
 				break;
-			fiber_schedule();
+			fiber_yield();
 		}
 	}
 	event->count += ucnt;
-	if (queue_pop(&event->wq, &current))
-		fiber_unlock(current);
+	fiber_unlock(&event->wq);
 	return 0;
 #endif /* OSI_THREADING */
 }

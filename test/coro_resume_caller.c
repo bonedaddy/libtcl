@@ -17,25 +17,35 @@
 
 #include "test.h"
 
-#include "osi/fiber.h"
+#include "osi/coro.h"
 
-void *call_return_value(void *arg)
+static coro_t a;
+static coro_t b;
+
+void *call_b(void *arg)
 {
-	static char result[] = "result";
-
 	(void)arg;
-	return result;
+	printf("coro b\n");
+	return NULL;
+}
+
+void *call_a(void *arg)
+{
+	(void)arg;
+	printf("begin coro a\n");
+	coro_resume(&b, NULL);
+	printf("end coro a\n");
+	return NULL;
 }
 
 int main(void)
 {
-	fid_t fiber;
-	char *result;
-
-	fiber_init(&fiber, call_return_value, (fiber_attr_t){ });
-	(void)(result = fiber_call(fiber, NULL));
-	ASSERT(!strcmp("result", result));
-	fiber_destroy(fiber);
-	fiber_cleanup();
+	coro_init(&a, call_a, 32);
+	coro_init(&b, call_b, 32);
+	printf("begin main\n");
+	coro_resume(&a, NULL);
+	printf("end main\n");
+	ASSERT_NULL(a);
+	ASSERT_NULL(b);
 	return 0;
 }

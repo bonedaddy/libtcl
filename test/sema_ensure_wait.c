@@ -70,6 +70,5 @@ int main(void)
 
 	sema_destroy(&sema);
 	thread_destroy(&thread);
-	fiber_cleanup();
 	return 0;
 }

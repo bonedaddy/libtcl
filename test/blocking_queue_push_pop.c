@@ -51,6 +51,5 @@ int main(void)
 	ASSERT_NULL(blocking_queue_trypop(&blocking_queue));
 
 	blocking_queue_destroy(&blocking_queue, NULL);
-	fiber_cleanup();
 	return 0;
 }

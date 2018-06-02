@@ -44,7 +44,7 @@ struct task {
 
 	bool joined;
 
-	work_t *work;
+	routine_t *work;
 
 	void *context;
 
@@ -53,13 +53,13 @@ struct task {
 	pthread_t pthread;
 #else
 
-	fid_t fiber;
+	fiber_t fiber;
 #endif
 };
 
-__api int task_spawn(task_t *task, work_t *work, void *context);
+__api int task_spawn(task_t *task, routine_t *work, void *context);
 
-__api int task_repeat(task_t *task, work_t *work, void *context);
+__api int task_repeat(task_t *task, routine_t *work, void *context);
 
 __api void task_destroy(task_t *task);
 

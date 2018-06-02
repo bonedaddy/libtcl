@@ -17,38 +17,40 @@
 
 #include "test.h"
 
-#include "osi/fiber.h"
+#include "osi/coro.h"
 
-static int counter = 0;
-
-void *call(void *arg)
+static void *generator(void *arg)
 {
+	static char *adjectives[] = { "small", "clean", NULL, "fast", NULL };
+	char **adjective = adjectives;
+
 	(void)arg;
-	++counter;
-	ASSERT(counter == 2);
-	fiber_yield(NULL);
-	++counter;
-	ASSERT(counter == 4);
-	return NULL;
+	while (*adjective) {
+		coro_yield(*adjective);
+		++adjective;
+	}
+	return adjectives[3];
 }
 
 int main(void)
 {
-	fid_t fiber;
+	coro_t coro;
+	char *lol;
 
-	fiber_init(&fiber, call, (fiber_attr_t){ });
-	ASSERT(!fiber_isdone(fiber));
-	++counter;
-	ASSERT(counter == 1);
-	fiber_call(fiber, NULL);
-	++counter;
-	ASSERT(counter == 3);
-	ASSERT(!fiber_isdone(fiber));
-	fiber_call(fiber, NULL);
-	++counter;
-	ASSERT(counter == 5);
-	ASSERT(fiber_isdone(fiber));
-	fiber_destroy(fiber);
-	fiber_cleanup();
+	coro_init(&coro, generator, 64);
+
+	lol = (char *)coro_resume(&coro, NULL);
+	ASSERT_STREQ("small", lol);
+	printf("%s\n", lol);
+
+	lol = (char *)coro_resume(&coro, NULL);
+	ASSERT_STREQ("clean", lol);
+	printf("%s\n", lol);
+
+	lol = (char *)coro_resume(&coro, NULL);
+	ASSERT_STREQ("fast", lol);
+	printf("%s\n", lol);
+
+	ASSERT_NULL(coro);
 	return 0;
 }

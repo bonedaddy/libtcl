@@ -19,387 +19,234 @@
 #include "osi/string.h"
 #include "osi/vector.h"
 
-#include <errno.h>
-
-#if defined(USE_CORO)
-# include <coro.h>
-#elif defined(USE_PICORO)
-# include <picoro.h>
-#elif defined(OS_PROVENCORE)
-# include <threads/threads.h>
-#else
-# error "Unable to implement software coroutines"
+#ifndef FIBER_MAX
+# define FIBER_MAX 256
 #endif
 
-#define DEFAULT_FIBER_STACK_SIZE (4096)
-#ifdef OS_PROVENCORE
-# define CALLBACK_RETURN_TY int
-#else
-# define CALLBACK_RETURN_TY void
-#endif
+enum {
 
-typedef struct {
+	/*! The fiber was just created so ready */
+	FIBER_ACTIVE,
 
-	/*! The fiber status */
-	fiber_st_t status;
+	/*! TODO */
+	FIBER_BLOCKING,
 
-	/*! The fiber core function */
-	work_t *fn;
+	/*! The fiber is terminated but still exists */
+	FIBER_DONE
+};
 
-	/*! The fiber core function argument */
-	void *context;
+struct fiber {
 
-	/*! The fiber result */
-	void *result;
+	uint16_t id;
 
-	/*! The fiber caller */
-	fid_t caller;
+	int8_t priority;
 
-	/*! The priority used by scheduler */
-	int priority;
+	uint8_t state;
 
-	/*! The index in the __fibers.queue buffer. */
-	uint16_t priority_idx;
+	void *arg;
 
-	/*! Fiber unique id. */
-	fid_t fid;
+	void *ret;
 
-	/*! Fiber stack size. */
-	uint16_t ss;
+	coro_t coroutine;
 
-#if defined(USE_CORO)
+	struct fiber *next;
+};
 
-	/** Coroutine context */
-	coro_context coroutine;
+struct {
 
-	/** Coroutine stack */
-	struct coro_stack stack;
-#elif defined(USE_PICORO)
+	struct fiber fibers[FIBER_MAX];
 
-	/** Picoro coroutine */
-	coro coroutine;
-#elif defined(OS_PROVENCORE)
+	struct fiber *head, *self;
 
-	/** ProveNCore coroutine */
-	struct context *coroutine;
-#endif
-} fiber_t;
+	uint16_t fibers_idx;
 
-static fid_t __fiber_current = 0;
-static uint16_t __fiber_idx = 0;
-static struct {
-	fiber_t *buffer;
-	fid_t *queue;
-	uint16_t len;
-	uint16_t cap;
-} __fibers = {NULL, NULL, 0, 0};
+	fiber_attr_t dft_attr;
 
-static int __init = 0;
+} __scope;
 
-static int __lazyinit(void)
+static void __initmain(void)
 {
-	if (!__init) {
-		__init = 1;
-		__fibers.buffer = calloc(32, sizeof(fiber_t));
-		__fibers.queue = calloc(32, sizeof(fid_t));
-		__fibers.len = 1;
-		__fibers.cap = 32;
-		__fibers.buffer[0].status = FIBER_RUNNING;
-		__fibers.queue[0] = 0;
-#ifdef OS_PROVENCORE
-		if (init_threads()) return -1;
-#endif
+	static int init;
+	struct fiber *head;
+
+	if (init)
+		return;
+	init = 1;
+
+	head = __scope.fibers + __scope.fibers_idx;
+	head->id = __scope.fibers_idx++;
+
+	head->coroutine = coro_self();
+	head->state = FIBER_ACTIVE;
+	head->priority = 0;
+	head->arg = NULL;
+	head->ret = NULL;
+	head->next = NULL;
+
+	coro_setdata(coro_self(), (void *)(uintptr_t)head->id);
+
+	__scope.head = head;
+}
+
+int fiber_create(fiber_t *fiber, const fiber_attr_t *attr,
+				 routine_t *routine, void *arg)
+{
+	struct fiber *node, *head;
+
+	if (__scope.fibers_idx >= FIBER_MAX) {
+		errno = EINVAL;
+		return -1;
 	}
-	return 0;
-}
 
-static FORCEINLINE fiber_t *__getfiber(fid_t fid)
-{
-	__lazyinit();
-	assert(fid < __fibers.len);
-	return __fibers.buffer + fid;
-}
+	if (LIKELY(!attr))
+		attr = &__scope.dft_attr;
 
-static fid_t __createfiber(void)
-{
-	fid_t i;
-	fiber_t *fiber;
-	uint16_t cap;
+	if (coro_init(fiber, routine, attr->stack_size))
+		return -1;
 
-	for (i = 1; i < __fibers.len; ++i) {
-		fiber = __getfiber(i);
-		if (fiber->status == FIBER_DESTROYED)
-			goto got_one;
-		if (fiber->status == FIBER_DONE) {
-#ifdef USE_CORO
-			(void)coro_destroy(&fiber->coroutine);
-#endif
-			goto got_one;
-		}
-	}
-	if ((i = __fibers.len++) + 1 >= __fibers.cap) {
-		cap = (uint16_t)(__fibers.cap * 2);
-		__fibers.buffer = realloc(__fibers.buffer, cap * sizeof(fiber_t));
-		bzero(__fibers.buffer + __fibers.cap, (cap - __fibers.cap) *
-			sizeof(fiber_t));
-		__fibers.queue = realloc(__fibers.queue, cap * sizeof(fid_t));
-		bzero(__fibers.queue + __fibers.cap, (cap - __fibers.cap) *
-			sizeof(fid_t));
-		__fibers.cap = cap;
-	}
-got_one:
-	__fibers.buffer[i].fid = i;
-	return i;
-}
+	__initmain();
 
-static NOINLINE REGPARAM(0) CALLBACK_RETURN_TY __fn(void *context)
-{
-	fiber_t *fiber;
+	node = __scope.fibers + __scope.fibers_idx;
+	node->id = __scope.fibers_idx++;
 
-	fiber = __getfiber((fid_t)context);
-	fiber->result = fiber->fn(fiber->context);
-	fiber->status = FIBER_DONE;
-	fiber_yield(fiber->result);
-#ifdef OS_PROVENCORE
-	return 0;
-#endif
-}
+	node->coroutine = *fiber;
+	node->state = FIBER_ACTIVE;
+	node->priority = attr->prio;
+	node->arg = arg;
+	node->ret = NULL;
+	node->next = NULL;
 
-static FORCEINLINE void __setpriority(fid_t fid)
-{
-	fid_t i;
-	fiber_t *a, *b;
+	coro_setdata(*fiber, (void *)(uintptr_t)node->id);
 
-	a = __getfiber(fid);
-	for (i = 1; i < __fibers.len; ++i) {
-		if (!__fibers.queue[i])
-			break;
-		b = __getfiber(__fibers.queue[i]);
-		if (b->priority < a->priority)
-			break;
-	}
-	if (i < __fibers.len - 1)
-		memmove(__fibers.queue + i + 1, __fibers.queue + i,
-			(__fibers.len - 1 - i) * sizeof(fid_t));
-	__fibers.queue[i] = fid;
-	a->priority_idx = i;
-}
-
-static FORCEINLINE void __deletepriority(fid_t fid)
-{
-	fid_t i;
-	fiber_t *b;
-
-	for (i = 1; i < __fibers.len; ++i) {
-		b = __getfiber(__fibers.queue[i]);
-		if (b->fid == fid)
-			break;
-	}
-	if (i != __fibers.len)
-		memmove(__fibers.queue + i, __fibers.queue + i + 1,
-			(__fibers.len - 1 - i) * sizeof(fid_t));
-	__fibers.queue[i] = 0;
-}
-
-static FORCEINLINE void __updatepriority(fid_t fid)
-{
-	__deletepriority(fid);
-	__setpriority(fid);
-}
-
-void fiber_init(fid_t *fid, work_t *work, fiber_attr_t attr)
-{
-	fiber_t *fiber;
-	void *context;
-
-	assert(!__lazyinit()); /* TODO: log an error and return if fail */
-	*fid = __createfiber();
-	fiber = __getfiber(*fid);
-	if (!attr.stack_size)
-		attr.stack_size = (uint16_t)DEFAULT_FIBER_STACK_SIZE;
-	context = (void *)(size_t)*fid;
-#ifdef OS_PROVENCORE
-	fiber->coroutine = create_context(ss, 0, 0, 0, __fn, context);
-#elif defined(USE_CORO)
-	if (fiber->ss < attr.stack_size) {
-		coro_stack_free(&fiber->stack);
-		coro_stack_alloc(&fiber->stack, attr.stack_size);
-	}
-	coro_create(&fiber->coroutine, __fn, context, fiber->stack.sptr,
-		fiber->stack.ssze);
-#else
-	fiber->coroutine = coroutine(__fn);
-#endif
-	fiber->fn = work;
-	fiber->status = FIBER_PENDING;
-	fiber->context = attr.context;
-	fiber->ss = attr.stack_size;
-	fiber->priority = attr.priority;
-	(fiber->priority_idx ? __updatepriority : __setpriority)(*fid);
-}
-
-void fiber_destroy(fid_t fid)
-{
-	fiber_t *fiber;
-
-	fiber = __getfiber(fid);
-	__deletepriority(fid);
-	assert(fiber->status == FIBER_DONE);
-#ifdef USE_CORO
-	(void)coro_destroy(&fiber->coroutine);
-	coro_stack_free(&fiber->stack);
-#endif
-	bzero(fiber, sizeof(fiber_t));
-	fiber->fid = fid;
-	fiber->status = FIBER_DESTROYED;
-}
-
-void fiber_cleanup(void)
-{
-	fid_t i;
-	fiber_t *fiber;
-
-	for (i = 1; i < __fibers.len; ++i) {
-		fiber = __getfiber(i);
-		if (fiber->status != FIBER_DESTROYED)
-			fiber_destroy(i);
-	}
-	if (__fibers.len) {
-		free(__fibers.buffer);
-		free(__fibers.queue);
-		bzero(&__fibers, sizeof(__fibers));
-	}
-	__init = 0;
-}
-
-void *fiber_call(fid_t fid, void *context)
-{
-	fiber_t *fiber;
-	fiber_t *current;
-
-	current = __getfiber(__fiber_current);
-	if (current->caller == fid)
-		return fiber_yield(context);
-	fiber = __getfiber(fid);
-	assert(__fiber_current != fid);
-	assert(fiber->status == FIBER_PENDING);
-	fiber->context = context;
-	fiber->caller = __fiber_current;
-	__fiber_current = fiber->fid;
-	__fiber_idx = fiber->priority_idx;
-	fiber->status = FIBER_RUNNING;
-	if (current->status == FIBER_RUNNING)
-		current->status = FIBER_PENDING;
-#ifdef USE_PICORO
-	fiber->result = resume(fiber->coroutine, (void *)(size_t)fid);
-#elif defined(OS_PROVENCORE)
-	int dummy;
-
-	if (resume(fiber->coroutine, &dummy))
-		fiber->status = FIBER_DONE;
-#else
-	coro_transfer(&current->coroutine, &fiber->coroutine);
-#endif
-	return fiber->result;
-}
-
-FORCEINLINE bool fiber_isdone(fid_t fid)
-{
-	return __getfiber(fid)->status >= FIBER_DONE;
-}
-
-FORCEINLINE void fiber_schedule(void)
-{
-	uint16_t begin;
-	fiber_t *fiber;
-
-	begin = __fiber_idx;
-	if (__fiber_idx + 1 >= __fibers.len)
-		__fiber_idx = 0;
-	else
-		++__fiber_idx;
-	while ((fiber = __getfiber(__fibers.queue[__fiber_idx]))->status
-		!= FIBER_PENDING) {
-		if (begin == __fiber_idx)
-			return;
-		if (++__fiber_idx >= __fibers.len)
-			__fiber_idx = 0;
-	}
-	fiber_call(fiber->fid, fiber->context);
-}
-
-FORCEINLINE void fiber_join(fid_t fid)
-{
-	while (!fiber_isdone(fid))
-		fiber_schedule();
-}
-
-void *fiber_yield(void *context)
-{
-	fiber_t *fiber;
-	fiber_t *caller;
-
-	fiber = __getfiber(__fiber_current);
-	caller = __getfiber(fiber->caller);
-	assert(fiber->status == FIBER_RUNNING
-		|| fiber->status == FIBER_DONE
-		|| fiber->status == FIBER_BLOCKING);
-	assert(caller->status == FIBER_PENDING
-		|| caller->status == FIBER_BLOCKING
-		|| caller->status == FIBER_DONE);
-	while (caller->fid && caller->status != FIBER_PENDING)
-		caller = __getfiber(caller->caller);
-	assert(caller);
-	assert(caller->status == FIBER_PENDING);
-	__fiber_current = caller->fid;
-	__fiber_idx = caller->priority_idx;
-	fiber->caller = 0;
-	if (fiber->status == FIBER_RUNNING)
-		fiber->status = FIBER_PENDING;
-	caller->status = FIBER_RUNNING;
-#ifdef USE_PICORO
-	return yield(context);
-#else
-	fiber->result = context;
-# ifdef OS_PROVENCORE
-	if (caller) {
-		int dummy;
-
-		if (resume(caller->coroutine, &dummy))
-			caller->status = FIBER_DONE;
+	if (!__scope.head || __scope.head->priority >= node->priority) {
+		node->next = __scope.head;
+		__scope.head = node;
 	} else {
-		yield();
+		head = __scope.head;
+		while (head->next
+			&& head->next->priority < node->priority) {
+			head = head->next;
+		}
+		node->next = head->next;
+		head->next = node;
 	}
-# else
-	coro_transfer(&fiber->coroutine, &caller->coroutine);
-# endif
-	return fiber->context;
-#endif
+
+	return 0;
 }
 
-FORCEINLINE fid_t fiber_lock(void)
+int fiber_cancel(fiber_t fiber)
 {
-	fiber_t *fiber;
+	struct fiber *data;
 
-	fiber = __getfiber(__fiber_current);
-	assert(fiber->status == FIBER_RUNNING);
-	fiber->status = FIBER_BLOCKING;
-	return __fiber_current;
+	if (!fiber) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	data = __scope.fibers + (uint16_t)(uintptr_t)coro_getdata(fiber);
+	if (data->state == FIBER_DONE) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (fiber == fiber_self())
+		fiber_exit(NULL);
+	else {
+		data->state = FIBER_DONE;
+		coro_kill(&data->coroutine);
+	}
+
+	return 0;
 }
 
-FORCEINLINE void fiber_unlock(fid_t fid)
+int fiber_join(fiber_t fiber, void **retval)
 {
-	fiber_t *fiber;
+	struct fiber *data;
 
-	fiber = __getfiber(fid);
-	fiber->status = FIBER_PENDING;
+	if (!fiber) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	data = __scope.fibers + (uint16_t)(uintptr_t)coro_getdata(fiber);
+	if (data->state == FIBER_DONE) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	while (data->state != FIBER_DONE)
+		fiber_yield();
+
+	if (retval)
+		*retval = data->ret;
+
+	return 0;
 }
 
-FORCEINLINE void fiber_setpriority(fid_t fid, int priority)
+int fiber_setschedprio(fiber_t fiber, int prio)
 {
-	fiber_t *fiber;
+	(void)fiber;
+	(void)prio;
+	/* TODO(tempow): update priority */
+	return 0;
+}
 
-	fiber = __getfiber(fid);
-	fiber->priority = priority;
-	__updatepriority(fid);
+FORCEINLINE
+void fiber_exit(void *retval)
+{
+	assert(__scope.self);
+
+	__scope.self->state = FIBER_DONE;
+	coro_exit(__scope.self->ret = retval);
+}
+
+FORCEINLINE
+fiber_t fiber_self(void)
+{
+	return coro_self();
+}
+
+void fiber_lock(waitq_t *wqueue)
+{
+	struct fiber *data;
+
+	data = __scope.fibers + (uint16_t)(uintptr_t)coro_getdata(fiber_self());
+	data->state = FIBER_BLOCKING;
+	waitq_push(wqueue, fiber_self());
+}
+
+void fiber_unlock(waitq_t *wqueue)
+{
+	fiber_t fiber;
+	struct fiber *data;
+
+	if ((fiber = waitq_pop(wqueue))) {
+		data = __scope.fibers + (uint16_t)(uintptr_t)coro_getdata(fiber);
+		data->state = FIBER_ACTIVE;
+	}
+}
+
+void fiber_yield(void)
+{
+	struct fiber *begin;
+
+	begin = __scope.self;
+
+	if (!__scope.self || !__scope.self->next)
+		__scope.self = __scope.head;
+	else
+		__scope.self = __scope.self->next;
+
+	assert(__scope.self);
+
+	while (__scope.self->state != FIBER_ACTIVE) {
+		if (__scope.self->next == begin)
+			return;
+		__scope.self = __scope.self->next ? __scope.self->next : __scope.head;
+	}
+	__scope.self->ret =
+		coro_resume(&__scope.self->coroutine, __scope.self->arg);
+	if (!__scope.self->coroutine) {
+		__scope.self->state = FIBER_DONE;
+	}
 }

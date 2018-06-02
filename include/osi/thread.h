@@ -63,7 +63,7 @@ __api bool thread_setpriority(thread_t *thread, int priority);
 
 __api void thread_join(thread_t *thread);
 
-__api bool thread_post(thread_t *thread, work_t *work, void *context);
+__api bool thread_post(thread_t *thread, routine_t *work, void *context);
 
 __api void thread_stop(thread_t *thread);
 

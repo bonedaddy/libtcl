@@ -169,7 +169,6 @@ static bool __has_byte(const eager_reader_t *reader)
 #ifndef OS_PROVENCORE
 		struct timeval timeout;
 
-
 		timeout.tv_sec = 0;
 		timeout.tv_usec = 0;
 		int ret = select(FD_SETSIZE, &read_fds, NULL, NULL, &timeout);

@@ -38,6 +38,5 @@ int main(void)
 	ASSERT_TRUE(sema_trywait(&sema));
 	ASSERT_FALSE(sema_trywait(&sema));
 	sema_destroy(&sema);
-	fiber_cleanup();
 	return 0;
 }

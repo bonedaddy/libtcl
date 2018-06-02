@@ -26,13 +26,6 @@
 #cmakedefine OS_PROVENCORE
 #endif
 
-#ifndef USE_CORO
-#cmakedefine USE_CORO
-#endif
-#ifndef USE_PICORO
-#cmakedefine USE_PICORO
-#endif
-
 #ifndef HAS_BZERO
 #cmakedefine HAS_BZERO
 #endif

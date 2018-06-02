@@ -26,6 +26,7 @@
 #include "osi/blocking_queue.h"
 #include "osi/buffer.h"
 #include "osi/compat.h"
+#include "osi/coro.h"
 #include "osi/dispatcher.h"
 #include "osi/event.h"
 #include "osi/fiber.h"
@@ -47,6 +48,7 @@
 #include "osi/task.h"
 #include "osi/thread.h"
 #include "osi/vector.h"
+#include "osi/waitq.h"
 
 /*!@public
  *

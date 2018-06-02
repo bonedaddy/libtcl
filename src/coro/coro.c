@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-#include <stdio.h>
-
 #include "coro/internal.h"
 #include "osi/string.h"
 
@@ -23,7 +21,7 @@
 
 static struct coro __main, *__self = &__main;
 
-int coro_init(coro_t *coro, fn_t *fn, size_t stack_size)
+int coro_init(coro_t *coro, routine_t *fn, size_t stack_size)
 {
 	if (!(*coro = __coroalloc(stack_size)))
 		return -1;
@@ -69,23 +67,41 @@ void* coro_yield(void *arg)
 	return cur->ret;
 }
 
+NOINLINE
+void coro_exit(void *retval)
+{
+	__self->flag = CORO_FLAG_END;
+	coro_yield(retval);
+	abort();
+}
+
 NOINLINE REGPARAM(0)
-void __coromain(fn_t *fn)
+void __coromain(routine_t *fn)
 {
 	void *arg, *ret;
 
 	arg = __self->ret;
 	ret = fn(arg);
-	__self->flag = CORO_FLAG_END;
-	coro_yield(ret);
+	coro_exit(ret);
 }
 
-void coro_destroy(coro_t *coro)
+void coro_kill(coro_t *coro)
 {
-	if (*coro) {
-		__cororelease(*coro);
-		*coro = NULL;
-	}
+	assert(*coro);
+	assert(*coro != __self);
+
+	__cororelease(*coro);
+	*coro = NULL;
+}
+
+void coro_setdata(coro_t coro, void *data)
+{
+	coro->data = data;
+}
+
+void *coro_getdata(coro_t coro)
+{
+	return coro->data;
 }
 
 coro_t coro_self(void)

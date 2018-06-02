@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2014 Google, Inc.
  * Copyright (C) 2018 Tempow
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,31 +15,30 @@
  * limitations under the License.
  */
 
-#pragma once
+#include "osi/waitq.h"
 
-/*!@file osi/coro.h
- * @author uael
- *
- * @addtogroup osi.coro @{
- */
-#ifndef __OSI_CORO_H
-# define __OSI_CORO_H
+void waitq_init(waitq_t *waitq)
+{
+	queue_init(&waitq->base, sizeof(fiber_t));
+}
 
-#include "osi/compat.h"
+void waitq_destroy(waitq_t *waitq)
+{
+	queue_destroy(&waitq->base, NULL);
+}
 
-typedef void *(fn_t)(void *);
+void waitq_push(waitq_t *waitq, fiber_t fiber)
+{
+	*(fiber_t *)queue_push(&waitq->base) = fiber;
+}
 
-typedef struct coro *coro_t;
+fiber_t waitq_pop(waitq_t *waitq)
+{
+	fiber_t fiber;
 
-__api int coro_init(coro_t *coro, fn_t *fn, size_t stack_size);
+	if (!queue_pop(&waitq->base, &fiber))
+		return NULL;
+	return fiber;
+}
 
-__api void coro_destroy(coro_t *coro);
 
-__api void *coro_resume(coro_t *coro, void *arg);
-
-__api void *coro_yield(void *arg);
-
-__api coro_t coro_self(void);
-
-#endif /* !__OSI_CORO_H */
-/*!@} */

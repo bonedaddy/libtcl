@@ -43,7 +43,7 @@
 # endif
 #else
 # undef __CORO_GUARD
-#   define __CORO_GUARD 0
+# define __CORO_GUARD 0
 #endif
 
 FORCEINLINE PURE CONST

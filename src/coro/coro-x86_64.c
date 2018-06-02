@@ -16,11 +16,11 @@
 
 #include "coro/internal.h"
 
-void __coromake(coro_t ctx, fn_t *fn)
+void __coromake(coro_t ctx, routine_t *fn)
 {
 	uintptr_t *stack;
 
-	stack = (uintptr_t *)((char *)ctx + ctx->ssize - 1);
+	stack = (uintptr_t *)((char *)ctx + ctx->ssize - sizeof(uintptr_t));
 
 	/* make stack-frame of coro_main 16-byte aligned
 	 * for amd64-ABI and some systems (such as Mac OS) require this

@@ -41,6 +41,5 @@ int main(void)
 	ASSERT_STREQ(pass_back_data0, future_await(&future));
 
 	thread_destroy(&thread);
-	fiber_cleanup();
 	return 0;
 }

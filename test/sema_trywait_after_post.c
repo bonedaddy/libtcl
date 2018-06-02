@@ -29,6 +29,5 @@ int main(void)
 	sema_post(&sema);
 	sema_wait(&sema);
 	sema_destroy(&sema);
-	fiber_cleanup();
 	return 0;
 }

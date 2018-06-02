@@ -30,6 +30,5 @@ int main(void)
 	ASSERT_EQ(0, thread_init(&thread, "ZEB"));
 	ASSERT_STREQ(thread.name, "ZEB");
 	thread_destroy(&thread);
-	fiber_cleanup();
 	return 0;
 }

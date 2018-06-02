@@ -17,7 +17,7 @@
 
 #include "test.h"
 
-#include "osi/coroutine.h"
+#include "osi/coro.h"
 
 #define CYCLE (1000)
 

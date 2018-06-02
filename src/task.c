@@ -16,10 +16,6 @@
  */
 #define LOG_TAG "osi_task"
 
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <sys/types.h>
-#include <sys/syscall.h>
 #include "osi/log.h"
 #include "osi/task.h"
 #include "osi/sema.h"
@@ -70,11 +66,11 @@ static void *__spawn(void *context)
 	return NULL;
 }
 
-static FORCEINLINE int __init(task_t *task, work_t *work, void *context,
+static FORCEINLINE int __init(task_t *task, routine_t *work, void *context,
 	bool repeat)
 {
 	start_arg_t start;
-	work_t *task_work;
+	routine_t *task_work;
 
 	if (sema_init(&start.start_sem, 0))
 		return -1;
@@ -88,19 +84,20 @@ static FORCEINLINE int __init(task_t *task, work_t *work, void *context,
 	if (pthread_create(&task->pthread, NULL, task_work, &start))
 		return -1;
 #else
-	fiber_init(&task->fiber, task_work, (fiber_attr_t){ .context = &start });
+	if (fiber_create(&task->fiber, NULL, task_work, &start))
+		return -1;
 #endif
 	sema_wait(&start.start_sem);
 	sema_destroy(&start.start_sem);
 	return 0;
 }
 
-int task_spawn(task_t *task, work_t *work, void *context)
+int task_spawn(task_t *task, routine_t *work, void *context)
 {
 	return __init(task, work, context, false);
 }
 
-int task_repeat(task_t *task, work_t *work, void *context)
+int task_repeat(task_t *task, routine_t *work, void *context)
 {
 	return __init(task, work, context, true);
 }
@@ -123,7 +120,10 @@ FORCEINLINE int task_setpriority(task_t *task, int priority)
 		return -1;
 	}
 #else
-	fiber_setpriority(task->fiber, priority);
+	if (fiber_setschedprio(task->fiber, priority)) {
+		LOG_ERROR("Unable to set fiber priority %d, %m", priority);
+		return -1;
+	}
 #endif /* OSI_THREADING */
 	return 1;
 }
@@ -140,7 +140,7 @@ FORCEINLINE void task_join(task_t *task)
 #ifdef OSI_THREADING
 		pthread_join(task->pthread, NULL);
 #else
-		fiber_join(task->fiber);
+		fiber_join(task->fiber, NULL);
 #endif /* OSI_THREADING */
 	}
 }
@@ -150,6 +150,6 @@ FORCEINLINE void task_schedule(void)
 #ifdef OSI_THREADING
 	sched_yield();
 #else
-	fiber_schedule();
+	fiber_yield();
 #endif
 }

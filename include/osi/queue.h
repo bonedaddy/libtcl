@@ -59,16 +59,16 @@ union fifo {
 		/*! Dynamic buffer to store items. */
 		const void *buffer;
 
-		/*! Size of an item which is passed to `queue_init'. */
-		const size_t isize;
-
-		/*! The queue capacity, or size of the allocated `buffer'. */
-		const size_t capacity;
-
 		/*! The queue length, represent the number of items stored in
 		 * `buffer'.
 		 */
 		const size_t length;
+
+		/*! The queue capacity, or size of the allocated `buffer'. */
+		const size_t capacity;
+
+		/*! Size of an item which is passed to `queue_init'. */
+		const size_t isize;
 	};
 };
 

@@ -59,16 +59,16 @@ union lifo {
 		/*! Dynamic buffer to store items. */
 		const void *buffer;
 
-		/*! Size of an item which is passed to `stack_init'. */
-		const size_t isize;
-
-		/*! The stack capacity, or size of the allocated `buffer'. */
-		const size_t capacity;
-
 		/*! The stack length, represent the number of items stored in
 		 * `buffer'.
 		 */
 		const size_t length;
+
+		/*! The stack capacity, or size of the allocated `buffer'. */
+		const size_t capacity;
+
+		/*! Size of an item which is passed to `stack_init'. */
+		const size_t isize;
 	};
 };
 

@@ -24,47 +24,15 @@
 #ifndef __OSI_FIBER_H
 # define __OSI_FIBER_H
 
-#include "osi/compat.h"
+#include "osi/waitq.h"
 
 /*!@public
  *
  * @brief
- * Represent a fiber unique id.
- */
-typedef uint16_t fid_t;
-
-/*!@public
- *
- * @brief
- * Fiber creation attributes.
+ * Fiber creation attributes structure declaration.
  */
 typedef struct fiber_attr fiber_attr_t;
 
-/*!@public
- *
- * @brief
- * Declaration of fiber function, which should be passed to the
- * `fiber_new'.
- */
-typedef void *(work_t)(void *arg);
-
-typedef enum {
-
-	/*! The fiber was just created so ready */
-	FIBER_PENDING,
-
-	/*! The fiber is running in it's own context until it finish or yield */
-	FIBER_RUNNING,
-
-	/*! TODO */
-	FIBER_BLOCKING,
-
-	/*! The fiber is terminated but still exists */
-	FIBER_DONE,
-
-	/*! TODO */
-	FIBER_DESTROYED
-} fiber_st_t;
 
 /*!@public
  *
@@ -73,118 +41,52 @@ typedef enum {
  */
 struct fiber_attr {
 
-	/*! The argument which is used on the first call of the fiber. */
-	void *context;
-
 	/*! The fiber priority. */
-	int priority;
+	int8_t prio;
 
 	/*! Desired stack size, 1024 by default. */
 	uint16_t stack_size;
 };
 
-/*!@public
- *
- * @brief
- * Creates the new fiber, which will execute the given fn after
- * calling the `fiber_call'.
- * ss (stack size) is the size of the stack for the given fiber.
- * If it is set to 0, then the stack size will be set automatically.
- *
- * @param fid  The fiber to initialize.
- * @param work The fiber function.
- * @param ss   The stack size of the new fiber.
- * @param attr The fiber creation attributes.
- */
-__api void fiber_init(fid_t *fid, work_t *work, fiber_attr_t attr);
+__api int fiber_attr_init(fiber_attr_t *attr, int prio, uint16_t stack_size);
 
-/*!@public
- *
- * @brief
- * Delete the fiber `fiber' and its context.
- *
- * @param fid The fiber to delete.
- */
-__api void fiber_destroy(fid_t fid);
+__api int fiber_create(fiber_t *fiber, const fiber_attr_t *attr,
+					   routine_t *routine, void *arg);
 
+__api int fiber_cancel(fiber_t fiber);
 
-/*!@public
- *
- * @brief
- * This suspends the current fiber and executes the called one until it reaches
- * the end of its body or until it passes control to yet another fiber.
- * If it reaches the end of its body, it is considered done.
- * `arg' is the callback argument on the first fiber call, then it come the
- * result of `fiber_yield'.
- *
- * @param fid The fiber to resume.
- * @param context   The argument to send to `fiber'.
- * @return      The yielded argument of the final result of the fiber callback.
- */
-__api void *fiber_call(fid_t fid, void *context);
+__api int fiber_join(fiber_t fiber, void **retval);
 
-/*!@public
- *
- * @brief
- * Waits while the given fiber will be finished,
- * i.e. it will exit the `work', which was passed to the `fiber_init'.
- * This function returns immediately in two cases:
- *   1) if the fiber was created but wasn't yet started by calling the
- *     `fiber_call';
- *   2) if the fiber was already finished by leaving the `work'.
- *
- * @param fiber The fiber to join.
- */
-__api void fiber_join(fid_t fiber);
+__api int fiber_setschedprio(fiber_t fiber, int prio);
 
-/*!@public
+__api NORETURN void fiber_exit(void *retval);
+
+__api fiber_t fiber_self(void);
+
+/*!@private
  *
  * @brief
  * TODO
  *
- * @param fid
+ * @param wqueue
  */
-__api void fiber_unlock(fid_t fid);
+__api void fiber_lock(waitq_t *wqueue);
 
-/*!@public
+/*!@private
  *
  * @brief
- * Tell if `fiber' reaches the end of its body.
+ * TODO
  *
- * @param fiber The fiber to check for done.
- * @return      If the fiber is done.
+ * @param wqueue
  */
-__api bool fiber_isdone(fid_t fiber);
+__api void fiber_unlock(waitq_t *wqueue);
 
-/*!@public
- *
- * @brief
- * The main difference between fibers and functions is that a fiber can be
- * suspended in the middle of its operation and then resumed later. Calling
- * another fiber is one way to suspend a fiber, but that’s more or less the
- * same as one function calling another.
- *
- * Things get interesting when a fiber yields. A yielded fiber passes control
- * back to the fiber that ran it, but remembers where it is. The next time the
- * fiber is called, it picks up right where it left off and keeps going.
- *
- * @param context The argument which is the result of `fiber_call'.
- * @return    The argument of `fiber_call' after yielding.
- */
-__api void *fiber_yield(void *context);
-
-/*!@public
+/*!@private
  *
  * @brief
  * TODO
  */
-__api void fiber_cleanup(void);
-
-__api void fiber_schedule(void);
-
-__api fid_t fiber_lock(void);
-
-__api void fiber_setpriority(fid_t fid, int priority);
+__api void fiber_yield(void);
 
 #endif /* __OSI_FIBER_H */
 /*!@} */

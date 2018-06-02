@@ -37,6 +37,5 @@ int main(void)
 	ASSERT_EQ(0, blocking_queue_length(&blocking_queue));
 
 	blocking_queue_destroy(&blocking_queue, NULL);
-	fiber_cleanup();
 	return 0;
 }
