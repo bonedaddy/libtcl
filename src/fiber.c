@@ -206,21 +206,21 @@ fiber_t fiber_self(void)
 	return coro_self();
 }
 
-void fiber_lock(waitq_t *wqueue)
+void fiber_lock(waitq_t *waitq)
 {
 	struct fiber *data;
 
 	data =__fiber(fiber_self());
 	data->state = FIBER_BLOCKING;
-	waitq_push(wqueue, fiber_self());
+	waitq_push(waitq, fiber_self());
 }
 
-void fiber_unlock(waitq_t *wqueue)
+void fiber_unlock(waitq_t *waitq)
 {
 	fiber_t fiber;
 	struct fiber *data;
 
-	if ((fiber = waitq_pop(wqueue))) {
+	if ((fiber = waitq_pop(waitq))) {
 		data = __fiber(fiber);
 		data->state = FIBER_ACTIVE;
 	}

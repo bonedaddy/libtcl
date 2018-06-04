@@ -71,18 +71,18 @@ __api fiber_t fiber_self(void);
  * @brief
  * TODO
  *
- * @param wqueue
+ * @param waitq
  */
-__api void fiber_lock(waitq_t *wqueue);
+__api void fiber_lock(waitq_t *waitq);
 
 /*!@private
  *
  * @brief
  * TODO
  *
- * @param wqueue
+ * @param waitq
  */
-__api void fiber_unlock(waitq_t *wqueue);
+__api void fiber_unlock(waitq_t *waitq);
 
 /*!@private
  *
