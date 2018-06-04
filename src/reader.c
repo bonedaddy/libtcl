@@ -156,6 +156,14 @@ FORCEINLINE int eager_reader_setpriority(eager_reader_t *reader,
 	return task_setpriority(&reader->inbound_read_task, priority);
 }
 
+#pragma GCC push_options
+
+#ifndef NDEBUG
+# pragma GCC optimize ("O1")
+#else
+# pragma GCC optimize ("O0")
+#endif
+
 static bool __has_byte(const eager_reader_t *reader)
 {
 	assert(reader != NULL);
@@ -182,6 +190,8 @@ static bool __has_byte(const eager_reader_t *reader)
 
 	return FD_ISSET(reader->inbound_fd, &read_fds);
 }
+
+#pragma GCC pop_options
 
 static void *__inbound_read_loop(void *context)
 {

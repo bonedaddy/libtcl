@@ -124,7 +124,7 @@ else ()
     PUBLIC -Wno-pointer-to-int-cast
     PUBLIC -Wno-implicit-fallthrough)
   if (CMAKE_BUILD_TYPE MATCHES Release)
-    target_compile_options(osi PUBLIC -O1)
+    target_compile_options(osi PUBLIC -O3)
   else ()
     target_compile_options(osi PUBLIC -O0 -g3)
     if (CMAKE_BUILD_TYPE MATCHES San)
