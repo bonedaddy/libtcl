@@ -21,6 +21,16 @@
 
 static struct coro __main, *__self = &__main;
 
+NOINLINE REGPARAM(0)
+void __coromain(routine_t *fn)
+{
+	void *arg, *ret;
+
+	arg = __self->ret;
+	ret = fn(arg);
+	coro_exit(ret);
+}
+
 int coro_init(coro_t *coro, routine_t *fn, size_t stack_size)
 {
 	if (!(*coro = __coroalloc(stack_size)))
@@ -29,6 +39,27 @@ int coro_init(coro_t *coro, routine_t *fn, size_t stack_size)
 	__coromake(*coro, fn);
 
 	return 0;
+}
+
+void coro_kill(coro_t *coro)
+{
+	assert(*coro);
+	assert(*coro != __self);
+
+	__cororelease(*coro);
+	*coro = NULL;
+}
+
+FORCEINLINE
+void coro_setdata(coro_t coro, uintptr_t data)
+{
+	coro->data = data;
+}
+
+FORCEINLINE
+uintptr_t coro_getdata(coro_t coro)
+{
+	return coro->data;
 }
 
 void *coro_resume(coro_t *coro, void *arg)
@@ -67,7 +98,6 @@ void* coro_yield(void *arg)
 	return cur->ret;
 }
 
-NOINLINE
 void coro_exit(void *retval)
 {
 	__self->flag = CORO_FLAG_END;
@@ -75,35 +105,7 @@ void coro_exit(void *retval)
 	abort();
 }
 
-NOINLINE REGPARAM(0)
-void __coromain(routine_t *fn)
-{
-	void *arg, *ret;
-
-	arg = __self->ret;
-	ret = fn(arg);
-	coro_exit(ret);
-}
-
-void coro_kill(coro_t *coro)
-{
-	assert(*coro);
-	assert(*coro != __self);
-
-	__cororelease(*coro);
-	*coro = NULL;
-}
-
-void coro_setdata(coro_t coro, void *data)
-{
-	coro->data = data;
-}
-
-void *coro_getdata(coro_t coro)
-{
-	return coro->data;
-}
-
+FORCEINLINE
 coro_t coro_self(void)
 {
 	return __self;

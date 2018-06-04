@@ -16,8 +16,6 @@
  */
 
 #include "osi/fiber.h"
-#include "osi/string.h"
-#include "osi/vector.h"
 
 #ifndef FIBER_MAX
 # define FIBER_MAX 256
@@ -37,6 +35,8 @@ enum {
 
 struct fiber {
 
+	coro_t coroutine;
+
 	uint16_t id;
 
 	int8_t priority;
@@ -46,8 +46,6 @@ struct fiber {
 	void *arg;
 
 	void *ret;
-
-	coro_t coroutine;
 
 	struct fiber *next;
 };
@@ -77,7 +75,7 @@ static void __initmain(void)
 FORCEINLINE
 static struct fiber *__fiber(fiber_t fiber)
 {
-	return __scope.fibers + (uint16_t)(uintptr_t)coro_getdata(fiber);
+	return __scope.fibers + coro_getdata(fiber);
 }
 
 int fiber_attr_init(fiber_attr_t *attr, int prio, uint16_t stack_size)
@@ -119,11 +117,11 @@ int fiber_create(fiber_t *fiber, const fiber_attr_t *attr,
 	node->ret = NULL;
 	node->next = NULL;
 
-	coro_setdata(*fiber, (void *)(uintptr_t)node->id);
+	coro_setdata(*fiber, (uintptr_t)node->id);
 
 	head = __scope.head;
 	while (head->next
-		&& head->next->priority < node->priority) {
+		&& head->next->priority <= node->priority) {
 		head = head->next;
 	}
 	node->next = head->next;
@@ -226,18 +224,19 @@ void fiber_unlock(waitq_t *wqueue)
 
 void fiber_yield(void)
 {
-	struct fiber *begin;
+	struct fiber *begin ,*head;
 
 	begin = __scope.self;
-	__scope.self = __scope.self->next ? __scope.self->next : __scope.head;
+	head = __scope.self->next ? __scope.self->next : __scope.head;
 
-	while (__scope.self->state != FIBER_ACTIVE) {
-		if (__scope.self->next == begin)
+	while (head->state != FIBER_ACTIVE) {
+		if (head->next == begin)
 			return;
-		__scope.self = __scope.self->next ? __scope.self->next : __scope.head;
+		head = head->next ? head->next : __scope.head;
 	}
-	__scope.self->ret =
-		coro_resume(&__scope.self->coroutine, __scope.self->arg);
-	if (!__scope.self->coroutine)
-		__scope.self->state = FIBER_DONE;
+
+	__scope.self = head;
+	head->ret = coro_resume(&head->coroutine, head->arg);
+	if (!head->coroutine)
+		head->state = FIBER_DONE;
 }

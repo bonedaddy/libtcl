@@ -59,7 +59,7 @@ struct coro {
 	void *ret;
 
 	/*! User data. */
-	void *data;
+	uintptr_t data;
 
 	unsigned int flag;
 

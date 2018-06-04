@@ -35,6 +35,11 @@
 # define COUNT_OF(x) (sizeof(x)/sizeof(*(x)))
 #endif
 
+#ifndef containerof
+# define containerof(ptr, type, member) \
+	((type *) ((char *) (ptr) - offsetof(type, member)))
+#endif
+
 #define PP_VA_ARGS(...) __VA_ARGS__
 #define PP_EVAL(...) PP_VA_ARGS(PP_VA_ARGS(PP_VA_ARGS(__VA_ARGS__)))
 

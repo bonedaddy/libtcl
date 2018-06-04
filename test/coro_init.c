@@ -28,7 +28,7 @@ static void *hello(void *arg)
 	int i;
 
 	(void)arg;
-	for (i = 0; i < CYCLE - 1; ++i) {
+	for (i = 0; i < (CYCLE * 10) - 1; ++i) {
 		++__counter;
 		coro_yield(NULL);
 	}
@@ -43,13 +43,13 @@ int main(void)
 
 	for (i = 0; i < CYCLE; ++i)
 		coro_init(&coros[i], hello, 32);
-	for (i = 0; i < CYCLE; ++i)
+	for (i = 0; i < (CYCLE * 10); ++i)
 		for (j = 0; j < CYCLE; ++j) {
 			++__counter;
-			coro_resume(&coros[i], NULL);
+			coro_resume(&coros[j], NULL);
 		}
 	for (i = 0; i < CYCLE; ++i)
 		ASSERT_NULL(coros[i]);
-	ASSERT_EQ(CYCLE * CYCLE * 2, __counter);
+	ASSERT_EQ(CYCLE * (CYCLE * 10) * 2, __counter);
 	return 0;
 }

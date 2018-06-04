@@ -34,9 +34,9 @@ __api int coro_init(coro_t *coro, routine_t *fn, size_t stack_size);
 
 __api void coro_kill(coro_t *coro);
 
-__api void coro_setdata(coro_t coro, void *data);
+__api void coro_setdata(coro_t coro, uintptr_t data);
 
-__api void *coro_getdata(coro_t coro);
+__api uintptr_t coro_getdata(coro_t coro);
 
 __api void *coro_resume(coro_t *coro, void *arg);
 

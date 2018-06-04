@@ -1,6 +1,8 @@
 /*
  * Copyright (C) 2018 Tempow
  *
+ * Written by Tony Finch <dot@dotat.at>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,15 +20,17 @@
 
 #include <setjmp.h>
 
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
 static struct coro {
 	struct coro *next;
+	uint8_t terminated;
+	uintptr_t data;
 	jmp_buf state;
 } __main, *__self = &__main, *__idle;
 
-static int __resumable(coro_t c)
-{
-	return c != NULL && c->next == NULL;
-}
+static volatile size_t __last_stack;
 
 static void __push(coro_t *list, coro_t c)
 {
@@ -36,74 +40,100 @@ static void __push(coro_t *list, coro_t c)
 
 static coro_t __pop(coro_t *list)
 {
-	coro_t c;
+	coro_t c = *list;
 	
-	c = *list;
 	*list = c->next;
 	c->next = NULL;
-	return c;
+	return(c);
 }
 
-NOINLINE
 static void *__pass(coro_t me, void *arg)
 {
 	static void *saved;
-
+	
 	saved = arg;
-	if(!setjmp(me->state))
+	if (!setjmp(me->state))
 		longjmp(__self->state, 1);
 	return saved;
 }
 
-static void __start(void);
+void *__resume(coro_t c, void *arg)
+{
+	void *ret;
 
-NOINLINE
+	__push(&__self, c);
+	ret = __pass(c->next, arg);
+	return ret;
+}
+
+static void __start(size_t stack_size);
+
 static void __root(void *ret)
 {
-	fn_t *fn;
+	void *(*fun)(void *);
 	struct coro me;
+	void *y;
 
 	__push(&__idle, &me);
-	fn = __pass(&me, ret);
-	if (!setjmp(__self->state))
-		__start();
-	while (true) {
-		ret = fn(coro_yield(&me));
+	fun = __pass(&me, ret);
+	if(!setjmp(__self->state))
+		__start(__last_stack);
+	for(;;) {
+		y = coro_yield(&me);
+		ret = fun(y);
+		__self->terminated = 1;
 		__push(&__idle, __pop(&__self));
-		fn = __pass(&me, ret);
+		fun = __pass(&me, ret);
 	}
 }
 
-NOINLINE
-static void __start(void)
+static void __start(size_t stack_size)
 {
-	char stack[16 * 1024];
+	char stack[stack_size + 1] ALIGNED(sizeof(int));
+
+	stack[stack_size] = 1;
 	__root(stack);
 }
 
-static void *__resume(coro_t c, void *arg)
+int coro_init(coro_t *coro, routine_t *fun, size_t stack_size)
 {
-	assert(__resumable(c));
-	__push(&__self, c);
-	return(__pass(c->next, arg));
+	if (stack_size < 4096)
+		stack_size = 4096;
+ 	__last_stack = stack_size;
+	if(__idle == NULL && !setjmp(__self->state))
+		__start(__last_stack);
+	*coro = (__resume(__pop(&__idle), fun));
+	return 0;
 }
 
-NOINLINE
-int coro_init(coro_t *coro, fn_t *fn, size_t stack_size)
+void coro_kill(coro_t *coro)
 {
-	(void)stack_size;
-	if (__idle == NULL && !setjmp(__self->state))
-		__start();
-	*coro = __resume(__pop(&__idle), fn);
-	return 0;
+	assert(*coro);
+	assert(*coro != __self);
+
+	*coro = NULL;
+}
+
+FORCEINLINE
+void coro_setdata(coro_t coro, uintptr_t data)
+{
+	coro->data = data;
+}
+
+FORCEINLINE
+uintptr_t coro_getdata(coro_t coro)
+{
+	return coro->data;
 }
 
 void *coro_resume(coro_t *c, void *arg)
 {
 	void *ret;
 
+	if (__self->next == *c)
+		return coro_yield(arg);
 	ret = __resume(*c, arg);
-	if (!__resumable(*c))
+	if ((*c)->terminated)
 		*c = NULL;
 	return ret;
 }
@@ -113,8 +143,17 @@ void *coro_yield(void *arg)
 	return __pass(__pop(&__self), arg);
 }
 
+void coro_exit(void *retval)
+{
+	__self->terminated = 1;
+	coro_yield(retval);
+	abort();
+}
+
 FORCEINLINE
 coro_t coro_self(void)
 {
 	return __self;
 }
+
+#pragma GCC pop_options
