@@ -25,7 +25,7 @@ static void __uctxmain(int arg1, int arg2)
 			((uintptr_t)(unsigned int)arg2 << (sizeof(int) * 8))));
 }
 
-void __coromake(coro_t coro, fn_t *fn)
+void __coromake(coro_t coro, routine_t *fn)
 {
 	if (getcontext(&coro->ctx) < 0) {
 		abort();

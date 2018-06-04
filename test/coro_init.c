@@ -19,7 +19,7 @@
 
 #include "osi/coro.h"
 
-#define CYCLE (1000)
+#define CYCLE (500)
 
 static size_t __counter;
 
