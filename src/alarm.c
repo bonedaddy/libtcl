@@ -37,8 +37,8 @@ static blocking_queue_t default_callback_queue;
 static sema_t alarm_expired;
 
 #ifdef HAS_TIMER
-static timer_t timer = NULL;
-static timer_t wakeup_timer = NULL;
+static timer_t __timer = NULL;
+static timer_t __wakeup_timer = NULL;
 static bool timer_set = false;
 
 static bool __timer_init(const clockid_t clock_id, timer_t *timer)
@@ -106,7 +106,7 @@ static void __schedule_root(void)
 		goto done;
 
 	next_deadline = list_first_entry(&alarms, alarm_t, list_alarm)->deadline;
-	next_expiration = next_deadline - now();
+	next_expiration = (int64_t)(next_deadline - now());
 	if (next_expiration < TIMER_INTERVAL_FOR_WAKELOCK_IN_MS) {
 # ifdef HAS_WAKELOCK
 		if (!timer_set) {
@@ -116,17 +116,17 @@ static void __schedule_root(void)
 			}
 		}
 # endif
-		timer_time.it_value.tv_sec = (next_deadline / 1000);
-		timer_time.it_value.tv_nsec = (next_deadline % 1000) * 1000000LL;
+		timer_time.it_value.tv_sec = (int64_t)(next_deadline / 1000);
+		timer_time.it_value.tv_nsec = (int64_t)(next_deadline % 1000) * 1000000LL;
 		bzero(&end_of_time, sizeof(end_of_time));
 		end_of_time.it_value.tv_sec = (time_t)(1LL << (sizeof(time_t) * 8 - 2));
-		if (timer_settime(wakeup_timer, TIMER_ABSTIME, &end_of_time, NULL) < 0)
+		if (timer_settime(__wakeup_timer, TIMER_ABSTIME, &end_of_time, NULL) < 0)
 			LOG_ERROR("Unable to set wakeup timer: %m");
 	} else {
 		bzero(&wakeup_time, sizeof(wakeup_time));
-		wakeup_time.it_value.tv_sec = (next_deadline / 1000);
-		wakeup_time.it_value.tv_nsec = (next_deadline % 1000) * 1000000LL;
-		if (timer_settime(wakeup_timer, TIMER_ABSTIME, &wakeup_time, NULL) < 0)
+		wakeup_time.it_value.tv_sec = (int64_t)(next_deadline / 1000);
+		wakeup_time.it_value.tv_nsec = (int64_t)(next_deadline % 1000) * 1000000LL;
+		if (timer_settime(__wakeup_timer, TIMER_ABSTIME, &wakeup_time, NULL) < 0)
 			LOG_ERROR("Unable to set wakeup timer: %m");
 	}
 done:
@@ -136,10 +136,10 @@ done:
 		wakelock_release();
 	}
 # endif
-	if (timer_settime(timer, TIMER_ABSTIME, &timer_time, NULL) == -1)
+	if (timer_settime(__timer, TIMER_ABSTIME, &timer_time, NULL) == -1)
 		LOG_ERROR("Unable to set timer: %m");
 	if (timer_set) {
-		timer_gettime(timer, &time_to_expire);
+		timer_gettime(__timer, &time_to_expire);
 		if (!time_to_expire.it_value.tv_sec &&
 			!time_to_expire.it_value.tv_nsec) {
 			LOG_DEBUG("Alarm expiration too close for posix timers, "
@@ -247,9 +247,9 @@ static bool __lazyinit(void)
 		return (true);
 	}
 #ifdef HAS_TIMER
-	if (!__timer_init(CLOCK_ID, &timer))
+	if (!__timer_init(CLOCK_ID, &__timer))
 		goto error;
-	if (!__timer_init(CLOCK_ID_ALARM, &wakeup_timer))
+	if (!__timer_init(CLOCK_ID_ALARM, &__wakeup_timer))
 		goto error1;
 #endif
 	if (sema_init(&alarm_expired, 0))
@@ -276,9 +276,9 @@ error3:
 	sema_destroy(&alarm_expired);
 error2:
 #ifdef HAS_TIMER
-	timer_delete(wakeup_timer);
+	timer_delete(__wakeup_timer);
 error1:
-	timer_delete(timer);
+	timer_delete(__timer);
 error:
 #endif
 	mutex_unlock(&alarms_mutex);
@@ -395,7 +395,7 @@ void alarm_cleanup(void)
 {
 	alarm_t *alarm_entry;
 	alarm_t *tmp;
-	
+
 	if (!is_ready)
 		return;
 	is_ready = false;
@@ -407,12 +407,12 @@ void alarm_cleanup(void)
 	blocking_queue_destroy(&default_callback_queue, NULL);
 	thread_destroy(&default_callback_thread);
 #ifdef HAS_TIMER
-	if (timer_delete(wakeup_timer))
+	if (timer_delete(__wakeup_timer))
 		LOG_ERROR("timer_delete wakeup_timer %m");
-	wakeup_timer = NULL;
-	if (timer_delete(timer))
+	__wakeup_timer = NULL;
+	if (timer_delete(__timer))
 		LOG_ERROR("timer_delete timer %m");
-	timer = NULL;
+	__timer = NULL;
 #endif
 	sema_destroy(&alarm_expired);
 	list_for_each_entry_safe(alarm_entry, tmp, alarm_t, &alarms, list_alarm)

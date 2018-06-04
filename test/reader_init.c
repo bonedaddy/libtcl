@@ -30,7 +30,7 @@ static void test(void);
 static int pipefd[2];
 static sema_t sema;
 
-static void setup()
+static void setup(void)
 {
 	pipe(pipefd);
 	sema_init(&sema, 0);

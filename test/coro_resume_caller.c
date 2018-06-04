@@ -22,14 +22,14 @@
 static coro_t a;
 static coro_t b;
 
-void *call_b(void *arg)
+static void *call_b(void *arg)
 {
 	(void)arg;
 	printf("coro b\n");
 	return NULL;
 }
 
-void *call_a(void *arg)
+static void *call_a(void *arg)
 {
 	(void)arg;
 	printf("begin coro a\n");

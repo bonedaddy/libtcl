@@ -31,7 +31,7 @@ static int pipefd[2];
 static sema_t sema;
 static char *small_data = "white chocolate lindor truffles";
 
-static void setup()
+static void setup(void)
 {
 	pipe(pipefd);
 	sema_init(&sema, 0);

@@ -35,6 +35,15 @@
 #ifndef HAS_REALLOC
 #cmakedefine HAS_REALLOC
 #endif
+#ifndef HAS_STRNLEN
+#cmakedefine HAS_STRNLEN
+#endif
+#ifndef HAS_STRLCPY
+#cmakedefine HAS_STRLCPY
+#endif
+#ifndef HAS_STRNCPY
+#cmakedefine HAS_STRNCPY
+#endif
 #ifndef HAS_SIGALTSTACK
 #cmakedefine HAS_SIGALTSTACK
 #endif

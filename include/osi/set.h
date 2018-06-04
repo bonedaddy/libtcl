@@ -24,8 +24,7 @@
 #ifndef __OSI_SET_H
 # define __OSI_SET_H
 
-#include "osi/compat.h"
-#include "osi/string.h"
+#include "osi/map.h"
 
 /*!@public
  *
@@ -33,20 +32,6 @@
  * The set structure type declaration.
  */
 typedef struct set set_t;
-
-/*!@public
- *
- * @brief
- * TODO
- */
-typedef size_t (hash_fn_t)(const void *key);
-
-/*!@public
- *
- * @brief
- * TODO
- */
-typedef bool (hash_eq_t)(const void *x, const void *y);
 
 /*!@public
  *

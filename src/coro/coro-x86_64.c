@@ -53,7 +53,7 @@ void __coromake(coro_t ctx, routine_t *fn)
 	ctx->sp = &stack[-10];
 }
 
-NOINLINE REGPARAM(0) REGPARAM(1)
+NOINLINE
 void __coroswitch(coro_t from, coro_t to)
 {
 	asm volatile (

@@ -76,7 +76,7 @@
 # endif
 #endif
 
-#if (STD_CXX - 0 >= VERSION_CXX98)
+#if defined(STD_CXX) && STD_CXX >= VERSION_CXX98
 # define STD_CXX98
 #endif
 
@@ -413,9 +413,9 @@
 #   define __HAS_ATTRIBUTE_pure 0
 # endif
 # if (defined(CC_GCC) && VERNO_GE(CC_GCC, 2, 95))
-#   define __HAS_ATTRIBUTE_regparm 1
+#   define __HAS_ATTRIBUTE_regparam 1
 # else
-#   define __HAS_ATTRIBUTE_regparm 0
+#   define __HAS_ATTRIBUTE_regparam 0
 # endif
 # if (defined(CC_GCC) && VERNO_GE(CC_GCC, 3, 4))
 #   define __HAS_ATTRIBUTE_saveall 1
@@ -517,6 +517,13 @@
 
 #if !defined(__has_builtin__)
 # define __has_builtin__(x) (__has_builtin(x) || __HAS_BUILTIN_##x)
+# if defined(CC_GCC)
+#   define __HAS_BUILTIN_expect 1
+#   define __HAS_BUILTIN___builtin_popcount 1
+# else
+#   define __HAS_BUILTIN_expect 0
+#   define __HAS_BUILTIN___builtin_popcount 0
+# endif
 #endif
 
 #if !defined(__has_declspec_attribute__)
@@ -820,6 +827,7 @@
 # else
 #   define __HAS_FEATURE_wctype_h 0
 # endif
+# define __HAS_FEATURE_address_sanitizer 0
 #endif
 
 #if !defined(__has_extension__)

@@ -38,7 +38,7 @@ static void spawn_reactor_thread(reactor_t *reactor)
 	ASSERT_EQ(0, ret);
 }
 
-static void join_reactor_thread()
+static void join_reactor_thread(void)
 {
 	pthread_join(thread, NULL);
 }

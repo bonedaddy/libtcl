@@ -33,7 +33,7 @@ static bool call_lifecycle_function(module_lifecycle_fn function) {
 		return true;
 
 	// Otherwise fall back to the future
-	return (bool)future_await(&future);
+	return future_await(&future) ? true : false;
 }
 
 bool module_init(module_t *module) {

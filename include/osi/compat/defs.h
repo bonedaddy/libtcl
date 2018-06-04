@@ -199,12 +199,12 @@
 #   define NORETURN __dead2
 # elif defined(_Noreturn)
 #   define NORETURN _Noreturn
-# elif __has_feature__(stdnoreturn_h) || __has_feature__(c_noreturn)
-#   define NORETURN _Noreturn
 # elif __has_attribute__(noreturn)
 #   define NORETURN __attribute__((__noreturn__))
 # elif __has_declspec_attribute__(noreturn)
 #   define NORETURN __declspec(noreturn)
+# elif __has_feature__(stdnoreturn_h) || __has_feature__(c_noreturn)
+#   define NORETURN _Noreturn
 # else
 #   define NORETURN
 # endif
@@ -246,7 +246,7 @@
 #if !defined(FORCEINLINE)
 # if defined(DEBUG)
 #   define FORCEINLINE __inline
-# elif defined(__forceinline) || CC_MSVC
+# elif defined(__forceinline) || defined(CC_MSVC)
 #   define FORCEINLINE __forceinline
 # elif __has_attribute__(always_inline)
 #   define FORCEINLINE __attribute__((__always_inline__)) __inline

@@ -21,7 +21,7 @@
 
 static int counter = 0;
 
-void *call(void *arg)
+static void *call(void *arg)
 {
 	(void)arg;
 	++counter;

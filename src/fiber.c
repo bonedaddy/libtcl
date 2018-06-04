@@ -43,6 +43,8 @@ struct fiber {
 
 	uint8_t state;
 
+	uint32_t __padding;
+
 	void *arg;
 
 	void *ret;
@@ -57,6 +59,8 @@ struct {
 	struct fiber *head, *self;
 
 	uint16_t fibers_idx;
+
+	uint16_t __padding;
 
 	fiber_attr_t dft_attr;
 

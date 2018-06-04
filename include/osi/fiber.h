@@ -44,6 +44,9 @@ struct fiber_attr {
 	/*! The fiber priority. */
 	int8_t prio;
 
+	/*!@private Padding. */
+	uint8_t __padding;
+
 	/*! Desired stack size, 1024 by default. */
 	uint16_t stack_size;
 };

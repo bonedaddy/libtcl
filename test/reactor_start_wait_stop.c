@@ -42,7 +42,7 @@ static void spawn_reactor_thread(reactor_t *reactor)
 	ASSERT(ret == 0);
 }
 
-static void join_reactor_thread()
+static void join_reactor_thread(void)
 {
 	pthread_join(thread, NULL);
 }

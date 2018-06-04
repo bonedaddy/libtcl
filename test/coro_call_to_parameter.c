@@ -19,7 +19,7 @@
 
 #include "osi/coro.h"
 
-void *call_to_return_parameter(void *arg)
+static void *call_to_return_parameter(void *arg)
 {
 	(void)arg;
 	ASSERT(!strcmp("result", arg));

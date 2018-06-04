@@ -19,7 +19,7 @@
 
 #include "osi/coro.h"
 
-void *call_return_value(void *arg)
+static void *call_return_value(void *arg)
 {
 	static char result[] = "result";
 

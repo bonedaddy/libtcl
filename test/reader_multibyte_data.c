@@ -61,7 +61,7 @@ static char *large_data =
 	"that shall be absolutely his own; that is to say, his judgment: "
 	"his instruction, labour and study, tend to nothing else but to form that.";
 
-static void setup()
+static void setup(void)
 {
 	pipe(pipefd);
 	sema_init(&sema, 0);

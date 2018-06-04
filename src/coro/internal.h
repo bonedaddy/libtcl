@@ -64,7 +64,11 @@ struct coro {
 	unsigned int flag;
 
 #ifdef RUNNING_ON_VALGRIND
+
 	int valgrind_id;
+#elif !defined(CORO_UCONTEXT)
+
+	char __padded[4];
 #endif
 };
 

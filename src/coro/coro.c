@@ -21,7 +21,7 @@
 
 static struct coro __main, *__self = &__main;
 
-NOINLINE REGPARAM(0)
+NOINLINE
 void __coromain(routine_t *fn)
 {
 	void *arg, *ret;

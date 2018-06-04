@@ -195,7 +195,7 @@
 # if defined(__HP_cc)
 #   define CC_HPCC VERNO_10_VVRRPP(__HP_cc)
 # else
-#   if (__cplusplus - 0 >= 199707L) && defined(__hpux)
+#   if defined(__cplusplus) && __cplusplus >= 199707L && defined(__hpux)
 #     define CC_HPCC 0
 #   endif
 # endif

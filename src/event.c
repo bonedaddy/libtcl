@@ -24,7 +24,7 @@ int event_init(event_t *event, event_value_t value,
 	unsigned flags)
 {
 #ifdef OSI_THREADING
-	if ((event->fd = eventfd((unsigned)value, flags)) < 0)
+	if ((event->fd = eventfd((unsigned)value, (int)flags)) < 0)
 		return -1;
 #else
 	if (flags & ~EVENT_FLAGS_SET) {

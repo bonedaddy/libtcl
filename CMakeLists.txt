@@ -118,7 +118,12 @@ if (MSVC)
   endif ()
 else ()
   target_compile_options(osi
-    PUBLIC -Wall -Werror -Wextra -fomit-frame-pointer
+    PUBLIC -Wall -Werror -Wextra -fomit-frame-pointer -ansi
+    PUBLIC -Wshadow -Wswitch-default -Wunreachable-code
+    PUBLIC -Wcast-align -Wstrict-prototypes -Wmissing-prototypes
+    PUBLIC -Wunreachable-code -Winit-self
+    PUBLIC -Wmissing-declarations -Wfloat-equal -Wbad-function-cast -Wundef
+    PUBLIC -Waggregate-return -Wold-style-definition -Wredundant-decls
     PUBLIC -Wno-implicit-function-declaration
     PUBLIC -Wno-missing-field-initializers
     PUBLIC -Wno-pointer-to-int-cast

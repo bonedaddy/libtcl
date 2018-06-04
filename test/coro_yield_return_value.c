@@ -21,7 +21,7 @@
 
 static char *result[] = { "a", "b", "c", "d" };
 
-void *yield_return_value(void *arg)
+static void *yield_return_value(void *arg)
 {
 	printf("%s\n", (char *) arg);
 	printf("%s\n", (char *) coro_yield(result[1]));

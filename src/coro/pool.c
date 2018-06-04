@@ -47,16 +47,16 @@
 #endif
 
 FORCEINLINE PURE CONST
-long __getpagesize(void)
+size_t __getpagesize(void)
 {
 #ifdef PAGE_SIZE
-	return PAGE_SIZE;
+	return (size_t)PAGE_SIZE;
 #elif defined(PAGESIZE)
-	return PAGESIZE;
+	return (size_t)PAGESIZE;
 #elif defined(HAS_GETPAGESIZE)
-	return getpagesize();
+	return (size_t)getpagesize();
 #elif defined(HAS_SYSCONF) && defined(_SC_PAGESIZE)
-	return sysconf(_SC_PAGESIZE);
+	return (size_t)sysconf(_SC_PAGESIZE);
 #else
 	return 4096;
 #endif
