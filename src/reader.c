@@ -166,27 +166,21 @@ FORCEINLINE int eager_reader_setpriority(eager_reader_t *reader,
 
 static bool __has_byte(const eager_reader_t *reader)
 {
+	int ret;
+	fd_set read_fds;
+	struct timeval timeout;
+
 	assert(reader != NULL);
 
-	fd_set read_fds;
-
-	for (;;) {
+	do {
 		FD_ZERO(&read_fds);
 		FD_SET(reader->inbound_fd, &read_fds);
 
-#ifndef OS_PROVENCORE
-		struct timeval timeout;
-
 		timeout.tv_sec = 0;
 		timeout.tv_usec = 0;
-		int ret = select(FD_SETSIZE, &read_fds, NULL, NULL, &timeout);
-#else
-		int ret = select(FD_SETSIZE, &read_fds, NULL, NULL);
-#endif /* !OS_PROVENCORE */
-		if (ret == -1 && errno == EINTR)
-			continue;
-		break;
-	}
+
+		ret = select(FD_SETSIZE, &read_fds, NULL, NULL, &timeout);
+	} while(ret == -1 && (errno == EINTR || errno == EAGAIN));
 
 	return FD_ISSET(reader->inbound_fd, &read_fds);
 }

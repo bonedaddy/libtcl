@@ -22,10 +22,6 @@
 #ifndef __OSI_CONF_H
 # define __OSI_CONF_H
 
-#ifndef OS_PROVENCORE
-#cmakedefine OS_PROVENCORE
-#endif
-
 #ifndef HAS_BZERO
 #cmakedefine HAS_BZERO
 #endif

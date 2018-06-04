@@ -118,16 +118,16 @@ if (MSVC)
   endif ()
 else ()
   target_compile_options(osi
-    PUBLIC -Wall -Werror -Wextra -fomit-frame-pointer -ansi
-    PUBLIC -Wshadow -Wswitch-default -Wunreachable-code
-    PUBLIC -Wcast-align -Wstrict-prototypes -Wmissing-prototypes
-    PUBLIC -Wunreachable-code -Winit-self
-    PUBLIC -Wmissing-declarations -Wfloat-equal -Wbad-function-cast -Wundef
-    PUBLIC -Waggregate-return -Wold-style-definition -Wredundant-decls
+    PUBLIC -Wall -Werror -Wextra -fomit-frame-pointer
     PUBLIC -Wno-implicit-function-declaration
     PUBLIC -Wno-missing-field-initializers
     PUBLIC -Wno-pointer-to-int-cast
-    PUBLIC -Wno-implicit-fallthrough)
+    PUBLIC -Wno-implicit-fallthrough
+    PRIVATE -ansi -Wshadow -Wswitch-default -Wunreachable-code
+    PRIVATE -Wcast-align -Wstrict-prototypes -Wmissing-prototypes
+    PRIVATE -Wunreachable-code -Winit-self
+    PRIVATE -Wmissing-declarations -Wfloat-equal -Wbad-function-cast -Wundef
+    PRIVATE -Waggregate-return -Wold-style-definition -Wredundant-decls)
   if (CMAKE_BUILD_TYPE MATCHES Release)
     target_compile_options(osi PUBLIC -O3)
   else ()
