@@ -109,30 +109,30 @@ __api void blocking_queue_destroy(blocking_queue_t *queue, fifo_dtor_t *dtor);
 /*!@public
  *
  * @brief
- * TODO
+ * Check if the blocking queue `queue' is empty.
  *
- * @param queue
- * @return
+ * @param queue The blocking queue to check for empty.
+ * @return      true if empty, false otherwise.
  */
 __api bool blocking_queue_empty(blocking_queue_t *queue);
 
 /*!@public
  *
  * @brief
- * TODO
+ * Get the length of the blocking queue `queue'.
  *
- * @param queue
- * @return
+ * @param queue The blocking queue.
+ * @return      The length of the blocking queue.
  */
 __api unsigned blocking_queue_length(blocking_queue_t *queue);
 
 /*!@public
  *
  * @brief
- * TODO
+ * Get the capacity of the blocking queue `queue'.
  *
- * @param queue
- * @return
+ * @param queue The blocking queue.
+ * @return      The capacity of the blocking queue.
  */
 __api unsigned blocking_queue_capacity(blocking_queue_t *queue);
 

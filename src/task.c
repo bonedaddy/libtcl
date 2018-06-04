@@ -116,7 +116,7 @@ FORCEINLINE int task_setpriority(task_t *task, int priority)
 #ifdef OSI_THREADING
 	if (pthread_setschedprio(task->pthread, priority)) {
 		LOG_ERROR("Unable to set thread priority %d, %m", priority);
-		return -1;
+		return 0;
 	}
 #else
 	if (fiber_setschedprio(task->fiber, priority)) {
@@ -124,7 +124,7 @@ FORCEINLINE int task_setpriority(task_t *task, int priority)
 		return -1;
 	}
 #endif /* OSI_THREADING */
-	return 1;
+	return 0;
 }
 
 FORCEINLINE void task_stop(task_t *task)

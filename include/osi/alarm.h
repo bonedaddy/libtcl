@@ -43,7 +43,7 @@ typedef struct alarm alarm_t;
 /*!@public
  *
  * @brief
- * TODO
+ * Procedure which is launched when the alarm is ready.
  */
 typedef void (proc_t)(void *context);
 

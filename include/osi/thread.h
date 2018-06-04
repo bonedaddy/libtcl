@@ -59,7 +59,7 @@ __api int thread_init(thread_t *thread, char const *name);
 
 __api void thread_destroy(thread_t *thread);
 
-__api bool thread_setpriority(thread_t *thread, int priority);
+__api int thread_setpriority(thread_t *thread, int priority);
 
 __api void thread_join(thread_t *thread);
 

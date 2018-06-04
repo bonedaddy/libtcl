@@ -72,8 +72,9 @@ __api allocator_t const *DFT_ALLOCATOR;
 /*!@public
  *
  * @brief
+ * Free the pointer into `pptr' and assign it to `NULL'
  *
- * @param pptr
+ * @param pptr The pointer of the pointer to free.
  */
 __api void pfree(void *pptr);
 
