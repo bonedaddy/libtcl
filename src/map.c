@@ -46,14 +46,16 @@ static bool CONST PURE __eq(const void *x, const void *y)
 	return x == y;
 }
 
-FORCEINLINE void map_init(map_t *map, hash_fn_t *hash, hash_eq_t *eq)
+FORCEINLINE
+void map_init(map_t *map, hash_fn_t *hash, hash_eq_t *eq)
 {
 	bzero(map, sizeof(map_t));
 	map->hash = hash ? hash : __hash;
 	map->eq = eq ? eq : __eq;
 }
 
-FORCEINLINE void map_destroy(map_t *map, map_dtor_t *idtor)
+FORCEINLINE
+void map_destroy(map_t *map, map_dtor_t *idtor)
 {
 	size_t it;
 
@@ -70,7 +72,8 @@ FORCEINLINE void map_destroy(map_t *map, map_dtor_t *idtor)
 	}
 }
 
-FORCEINLINE void map_clear(map_t *map, map_dtor_t *idtor)
+FORCEINLINE
+void map_clear(map_t *map, map_dtor_t *idtor)
 {
 	size_t it;
 
@@ -86,13 +89,13 @@ FORCEINLINE void map_clear(map_t *map, map_dtor_t *idtor)
 	}
 }
 
-FORCEINLINE size_t map_length(const map_t *map)
+FORCEINLINE
+size_t map_length(const map_t *map)
 {
 	return map->length;
 }
 
-static FORCEINLINE bool __getidx(const map_t *map, const void *key,
-	size_t *idx)
+bool map_indexof(const map_t *map, const void *key, size_t *idx)
 {
 	size_t k, i, last, mask, step;
 
@@ -116,16 +119,22 @@ static FORCEINLINE bool __getidx(const map_t *map, const void *key,
 	return false;
 }
 
+FORCEINLINE
+bool map_populated(const map_t *map, size_t idx)
+{
+	return !__ac_iseither(map->flags, idx);
+}
+
 bool map_contains(const map_t *map, const void *key)
 {
-	return __getidx(map, key, NULL);
+	return map_indexof(map, key, NULL);
 }
 
 void *map_get(const map_t *map, const void *key)
 {
 	size_t idx;
 
-	if (!__getidx(map, key, &idx))
+	if (!map_indexof(map, key, &idx))
 		return NULL;
 	return (void *)map->values[idx];
 }
@@ -266,7 +275,7 @@ bool map_remove(map_t *map, const void *key)
 {
 	size_t idx;
 
-	if (!__getidx(map, key, &idx))
+	if (!map_indexof(map, key, &idx))
 		return false;
 	if (!__ac_iseither(map->flags, idx)) {
 		__ac_set_isdel_true(map->flags, idx);
@@ -274,4 +283,39 @@ bool map_remove(map_t *map, const void *key)
 		return true;
 	}
 	return false;
+}
+
+FORCEINLINE
+void map_it_init(map_it_t *it, map_t const *map)
+{
+	it->map = map;
+	it->idx = 0;
+}
+
+FORCEINLINE
+bool map_it_hasnext(map_it_t *it)
+{
+	for (; it->idx < it->map->capacity; ++it->idx) {
+		if (map_populated(it->map, it->idx))
+			return true;
+	}
+	return false;
+}
+
+FORCEINLINE
+void map_it_next(map_it_t *it)
+{
+	++it->idx;
+}
+
+FORCEINLINE
+void *map_it_key(map_it_t *it)
+{
+	return (void *)it->map->keys[it->idx];
+}
+
+FORCEINLINE
+void *map_it_value(map_it_t *it)
+{
+	return (void *)it->map->values[it->idx];
 }

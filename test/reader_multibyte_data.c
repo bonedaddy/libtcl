@@ -19,9 +19,9 @@ static void setup(void);
 static void teardown(void);
 static void test(void);
 
-#define  SETUP setup
-#define  TEARDOWN teardown
-#define  TEST test
+#define SETUP setup
+#define TEARDOWN teardown
+#define TEST test
 
 #include "test.h"
 

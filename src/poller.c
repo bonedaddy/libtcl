@@ -96,25 +96,23 @@ int poller_wait(poller_t *poller, pollev_t *events, int size)
 	}
 #else
 	int ret;
-	size_t it;
+	map_it_t iterator;
 	const event_t *ev;
 	const pollev_t *event;
 
 	ret = 0;
 	while (poller->events.length && ret < size) {
-		for (it = 0; it < poller->events.capacity; ++it) {
-			/* TODO(uael): ops */
-			if (!(poller->events.flags[it] & 0b11111111)) {
-				ev = poller->events.keys[it];
-				event = poller->events.values[it];
+		MAP_FOREACH(&iterator, &poller->events) {
+			ev = map_it_key(&iterator);
+			event = map_it_value(&iterator);
 
-				/* TODO(uael): poller out */
-				if (ev->count) {
-					events[ret].events = POLLER_IN;
-					events[ret].ptr = event->ptr;
-					++ret;
-				}
+			events[ret].events = 0;
+			if (ev->count) {
+				events[ret].events = POLLER_IN;
+				events[ret].ptr = event->ptr;
 			}
+			if (events[ret].events)
+				++ret;
 		}
 		if (ret)
 			break;

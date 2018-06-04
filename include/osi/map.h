@@ -37,6 +37,13 @@ typedef struct map map_t;
 /*!@public
  *
  * @brief
+ * The map iterator structure type declaration.
+ */
+typedef struct map_it map_it_t;
+
+/*!@public
+ *
+ * @brief
  * TODO
  */
 typedef size_t (hash_fn_t)(const void *key);
@@ -94,6 +101,72 @@ struct map {
 /*!@public
  *
  * @brief
+ * The map iterator structure definition.
+ */
+struct map_it {
+
+	/*! TODO. */
+	map_t const *map;
+
+	/*! TODO. */
+	size_t idx;
+};
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param it
+ * @param map
+ */
+__api void map_it_init(map_it_t *it, map_t const *map);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param it
+ * @return
+ */
+__api bool map_it_hasnext(map_it_t *it);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param it
+ */
+__api void map_it_next(map_it_t *it);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param it
+ * @return
+ */
+__api void *map_it_key(map_it_t *it);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param it
+ * @return
+ */
+__api void *map_it_value(map_it_t *it);
+
+#define MAP_FOREACH(IT, MAP) \
+	for (map_it_init(IT, MAP); map_it_hasnext(IT); map_it_next(IT))
+
+/*!@public
+ *
+ * @brief
  * TODO
  *
  * @param map
@@ -142,6 +215,18 @@ __api size_t map_length(const map_t *map);
  * @return
  */
 __api bool map_contains(const map_t *map, const void *key);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param map
+ * @param key
+ * @param idx
+ * @return
+ */
+__api bool map_indexof(const map_t *map, const void *key, size_t *idx);
 
 /*!@public
  *
