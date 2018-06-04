@@ -65,7 +65,7 @@ void test(void)
 	thread_t read_thread;
 
 
-	eager_reader_init(&reader, pipefd[0], DFT_ALLOCATOR, 32, UINT_MAX, "test");
+	eager_reader_init(&reader, pipefd[0], DFT_ALLOCATOR, 32, UINT_MAX);
 	thread_init(&read_thread, "read");
 
 	eager_reader_register(&reader, &read_thread, expect_data, small_data);

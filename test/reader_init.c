@@ -47,6 +47,6 @@ void test(void)
 {
 	eager_reader_t reader;
 
-	eager_reader_init(&reader, pipefd[0], DFT_ALLOCATOR, 32, UINT_MAX, "test");
+	eager_reader_init(&reader, pipefd[0], DFT_ALLOCATOR, 32, UINT_MAX);
 	eager_reader_destroy(&reader);
 }

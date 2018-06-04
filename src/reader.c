@@ -26,14 +26,13 @@ static void __outbound_read_ready(void *context);
 
 int eager_reader_init(eager_reader_t *ret, int fd_to_read,
 	const allocator_t *allocator, unsigned buffer_size,
-	unsigned max_buffer_count, const char *thread_name)
+	unsigned max_buffer_count)
 {
 
 	assert(fd_to_read != INVALID_FD);
 	assert(allocator != NULL);
 	assert(buffer_size > 0);
 	assert(max_buffer_count > 0);
-	assert(thread_name != NULL && *thread_name != '\0');
 
 	ret->allocator = allocator;
 	ret->inbound_fd = fd_to_read;

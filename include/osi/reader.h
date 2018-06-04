@@ -120,13 +120,12 @@ struct eager_reader {
  * @param fd_to_read 
  * @param allocator 
  * @param buffer_size 
- * @param max_buffer_count 
- * @param thread_name 
+ * @param max_buffer_count
  * @return
  */
 __api int eager_reader_init(eager_reader_t *reader, int fd_to_read,
 	const allocator_t *allocator, unsigned buffer_size,
-	unsigned max_buffer_count, const char *thread_name);
+	unsigned max_buffer_count);
 
 /*!@public
  * 

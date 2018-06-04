@@ -36,9 +36,11 @@ void mutex_destroy(mutex_t *mutex)
 #ifdef OSI_THREADING
 	pthread_mutex_destroy(&mutex->mutex);
 #else
+# ifndef NDEBUG
 	event_value_t val;
 
 	assert(event_tryread(&mutex->ev, &val));
+# endif
 	event_destroy(&mutex->ev);
 #endif /* OSI_THREADING */
 }

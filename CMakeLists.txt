@@ -30,6 +30,7 @@ set(osi_INC_DIR ${CMAKE_CURRENT_LIST_DIR}/include)
 set(osi_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 set(osi_TEST_DIR ${CMAKE_CURRENT_LIST_DIR}/test)
 
+option(OSI_CHECK "Enable testing" ON)
 option(OSI_THREADING "Enable Logging" ON)
 if (CMAKE_BUILD_TYPE MATCHES Release)
   option(OSI_LOGGING "Enable Logging" OFF)
@@ -37,7 +38,11 @@ else ()
   option(OSI_LOGGING "Enable Logging" OFF)
 endif ()
 
+set(CMAKE_REQUIRED_QUIET_OLD ${CMAKE_REQUIRED_QUIET})
+set(CMAKE_REQUIRED_QUIET ON)
+
 include(CheckIncludeFile)
+message(STATUS "Checking include file")
 check_include_file(sys/eventfd.h HAS_SYS_EVENTFD_H)
 check_include_file(sys/epoll.h HAS_SYS_EPOLL_H)
 check_include_file(sys/time.h HAS_SYS_TIME_H)
@@ -53,8 +58,10 @@ check_include_file(setjmp.h HAS_SETJMP_H)
 check_include_file(stdbool.h HAS_STDBOOL_H)
 check_include_file(stdint.h HAS_STDINT_H)
 check_include_file(strings.h HAS_STRINGS_H)
+message(STATUS "Checking include file - done")
 
 include(CheckFunctionExists)
+message(STATUS "Checking function")
 check_function_exists(bzero HAS_BZERO)
 check_function_exists(free HAS_FREE)
 check_function_exists(realloc HAS_REALLOC)
@@ -63,14 +70,21 @@ check_function_exists(strlcpy HAS_STRLCPY)
 check_function_exists(strncpy HAS_STRNCPY)
 check_function_exists(wakelock_acquire HAS_WAKELOCK_ACQUIRE)
 check_function_exists(wakelock_release HAS_WAKELOCK_RELEASE)
+message(STATUS "Checking function - done")
 
 include(CheckSymbolExists)
+message(STATUS "Checking symbole")
 check_symbol_exists(sigaltstack "signal.h" HAS_SIGALTSTACK)
 check_symbol_exists(mmap "sys/mman.h" HAS_MMAP)
 check_symbol_exists(munmap "sys/mman.h" HAS_MUNMAP)
 check_symbol_exists(mprotect "sys/mman.h" HAS_MPROTECT)
 check_symbol_exists(sysconf "unistd.h" HAS_SYSCONF)
 check_symbol_exists(getpagesize "unistd.h" HAS_GETPAGESIZE)
+message(STATUS "Checking symbole - done")
+
+set(CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET_OLD})
+
+message(STATUS "Looking for concurrent method")
 
 if (OSI_THREADING AND (NOT HAS_SYS_EVENTFD_H OR NOT HAS_SYS_EPOLL_H
   OR NOT HAS_PTHREAD_H OR NOT HAS_UNISTD_H OR NOT HAS_SYS_PRCTL_H
@@ -78,7 +92,27 @@ if (OSI_THREADING AND (NOT HAS_SYS_EVENTFD_H OR NOT HAS_SYS_EPOLL_H
   set(OSI_THREADING OFF)
 endif ()
 
+set(THREAD_LIB)
+if (OSI_THREADING)
+  set(THREADS_PREFER_PTHREAD_FLAG ON)
+  find_package(Threads QUIET)
+  if (Threads_FOUND)
+    set(THREAD_LIB Threads::Threads)
+  else ()
+    set(OSI_THREADING OFF)
+  endif ()
+endif ()
+
+if (OSI_THREADING)
+  message(STATUS "Looking for concurrent method - pthread")
+ else ()
+  message(STATUS "Looking for concurrent method - fiber")
+endif ()
+
 add_subdirectory(${osi_SRC_DIR}/coro)
+
+configure_file(${osi_INC_DIR}/osi/conf.h.in
+  ${CMAKE_BINARY_DIR}/include/osi/conf.h @ONLY)
 
 file(GLOB osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/[a-z_]*.c)
 file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.h)
@@ -89,20 +123,7 @@ add_library(osi ${osi_SRCS} ${osi_HDRS} ${osi_HDR})
 target_include_directories(osi
   PUBLIC ${osi_INC_DIR} ${CMAKE_BINARY_DIR}/include
   PRIVATE ${osi_SRC_DIR})
-target_link_libraries(osi PUBLIC rt)
-
-if (OSI_THREADING)
-  set(THREADS_PREFER_PTHREAD_FLAG ON)
-  find_package(Threads)
-  if (Threads_FOUND)
-    target_link_libraries(osi PUBLIC Threads::Threads)
-  else ()
-    set(OSI_THREADING OFF)
-  endif ()
-endif ()
-
-configure_file(${osi_INC_DIR}/osi/conf.h.in
-  ${CMAKE_BINARY_DIR}/include/osi/conf.h @ONLY)
+target_link_libraries(osi PUBLIC rt ${THREAD_LIB})
 
 target_compile_definitions(osi
   PRIVATE OSI_COMPILE)
@@ -140,7 +161,12 @@ else ()
   endif ()
 endif ()
 
-if (ENABLE_TEST)
+if (OSI_CHECK)
+  enable_testing()
+
+  if (NOT TARGET check)
+    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --timeout 2)
+  endif ()
   add_subdirectory(${osi_TEST_DIR})
 endif ()
 

@@ -24,6 +24,8 @@
 #ifndef __OSI_COMPAT_H
 # define __OSI_COMPAT_H
 
+#include <assert.h>
+
 #include "osi/compat/arch.h"
 #include "osi/compat/compiler.h"
 #include "osi/compat/cpu.h"
