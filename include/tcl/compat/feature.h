@@ -400,6 +400,12 @@
 # else
 #   define __HAS_ATTRIBUTE_nothrow 0
 # endif
+# if (defined(CC_GCC) && VERNO_GE(CC_GCC, 4, 4)) || \
+     (defined(CC_CRAY))
+#   define __HAS_ATTRIBUTE_optimize 1
+# else
+#   define __HAS_ATTRIBUTE_optimize 0
+# endif
 # if (defined(CC_GCC) && VERNO_GE(CC_GCC, 2, 95)) || \
      defined(CC_DIAB) || \
      (defined(CC_INTEL))

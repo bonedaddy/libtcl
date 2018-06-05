@@ -295,10 +295,10 @@
 #endif
 
 #if !defined(NOINLINE)
-# if __has_declspec_attribute__(noinline)
-#   define NOINLINE __declspec(deprecated)
-# elif __has_attribute__(noinline)
+# if __has_attribute__(noinline)
 #   define NOINLINE __attribute__((noinline))
+# elif __has_declspec_attribute__(noinline)
+#   define NOINLINE __declspec(deprecated)
 # else
 #   define NOINLINE
 # endif
@@ -310,6 +310,31 @@
 # else
 #   define REGPARAM(N)
 # endif
+#endif
+
+#if !defined(OPTNONE)
+# if __has_attribute__(optnone)
+#   define OPTNONE __attribute__((optnone))
+# elif __has_attribute__(optimize)
+#   define OPTNONE __attribute__((optimize("O0")))
+# else
+#   define OPTNONE
+# endif
+#endif
+
+#if defined(__clang__)
+#if __has_attribute(optnone)
+#define NOT_OPTIMIZED __attribute__((optnone))
+#endif
+#elif defined(__GNUC__)
+#define GCC_VERSION                                                            \
+    (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#if GCC_VERSION >= 40400
+#define NOT_OPTIMIZED __attribute__((optimize("O0")))
+#endif
+#endif
+#ifndef NOT_OPTIMIZED
+#define NOT_OPTIMIZED
 #endif
 
 #if !defined(RESTRICT)

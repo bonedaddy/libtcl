@@ -139,7 +139,7 @@ else ()
     PUBLIC -Wno-missing-field-initializers
     PUBLIC -Wno-pointer-to-int-cast
     PRIVATE -ansi -Wshadow -Wswitch-default -Wunreachable-code
-    PRIVATE -Wcast-align -Wstrict-prototypes -Wmissing-prototypes
+    PRIVATE -Wstrict-prototypes -Wmissing-prototypes
     PRIVATE -Wunreachable-code -Winit-self
     PRIVATE -Wmissing-declarations -Wfloat-equal -Wbad-function-cast -Wundef
     PRIVATE -Waggregate-return -Wold-style-definition -Wredundant-decls)
