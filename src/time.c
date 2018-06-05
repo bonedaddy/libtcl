@@ -37,6 +37,7 @@ static int __gettime(struct timespec *ts)
 	mach_port_deallocate(mach_task_self(), cclock);
 	ts->tv_sec = mts.tv_sec;
 	ts->tv_nsec = mts.tv_nsec;
+	retutn 0;
 #else
 	return clock_gettime(CLOCK_REALTIME, ts);
 #endif
