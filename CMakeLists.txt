@@ -138,7 +138,6 @@ else ()
     PUBLIC -Wno-implicit-function-declaration
     PUBLIC -Wno-missing-field-initializers
     PUBLIC -Wno-pointer-to-int-cast
-    PUBLIC -Wno-implicit-fallthrough
     PRIVATE -ansi -Wshadow -Wswitch-default -Wunreachable-code
     PRIVATE -Wcast-align -Wstrict-prototypes -Wmissing-prototypes
     PRIVATE -Wunreachable-code -Winit-self

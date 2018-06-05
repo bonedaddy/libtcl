@@ -234,15 +234,6 @@
 # endif
 #endif
 
-#if !defined(NOSANITIZE)
-# if __has_feature__(address_sanitizer) || defined(__SANITIZE_ADDRESS__) || \
-     __has_attribute__(no_sanitize_address)
-#   define NOSANITIZE __attribute__((no_sanitize_address))
-# else
-#   define NOSANITIZE
-# endif
-#endif
-
 #if !defined(FORCEINLINE)
 # if defined(DEBUG)
 #   define FORCEINLINE __inline
@@ -274,7 +265,7 @@
 #endif
 
 #if !defined(CONST)
-# if __has_attribute__(__const)
+# if __has_attribute__(const)
 #   define CONST __attribute__((__const__))
 # elif defined(__pure2)
 #   define CONST __pure2
