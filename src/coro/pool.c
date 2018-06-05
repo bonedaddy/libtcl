@@ -47,7 +47,7 @@
 #endif
 
 FORCEINLINE PURE CONST
-size_t __getpagesize(void)
+static size_t __getpagesize(void)
 {
 #ifdef PAGE_SIZE
 	return (size_t)PAGE_SIZE;
