@@ -68,6 +68,9 @@
 #ifndef HAS_SYS_TIME_H
 #cmakedefine HAS_SYS_TIME_H
 #endif
+#ifndef HAS_SYS_TYPES_H
+#cmakedefine HAS_SYS_TYPES_H
+#endif
 #ifndef HAS_SYS_PRCTL_H
 #cmakedefine HAS_SYS_PRCTL_H
 #endif
@@ -88,6 +91,9 @@
 #endif
 #ifndef HAS_SIGNAL_H
 #cmakedefine HAS_SIGNAL_H
+#endif
+#ifndef HAS_INTTYPES_H
+#cmakedefine HAS_INTTYPES_H
 #endif
 #ifndef HAS_STDBOOL_H
 #cmakedefine HAS_STDBOOL_H

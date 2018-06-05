@@ -90,23 +90,23 @@
 #define VERSION_POSIX_1996 199506L
 #define VERSION_POSIX_2001 200112L
 
-#if _POSIX_VERSION - 0 >= VERSION_POSIX_1990
-# define STD_POSIX_1990
-#endif
-#if _POSIX_VERSION - 0 >= VERSION_POSIX_1992
-# define STD_POSIX_1992
-#endif
-#if _POSIX_VERSION - 0 >= VERSION_POSIX_1993
-# define STD_POSIX_1993
-#endif
-#if _POSIX_VERSION - 0 >= VERSION_POSIX_1996
-# define STD_POSIX_1996
-#endif
-#if _POSIX_VERSION - 0 >= VERSION_POSIX_2001
-# define STD_POSIX_2001
-#endif
 #if defined(_POSIX_VERSION)
-# define STD_POSIX _POSIX_VERSION
+# if _POSIX_VERSION >= VERSION_POSIX_1990
+#   define STD_POSIX_1990
+# endif
+# if _POSIX_VERSION >= VERSION_POSIX_1992
+#   define STD_POSIX_1992
+# endif
+# if _POSIX_VERSION >= VERSION_POSIX_1993
+#   define STD_POSIX_1993
+# endif
+# if _POSIX_VERSION >= VERSION_POSIX_1996
+#   define STD_POSIX_1996
+# endif
+# if _POSIX_VERSION >= VERSION_POSIX_2001
+#   define STD_POSIX_2001
+# endif
+#   define STD_POSIX _POSIX_VERSION
 #endif
 
 #define VERSION_XOPEN_1989 300
@@ -115,21 +115,23 @@
 #define VERSION_XOPEN_1998 500
 #define VERSION_XOPEN_2003 600
 
-#if (_XOPEN_VERSION - 0 >= 3) || defined(_XOPEN_XPG3)
-# define STD_XOPEN_1989
-#endif
-#if (_XOPEN_VERSION - 0 >= 4) || defined(_XOPEN_XPG4)
-# define STD_XOPEN_1992
-#endif
-#if (_XOPEN_VERSION - 0 > 4) || \
-    (defined(_XOPEN_UNIX) && (_XOPEN_VERSION - 0 == 4))
-# define STD_XOPEN_1995
-#endif
-#if (_XOPEN_VERSION - 0 >= VERSION_XOPEN_1998)
-# define STD_XOPEN_1998
-#endif
-#if (_XOPEN_VERSION - 0 >= VERSION_XOPEN_2003)
-# define STD_XOPEN_2003
+#if defined(_XOPEN_VERSION)
+# if (_XOPEN_VERSION - 0 >= 3) || defined(_XOPEN_XPG3)
+#   define STD_XOPEN_1989
+# endif
+# if (_XOPEN_VERSION - 0 >= 4) || defined(_XOPEN_XPG4)
+#   define STD_XOPEN_1992
+# endif
+# if (_XOPEN_VERSION - 0 > 4) || \
+	(defined(_XOPEN_UNIX) && (_XOPEN_VERSION - 0 == 4))
+#   define STD_XOPEN_1995
+# endif
+# if (_XOPEN_VERSION - 0 >= VERSION_XOPEN_1998)
+#   define STD_XOPEN_1998
+# endif
+# if (_XOPEN_VERSION - 0 >= VERSION_XOPEN_2003)
+#   define STD_XOPEN_2003
+# endif
 #endif
 
 #if defined(STD_XOPEN_1998)
@@ -406,6 +408,7 @@
 # else
 #   define __HAS_ATTRIBUTE_optimize 0
 # endif
+# define __HAS_ATTRIBUTE_optnone 0
 # if (defined(CC_GCC) && VERNO_GE(CC_GCC, 2, 95)) || \
      defined(CC_DIAB) || \
      (defined(CC_INTEL))

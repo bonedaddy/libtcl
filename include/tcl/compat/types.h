@@ -37,6 +37,13 @@
 typedef float f32_t;
 typedef double f64_t;
 
+#ifdef HAS_INTTYPES_H
+# include <inttypes.h>
+#endif
+#ifdef HAS_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+
 #ifdef HAS_STDINT_H
 # if defined(__cplusplus)
 #   include <cstdint>
