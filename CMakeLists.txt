@@ -120,7 +120,8 @@ add_library(tcl ${tcl_SRCS} ${tcl_HDRS} ${tcl_HDR})
 target_include_directories(tcl
   PUBLIC ${tcl_INC_DIR} ${CMAKE_BINARY_DIR}/include
   PRIVATE ${tcl_SRC_DIR})
-target_link_libraries(tcl PUBLIC rt ${THREAD_LIB})
+
+target_link_libraries(tcl PUBLIC ${THREAD_LIB})
 
 target_compile_definitions(tcl
   PRIVATE TCL_COMPILE)
