@@ -66,7 +66,7 @@ static inline void ordered_cb(void *data)
 
 static inline void msleep(uint64_t ms)
 {
-	usleep((__useconds_t)(ms * 1000));
+	usleep((unsigned)(ms * 1000));
 }
 
 #endif /* __TCL_TEST_ALARM_H */
