@@ -17,12 +17,12 @@
 
 #include "tcl/allocator.h"
 
-static const allocator_t __interface = {
+static const allocator_t __int = {
 	malloc,
 	free
 };
 
-allocator_t const *DFT_ALLOCATOR = &__interface;
+allocator_t const *DFT_ALLOCATOR = &__int;
 
 void pfree(void *pptr)
 {

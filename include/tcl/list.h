@@ -19,14 +19,14 @@ struct list_head {
  */
 
 #define WRITE_ONCE(var, val) \
-    (*((volatile typeof(val) *)(&(var))) = (val))
+    ((var) = (val))
 
-#define READ_ONCE(var) (*((volatile typeof(var) *)(&(var))))
+#define READ_ONCE(var) (var)
 
 
 #define POISON_POINTER_DELTA 0
-#define LIST_POISON1  ((void *) 0x100 + POISON_POINTER_DELTA)
-#define LIST_POISON2  ((void *) 0x200 + POISON_POINTER_DELTA)
+#define LIST_POISON1  ((char *) 0x100 + POISON_POINTER_DELTA)
+#define LIST_POISON2  ((char *) 0x200 + POISON_POINTER_DELTA)
 
 #define LIST_HEAD_INIT(name) { &(name), &(name) }
 
@@ -629,8 +629,8 @@ static inline void __hlist_del(struct hlist_node *n) {
 
 static inline void hlist_del(struct hlist_node *n) {
 	__hlist_del(n);
-	n->next = LIST_POISON1;
-	n->pprev = LIST_POISON2;
+	n->next = (struct hlist_node *)LIST_POISON1;
+	n->pprev = (struct hlist_node **)LIST_POISON2;
 }
 
 static inline void hlist_del_init(struct hlist_node *n) {

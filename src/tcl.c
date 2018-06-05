@@ -15,15 +15,43 @@
  * limitations under the License.
  */
 
-#include <tcl.h>
+#define LOG_TAG "tcl"
 
-void tcl_init(void)
+#include "tcl/log.h"
+#include "tcl.h"
+
+static int __init;
+
+int tcl_init(void)
 {
+	if (__init)
+		return -1;
+#ifdef CC_MSVC
+	{
+		WORD wVersionRequested;
+		WSADATA wsaData;
+		int err;
+
+		wVersionRequested = MAKEWORD(2, 2);
+		if ((err = WSAStartup(wVersionRequested, &wsaData))) {
+			LOG_ERROR("WSAStartup failed with error: %d", err);
+			return -1;
+		}
+	}
+#endif
 	mutex_global_init();
+	__init = 1;
+	return 0;
 }
 
 void tcl_cleanup(void)
 {
+	if (!__init)
+		return;
+#ifdef CC_MSVC
+	WSACleanup();
+#endif
 	mutex_global_cleanup();
 	alarm_cleanup();
+	__init = 0;
 }

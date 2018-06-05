@@ -65,7 +65,7 @@ struct data_buffer {
 	size_t offset;
 
 	/*! TODO. */
-	uint8_t data[];
+	uint8_t data[1];
 };
 
 /*!@public

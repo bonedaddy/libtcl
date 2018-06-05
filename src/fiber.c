@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#define LOG_TAG "tcl_fiber"
+
+#include "tcl/log.h"
 #include "tcl/fiber.h"
 
 #ifndef FIBER_MAX
@@ -230,13 +233,13 @@ void fiber_yield(void)
 	struct fiber *begin ,*head;
 
 	begin = __scope.self;
-	head = __scope.self->next ? __scope.self->next : __scope.head;
+	head = begin;
 
-	while (head->state != FIBER_ACTIVE) {
-		if (head->next == begin)
-			return;
+	do {
 		head = head->next ? head->next : __scope.head;
-	}
+		if (head == begin)
+			return;
+	} while (head->state != FIBER_ACTIVE);
 
 	__scope.self = head;
 	head->ret = coro_resume(&head->coroutine, head->arg);

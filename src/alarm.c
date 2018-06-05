@@ -20,6 +20,7 @@
 #include "tcl/alarm.h"
 #include "tcl/log.h"
 #include "tcl/task.h"
+#include "tcl/string.h"
 
 #define THREAD_RT_PRIORITY 1
 #define CALLBACK_THREAD_PRIORITY_HIGH (-19)
@@ -55,7 +56,8 @@ static bool __timer_init(const clockid_t clock_id, timer_t *timer)
 	sigevent.sigev_notify_attributes = &thread_attr;
 	sigevent.sigev_value.sival_ptr = &__alarm_expired;
 	if (timer_create(clock_id, &sigevent, timer) == -1) {
-		LOG_ERROR("Unable to create timer with clock %d: %m", clock_id);
+		LOG_ERROR("Unable to create timer with clock %d: %s", clock_id,
+			strerror(errno));
 		if (clock_id == CLOCK_BOOTTIME_ALARM) {
 			LOG_ERROR("The kernel might not have support for "
 				"timer_create(CLOCK_BOOTTIME_ALARM): "
@@ -123,7 +125,7 @@ static void __schedule_root(void)
 		end_of_time.it_value.tv_sec = (time_t)(1LL << (sizeof(time_t) * 8 - 2));
 		if (__timer_settime(__wakeup_timer, TIMER_ABSTIME, &end_of_time,
 			NULL) < 0)
-			LOG_ERROR("Unable to set wakeup timer: %m");
+			LOG_ERROR("Unable to set wakeup timer: %s", strerror(errno));
 	} else {
 		bzero(&wakeup_time, sizeof(wakeup_time));
 		wakeup_time.it_value.tv_sec = (int64_t)(next_deadline / 1000);
@@ -131,7 +133,7 @@ static void __schedule_root(void)
 			* 1000000LL;
 		if (__timer_settime(__wakeup_timer, TIMER_ABSTIME, &wakeup_time,
 			NULL) < 0)
-			LOG_ERROR("Unable to set wakeup timer: %m");
+			LOG_ERROR("Unable to set wakeup timer: %s", strerror(errno));
 	}
 done:
 	__timer_set = timer_time.it_value.tv_sec || timer_time.it_value.tv_nsec;
@@ -141,7 +143,7 @@ done:
 	}
 # endif
 	if (__timer_settime(__timer, TIMER_ABSTIME, &timer_time, NULL) == -1)
-		LOG_ERROR("Unable to set timer: %m");
+		LOG_ERROR("Unable to set timer: %s", strerror(errno));
 	if (__timer_set) {
 		timer_gettime(__timer, &time_to_expire);
 		if (!time_to_expire.it_value.tv_sec &&
@@ -420,10 +422,10 @@ void alarm_cleanup(void)
 	thread_destroy(&__default_callback_thread);
 #ifdef HAS_TIMER
 	if (timer_delete(__wakeup_timer))
-		LOG_ERROR("timer_delete wakeup_timer %m");
+		LOG_ERROR("timer_delete wakeup_timer %s", strerror(errno));
 	__wakeup_timer = NULL;
 	if (timer_delete(__timer))
-		LOG_ERROR("timer_delete timer %m");
+		LOG_ERROR("timer_delete timer %s", strerror(errno));
 	__timer = NULL;
 #endif
 	sema_destroy(&__alarm_expired);

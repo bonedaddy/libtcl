@@ -18,6 +18,7 @@
 #define LOG_TAG "bt_tcl_reader"
 
 #include "tcl/log.h"
+#include "tcl/io.h"
 #include "tcl/reader.h"
 
 static bool __has_byte(const eager_reader_t *reader);
@@ -117,7 +118,7 @@ size_t eager_reader_read(eager_reader_t *reader, uint8_t *buffer,
 	}
 
 	if (max_size > bytes_available)
-		max_size = bytes_available;
+		max_size = (size_t)bytes_available;
 
 	size_t bytes_consumed = 0;
 	while (bytes_consumed < max_size) {
@@ -172,10 +173,10 @@ static bool __has_byte(const eager_reader_t *reader)
 		timeout.tv_sec = 0;
 		timeout.tv_usec = 0;
 
-		ret = select(FD_SETSIZE, &read_fds, NULL, NULL, &timeout);
+		ret = select(reader->inbound_fd + 1, &read_fds, NULL, NULL, &timeout);
 	} while(ret == -1 && (errno == EINTR || errno == EAGAIN));
 
-	return FD_ISSET(reader->inbound_fd, &read_fds);
+	return ret > 0 && FD_ISSET(reader->inbound_fd, &read_fds) ? true : false;
 }
 
 static void *__inbound_read_loop(void *context)
@@ -193,7 +194,7 @@ static void *__inbound_read_loop(void *context)
 		buffer->length = 0;
 		buffer->offset = 0;
 
-		ssize_t bytes_read;
+		isize_t bytes_read;
 		do (bytes_read = read(reader->inbound_fd, buffer->data,
 			reader->buffer_size));
 		while (bytes_read < 0 && errno == EINTR);
@@ -209,8 +210,10 @@ static void *__inbound_read_loop(void *context)
 #ifdef TCL_LOGGING
 			if (bytes_read == 0)
 				LOG_WARN("fd said bytes existed, but none were found.");
-			else
-				LOG_WARN("unable to read from file descriptor: %m");
+			else {
+				LOG_WARN("unable to read from file descriptor: %s",
+					strerror(errno));
+			}
 #endif
 			free(buffer);
 		}

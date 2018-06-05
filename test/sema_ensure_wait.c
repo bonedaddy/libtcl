@@ -16,6 +16,7 @@
 
 #include "test.h"
 
+#include "tcl/time.h"
 #include "tcl/thread.h"
 
 typedef struct {

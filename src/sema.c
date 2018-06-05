@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
+#define LOG_TAG "tcl_semaphore"
+
+#include "tcl/log.h"
 #include "tcl/sema.h"
 
 int sema_init(sema_t *sema, unsigned value)

@@ -21,6 +21,8 @@ set(CORO_UCONTEXT OFF)
 set(CORO_WIN OFF)
 set(CORO_SJLJ OFF)
 
+message(STATUS "Processor - ${CMAKE_SYSTEM_PROCESSOR}")
+
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
   set(CORO_X86_64 ON)
   set(tcl_SRCS ${tcl_SRCS}
@@ -39,7 +41,9 @@ elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "x86")
   message(STATUS "Selecting `x86_32' coroutine implementation.")
 elseif (MSVC)
   set(CORO_WIN ON)
-  set(tcl_SRCS ${tcl_SRCS} ${tcl_SRC_DIR}/coro/coro-win.c)
+  set(tcl_SRCS ${tcl_SRCS}
+    ${tcl_SRC_DIR}/coro/coro.c
+    ${tcl_SRC_DIR}/coro/coro-win.c)
 
   message(STATUS "Selecting `windows' coroutine implementation.")
 elseif (HAS_SETJMP_H)

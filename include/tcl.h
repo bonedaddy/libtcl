@@ -55,7 +55,7 @@
  * @brief
  * TODO
  */
-__api void tcl_init(void);
+__api int tcl_init(void);
 
 /*!@public
  *

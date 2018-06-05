@@ -25,26 +25,28 @@
 # define EFD_SEMAPHORE (1 << 0)
 #endif /* !EFD_SEMAPHORE */
 
+#define __MAX_EVENTS 64
+
 static reactor_st_t __run_reactor(reactor_t *reactor, int iterations);
-static const size_t __max_events = 64;
 
 int reactor_init(reactor_t *reactor)
 {
 	pollev_t event;
 
-	if (poller_init(&reactor->poller, __max_events)) {
-		LOG_ERROR("unable to create epoll instance: %m");
+	if (poller_init(&reactor->poller, __MAX_EVENTS)) {
+		LOG_ERROR("unable to create epoll instance: %s", strerror(errno));
 		return -1;
 	}
 	if (event_init(&reactor->stopev, 0, 0)) {
-		LOG_ERROR("unable to create eventfd: %m");
+		LOG_ERROR("unable to create eventfd: %s", strerror(errno));
 		return -1;
 	}
 	bzero(&event, sizeof(event));
 	event.events = POLLER_IN;
 	event.ptr = NULL;
 	if (poller_add(&reactor->poller, &reactor->stopev, event)) {
-		LOG_ERROR("unable to register eventfd with epoll set: %m");
+		LOG_ERROR("unable to register eventfd with epoll set: %s",
+			strerror(errno));
 		return -1;
 	}
 	return 0;
@@ -89,7 +91,7 @@ reactor_object_t *reactor_register(reactor_t *reactor, event_t *ev,
 	if (write_ready) event.events |= POLLER_OUT;
 	event.ptr = object;
 	if (poller_add(&reactor->poller, ev, event)) {
-		LOG_ERROR("unable to register ev to epoll set: %m");
+		LOG_ERROR("unable to register ev to epoll set: %s", strerror(errno));
 		free(object);
 		return NULL;
 	}
@@ -116,14 +118,14 @@ static reactor_st_t __run_reactor(reactor_t *reactor, int iterations)
 {
 	int ret, i, j;
 	reactor_object_t *object;
-	pollev_t events[__max_events];
+	pollev_t events[__MAX_EVENTS];
 	
 	reactor->is_running = true;
 	for (i = 0; iterations == 0 || i < iterations; ++i) {
 
-		ret = poller_wait(&reactor->poller, events, (int)__max_events);
+		ret = poller_wait(&reactor->poller, events, (int)__MAX_EVENTS);
 		if (ret < 0) {
-			LOG_ERROR("error in epoller_wait: %m");
+			LOG_ERROR("error in epoller_wait: %s", strerror(errno));
 			reactor->is_running = false;
 			return REACTOR_STATUS_ERROR;
 		}

@@ -26,7 +26,7 @@
 #include <stdio.h>
 
 #ifndef ASSERT_F
-# define ASSERT_F(cond...) "%s:%d: `%s'\n", __FILE__, __LINE__, #cond
+# define ASSERT_F(...) "%s:%d: `%s'\n", __FILE__, __LINE__, #__VA_ARGS__
 #endif
 
 #ifndef TEARDOWN

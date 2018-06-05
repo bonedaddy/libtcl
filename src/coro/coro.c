@@ -67,6 +67,8 @@ void *coro_resume(coro_t *coro, void *arg)
 	coro_t cur;
 
 	cur = __self;
+	if (cur->caller == *coro)
+		return coro_yield(arg);
 
 	(*coro)->caller = cur;
 	(*coro)->ret = arg;

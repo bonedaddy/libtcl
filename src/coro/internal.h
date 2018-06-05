@@ -25,7 +25,7 @@
 #include "tcl/coro.h"
 
 #if defined(CORO_X86_64) || defined (CORO_X86_32) || \
-	defined (CORO_ARM) || defined (CORO_UCONTEXT)
+	defined (CORO_ARM) || defined (CORO_UCONTEXT) || defined(CORO_WIN)
 
 # ifdef CORO_UCONTEXT
 #   include <ucontext.h>
@@ -39,10 +39,17 @@ __ext void __coromain(routine_t *fn);
 
 struct coro {
 
-# ifdef CORO_UCONTEXT
+# if defined(CORO_UCONTEXT)
 
 	/*! Unix ucontext. */
 	ucontext_t ctx;
+# elif defined(CORO_WIN)
+
+	/*! Windows fiber handle ptr. */
+	LPVOID handle;
+
+	/*! We have to keep the routine until the first `coro_resume'. */
+	routine_t *fn;
 # else
 
 	/*! Stack pointer origin. */
@@ -68,7 +75,7 @@ struct coro {
 	int valgrind_id;
 #elif !defined(CORO_UCONTEXT)
 
-	char __padded[4];
+	char __padding[4];
 #endif
 };
 

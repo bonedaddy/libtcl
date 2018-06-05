@@ -47,7 +47,7 @@ char *strncpy(char *s1, const char *s2, size_t n)
 #endif /* !HAS_STRNCPY */
 
 #ifndef HAS_STRLCPY
-size_t strlcpy(char *dst, const char *src, size_t siz)
+size_t strlcpy(char *__restrict dst, const char *__restrict src, size_t siz)
 {
 	char *d = dst;
 	const char *s = src;

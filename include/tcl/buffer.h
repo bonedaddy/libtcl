@@ -51,7 +51,7 @@ struct buffer {
 	size_t length;
 
 	/*! TODO. */
-	uint8_t data[];
+	uint8_t data[1];
 };
 
 /*!@public

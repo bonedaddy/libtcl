@@ -58,6 +58,9 @@
 #ifndef HAS_GETPAGESIZE
 #cmakedefine HAS_GETPAGESIZE
 #endif
+#ifndef HAS_USLEEP
+#cmakedefine HAS_USLEEP
+#endif
 
 #ifndef HAS_SYS_EVENTFD_H
 #cmakedefine HAS_SYS_EVENTFD_H

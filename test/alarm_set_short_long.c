@@ -20,12 +20,11 @@
 
 int main(void)
 {
-	alarm_t alarm[2] = { };
+	alarm_t alarm[2];
 
 	alarm_init(alarm, "alarm_test.test_set_short_long_0");
 	alarm_init(alarm + 1, "alarm_test.test_set_short_long_1");
 
-	LOG_INFO();
 	sema_init(&semaphore, 0);
 	alarm_set(alarm, 10, cb, NULL);
 	alarm_set(alarm + 1, 10 + TIMER_INTERVAL_FOR_WAKELOCK_IN_MS + EPSILON_MS,

@@ -15,13 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#define LOG_TAG "tcl_coro_sjlj"
 
+#include "tcl/log.h"
 #include "coro/internal.h"
 
 #include <setjmp.h>
-
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
 
 static struct coro {
 	struct coro *next;
@@ -47,6 +46,7 @@ static coro_t __pop(coro_t *list)
 	return(c);
 }
 
+OPTNONE
 static void *__pass(coro_t me, void *arg)
 {
 	static void *saved;
@@ -68,6 +68,7 @@ void *__resume(coro_t c, void *arg)
 
 static void __start(size_t stack_size);
 
+OPTNONE
 static void __root(void *ret)
 {
 	void *(*fun)(void *);
@@ -89,12 +90,17 @@ static void __root(void *ret)
 
 static void __start(size_t stack_size)
 {
+#ifdef CC_MSVC
+	char *stack = alloca(stack_size + 1);
+#else
 	char stack[stack_size + 1] ALIGNED(sizeof(int));
+#endif
 
 	stack[stack_size] = 1;
 	__root(stack);
 }
 
+OPTNONE
 int coro_init(coro_t *coro, routine_t *fun, size_t stack_size)
 {
 	if (stack_size < 4096)
@@ -155,5 +161,3 @@ coro_t coro_self(void)
 {
 	return __self;
 }
-
-#pragma GCC pop_options

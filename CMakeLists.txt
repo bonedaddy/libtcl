@@ -15,8 +15,6 @@
 #
 
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-cmake_policy(SET CMP0054 OLD)
-cmake_policy(SET CMP0045 OLD)
 
 project(tcl C)
 set(CMAKE_C_STANDARD 99)
@@ -28,9 +26,9 @@ set(tcl_TEST_DIR ${CMAKE_CURRENT_LIST_DIR}/test)
 option(TCL_CHECK "Enable testing" ON)
 option(TCL_THREADING "Enable Threading" ON)
 if (CMAKE_BUILD_TYPE MATCHES "Release")
-  option(TCL_LOGGING "Enable Logging" ON)
-else ()
   option(TCL_LOGGING "Enable Logging" OFF)
+else ()
+  option(TCL_LOGGING "Enable Logging" ON)
 endif ()
 
 set(CMAKE_REQUIRED_QUIET_OLD ${CMAKE_REQUIRED_QUIET})
@@ -77,6 +75,7 @@ check_symbol_exists(munmap "sys/mman.h" HAS_MUNMAP)
 check_symbol_exists(mprotect "sys/mman.h" HAS_MPROTECT)
 check_symbol_exists(sysconf "unistd.h" HAS_SYSCONF)
 check_symbol_exists(getpagesize "unistd.h" HAS_GETPAGESIZE)
+check_symbol_exists(usleep "unistd.h" HAS_USLEEP)
 message(STATUS "Checking symbole - done")
 
 set(CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET_OLD})
@@ -126,8 +125,9 @@ target_link_libraries(tcl PUBLIC ${THREAD_LIB})
 target_compile_definitions(tcl
   PRIVATE TCL_COMPILE)
 if (MSVC)
+  target_link_libraries(tcl PRIVATE ws2_32)
   target_compile_options(tcl
-    PUBLIC /MT$<$<CONFIG:Debug>:d> /Oy /Za /W3
+    PUBLIC /MT$<$<CONFIG:Debug>:d> /Oy /W3
     PUBLIC /D_CRT_SECURE_NO_WARNINGS
     PUBLIC /O$<$<CONFIG:Debug>:d>$<$<CONFIG:Release>:x>)
   if (CMAKE_BUILD_TYPE MATCHES Release)
@@ -135,6 +135,15 @@ if (MSVC)
   else ()
     target_compile_options(tcl PUBLIC /Od)
   endif ()
+
+  foreach (flag_var
+    CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+    CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+    if (${flag_var} MATCHES "/MD")
+      string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+    endif ()
+  endforeach ()
+
 else ()
   target_compile_options(tcl
     PUBLIC -Wall -Werror -Wextra -fomit-frame-pointer
@@ -162,7 +171,7 @@ if (TCL_CHECK AND EXISTS ${tcl_TEST_DIR})
   enable_testing()
 
   if (NOT TARGET check)
-    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --timeout 2)
+    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --timeout 4)
   endif ()
   add_subdirectory(${tcl_TEST_DIR})
 endif ()

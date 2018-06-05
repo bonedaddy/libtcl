@@ -17,7 +17,7 @@
 
 #include "tcl/ringbuffer.h"
 
-void ringbuffer_init(ringbuffer_t *p, const size_t size)
+void ringbuffer_init(ringbuffer_t *p, size_t size)
 {
 	p->base = calloc(size, 1);
 	p->head = p->tail = p->base;

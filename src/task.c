@@ -115,12 +115,14 @@ FORCEINLINE int task_setpriority(task_t *task, int priority)
 {
 #ifdef TCL_THREADING
 	if (pthread_setschedprio(task->pthread, priority)) {
-		LOG_ERROR("Unable to set thread priority %d, %m", priority);
+		LOG_ERROR("Unable to set thread priority %d, %s", priority,
+			strerror(errno));
 		return 0;
 	}
 #else
 	if (fiber_setschedprio(task->fiber, priority)) {
-		LOG_ERROR("Unable to set fiber priority %d, %m", priority);
+		LOG_ERROR("Unable to set fiber priority %d, %s", priority,
+			strerror(errno));
 		return -1;
 	}
 #endif /* TCL_THREADING */

@@ -24,6 +24,8 @@ static void test(void);
 
 #include "test.h"
 
+#include "tcl.h"
+#include "tcl/io.h"
 #include "tcl/reader.h"
 
 static int pipefd[2];
@@ -96,7 +98,7 @@ void test(void)
 	eager_reader_t reader;
 	thread_t read_thread;
 
-
+	tcl_init();
 	eager_reader_init(&reader, pipefd[0], DFT_ALLOCATOR, 32, UINT_MAX);
 	thread_init(&read_thread, "read");
 
@@ -107,4 +109,5 @@ void test(void)
 
 	thread_destroy(&read_thread);
 	eager_reader_destroy(&reader);
+	tcl_cleanup();
 }

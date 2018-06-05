@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#define LOG_TAG "tcl_mutex"
+
+#include "tcl/log.h"
 #include "tcl/mutex.h"
 #include "tcl/fiber.h"
 
@@ -51,8 +54,7 @@ void mutex_lock(mutex_t *mutex)
 #else
 	event_value_t val;
 
-	do event_read(&mutex->ev, &val);
-	while (val != 1);
+	do event_read(&mutex->ev, &val); while (val != 1);
 #endif /* TCL_THREADING */
 }
 

@@ -24,6 +24,11 @@ static void test(void);
 
 #include "test.h"
 
+#define LOG_TAG "test_reader_small_data"
+
+#include "tcl.h"
+#include "tcl/log.h"
+#include "tcl/io.h"
 #include "tcl/reader.h"
 
 static int pipefd[2];
@@ -54,7 +59,6 @@ static void expect_data(eager_reader_t *reader, void *context)
 		printf("read: %c\n", byte);
 		ASSERT_EQ(data[i], byte);
 	}
-
 	sema_post(&sema);
 }
 
@@ -63,7 +67,7 @@ void test(void)
 	eager_reader_t reader;
 	thread_t read_thread;
 
-
+	tcl_init();
 	eager_reader_init(&reader, pipefd[0], DFT_ALLOCATOR, 32, UINT_MAX);
 	thread_init(&read_thread, "read");
 
@@ -74,4 +78,5 @@ void test(void)
 
 	thread_destroy(&read_thread);
 	eager_reader_destroy(&reader);
+	tcl_cleanup();
 }

@@ -20,7 +20,7 @@
 
 int main(void)
 {
-	alarm_t alarm[2] = { };
+	alarm_t alarm[2];
 
 	alarm_init(alarm, "alarm_test.test_set_short_short_0");
 	alarm_init(alarm + 1, "alarm_test.test_set_short_short_1");

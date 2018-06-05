@@ -33,24 +33,24 @@
 #   warning "LOG_TAG must be defined"
 #   define LOG_TAG __FILE__
 # endif /* !defined(LOG_TAG) */
-# define LOGWRAP(lvl, fmt, args...) \
+# define LOGWRAP(lvl, fmt, ...) \
 	fprintf(stderr, "[%s] %s: %s: %d "fmt"\n", #lvl, LOG_TAG, __func__, \
-		__line__, ##args)
+		__line__, __VA_ARGS__)
 # ifdef NDEBUG
 #   define LOG_VERBOSE(...) do; while (0)
 # else
-#   define LOG_VERBOSE(fmt, args...) LOGWRAP(LOG_VERBOSE, fmt, ##args)
+#   define LOG_VERBOSE(fmt, ...) LOGWRAP(LOG_VERBOSE, fmt, __VA_ARGS__)
 # endif /* NDEBUG */
-# define LOG_DEBUG(fmt, args...) LOGWRAP(LOG_DEBUG, fmt, ## args)
-# define LOG_INFO(fmt, args...) LOGWRAP(LOG_INFO, fmt, ## args)
-# define LOG_WARN(fmt, args...) LOGWRAP(LOG_WARN, fmt, ## args)
-# define LOG_ERROR(fmt, args...) LOGWRAP(LOG_ERROR, fmt, ## args)
+# define LOG_DEBUG(fmt, ...) LOGWRAP(LOG_DEBUG, fmt, __VA_ARGS__)
+# define LOG_INFO(fmt, ...) LOGWRAP(LOG_INFO, fmt, __VA_ARGS__)
+# define LOG_WARN(fmt, ...) LOGWRAP(LOG_WARN, fmt, __VA_ARGS__)
+# define LOG_ERROR(fmt, ...) LOGWRAP(LOG_ERROR, fmt, __VA_ARGS__)
 #else /* !TCL_LOGGING */
-# define LOG_VERBOSE(fmt, args...) do {} while (0)
-# define LOG_DEBUG(fmt, args...) do {} while (0)
-# define LOG_INFO(fmt, args...) do {} while (0)
-# define LOG_WARN(fmt, args...) do {} while (0)
-# define LOG_ERROR(fmt, args...) do {} while (0)
+# define LOG_VERBOSE(fmt, ...) do {} while (0)
+# define LOG_DEBUG(fmt, ...) do {} while (0)
+# define LOG_INFO(fmt, ...) do {} while (0)
+# define LOG_WARN(fmt, ...) do {} while (0)
+# define LOG_ERROR(fmt, ...) do {} while (0)
 #endif /* TCL_LOGGING */
 
 #endif /* !__TCL_LOG_H */

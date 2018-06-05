@@ -24,7 +24,21 @@
 #ifndef __TCL_IO_H
 # define __TCL_IO_H
 
+#include "tcl/compat.h"
+
 #include <stdio.h>
+
+#ifdef HAS_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#ifdef CC_MSVC
+# include <io.h>
+# define read _read
+# define write _write
+# define close _close
+# define pipe(FDS) _pipe(FDS, 4096, 0)
+#endif
 
 #endif /* !__TCL_IO_H */
 /*!@} */

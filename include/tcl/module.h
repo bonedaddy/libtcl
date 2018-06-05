@@ -95,7 +95,7 @@ struct module {
 	module_lifecycle_fn clean_up;
 
 	/*! TODO. */
-	module_t **dependencies[];
+	module_t **dependencies[1];
 };
 
 bool module_init(module_t *module);

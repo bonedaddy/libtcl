@@ -16,14 +16,16 @@
 
 #include "tcl/vector.h"
 
-FORCEINLINE void vector_init(vector_t *vector, size_t isize)
+FORCEINLINE
+void vector_init(vector_t *vector, size_t isize)
 {
 	vector->buffer = NULL;
 	vector->isize = isize;
 	vector->capacity = vector->length = 0;
 }
 
-FORCEINLINE void vector_destroy(vector_t *vector, vector_dtor_t *idtor)
+FORCEINLINE
+void vector_destroy(vector_t *vector, vector_dtor_t *idtor)
 {
 	char *item;
 
@@ -37,7 +39,8 @@ FORCEINLINE void vector_destroy(vector_t *vector, vector_dtor_t *idtor)
 	}
 }
 
-FORCEINLINE void vector_clear(vector_t *vector, vector_dtor_t *idtor)
+FORCEINLINE
+void vector_clear(vector_t *vector, vector_dtor_t *idtor)
 {
 	char *item;
 
@@ -49,40 +52,46 @@ FORCEINLINE void vector_clear(vector_t *vector, vector_dtor_t *idtor)
 	}
 }
 
-FORCEINLINE size_t vector_length(vector_t *vector)
+FORCEINLINE
+size_t vector_length(vector_t *vector)
 {
 	return vector->length;
 }
 
-FORCEINLINE void *vector_begin(vector_t *vector)
+FORCEINLINE
+void *vector_begin(vector_t *vector)
 {
 	if (!vector->length)
 		return NULL;
 	return vector->buffer;
 }
 
-FORCEINLINE void *vector_end(vector_t *vector)
+FORCEINLINE
+void *vector_end(vector_t *vector)
 {
 	if (!vector->capacity)
 		return NULL;
 	return (char *)vector->buffer + (vector->length * vector->isize);
 }
 
-FORCEINLINE void *vector_back(vector_t *vector)
+FORCEINLINE
+void *vector_back(vector_t *vector)
 {
 	if (!vector->capacity || !vector->length)
 		return NULL;
 	return (char *)vector->buffer + ((vector->length - 1) * vector->isize);
 }
 
-FORCEINLINE void *vector_at(vector_t *vector, size_t idx)
+FORCEINLINE
+void *vector_at(vector_t *vector, size_t idx)
 {
 	if (idx >= vector->length)
 		return NULL;
 	return (char *)vector_begin(vector) + (idx * vector->isize);
 }
 
-static FORCEINLINE void __vector_alloc(vector_t *vector, size_t n)
+FORCEINLINE
+static void __vector_alloc(vector_t *vector, size_t n)
 {
 	if (vector->capacity == n)
 		return;
@@ -95,7 +104,7 @@ static FORCEINLINE void __vector_alloc(vector_t *vector, size_t n)
 		vector->buffer = realloc(vector->buffer, n * vector->isize);
 		if (vector->length > (vector->capacity = n))
 			vector->length = n;
-		bzero(vector->buffer + (vector->length * vector->isize),
+		bzero((char *)vector->buffer + (vector->length * vector->isize),
 			(vector->capacity - vector->length) * vector->isize);
 	}
 }
@@ -106,7 +115,8 @@ static FORCEINLINE void __vector_alloc(vector_t *vector, size_t n)
 # define ISPOW2(n) (((n) != 0) && (((n) & (~(n) + 1)) == (n)))
 #endif
 
-static FORCEINLINE PURE size_t __pow2_next(size_t n)
+FORCEINLINE PURE
+static size_t __pow2_next(size_t n)
 {
 	size_t i;
 	size_t j;
@@ -128,7 +138,8 @@ static FORCEINLINE PURE size_t __pow2_next(size_t n)
 	return (i < n) ? (size_t)SIZE_MAX : i;
 }
 
-FORCEINLINE void vector_ensure(vector_t *vector, size_t n)
+FORCEINLINE
+void vector_ensure(vector_t *vector, size_t n)
 {
 	if (++n < 32 && 32 > vector->capacity)
 		__vector_alloc(vector, 32);
@@ -136,7 +147,8 @@ FORCEINLINE void vector_ensure(vector_t *vector, size_t n)
 		__vector_alloc(vector, __pow2_next(n));
 }
 
-FORCEINLINE void vector_grow(vector_t *vector, size_t n)
+FORCEINLINE
+void vector_grow(vector_t *vector, size_t n)
 {
 	const size_t final_len = n + vector->length + 1;
 
@@ -146,7 +158,8 @@ FORCEINLINE void vector_grow(vector_t *vector, size_t n)
 		__vector_alloc(vector, __pow2_next(final_len));
 }
 
-FORCEINLINE void *vector_npush_back(vector_t *vector, size_t n)
+FORCEINLINE
+void *vector_npush_back(vector_t *vector, size_t n)
 {
 	char *it;
 
@@ -156,7 +169,8 @@ FORCEINLINE void *vector_npush_back(vector_t *vector, size_t n)
 	return it;
 }
 
-FORCEINLINE void *vector_npush_front(vector_t *vector, size_t n)
+FORCEINLINE
+void *vector_npush_front(vector_t *vector, size_t n)
 {
 	size_t len;
 	char *it;
@@ -169,7 +183,8 @@ FORCEINLINE void *vector_npush_front(vector_t *vector, size_t n)
 	return it;
 }
 
-FORCEINLINE void *vector_npush_at(vector_t *vector, size_t n, size_t idx)
+FORCEINLINE
+void *vector_npush_at(vector_t *vector, size_t n, size_t idx)
 {
 	size_t len;
 	void *it;
@@ -188,7 +203,8 @@ FORCEINLINE void *vector_npush_at(vector_t *vector, size_t n, size_t idx)
 	return it;
 }
 
-FORCEINLINE size_t vector_npop_back(vector_t *vector, size_t n, void *out)
+FORCEINLINE
+size_t vector_npop_back(vector_t *vector, size_t n, void *out)
 {
 	size_t len;
 
@@ -202,7 +218,8 @@ FORCEINLINE size_t vector_npop_back(vector_t *vector, size_t n, void *out)
 	return n;
 }
 
-FORCEINLINE size_t vector_npop_front(vector_t *vector, size_t n, void *out)
+FORCEINLINE
+size_t vector_npop_front(vector_t *vector, size_t n, void *out)
 {
 	size_t len;
 	char *it;
@@ -220,7 +237,8 @@ FORCEINLINE size_t vector_npop_front(vector_t *vector, size_t n, void *out)
 	return n;
 }
 
-FORCEINLINE size_t vector_npop_at(vector_t *s, size_t n, size_t idx,
+FORCEINLINE
+size_t vector_npop_at(vector_t *s, size_t n, size_t idx,
 									  void *out)
 {
 	size_t len;
@@ -243,37 +261,44 @@ FORCEINLINE size_t vector_npop_at(vector_t *s, size_t n, size_t idx,
 	return n;
 }
 
-FORCEINLINE void *vector_push_back(vector_t *vector)
+FORCEINLINE
+void *vector_push_back(vector_t *vector)
 {
 	return vector_npush_back(vector, 1);
 }
 
-FORCEINLINE void *vector_push_front(vector_t *vector)
+FORCEINLINE
+void *vector_push_front(vector_t *vector)
 {
 	return vector_npush_front(vector, 1);
 }
 
-FORCEINLINE void *vector_push_at(vector_t *vector, size_t i)
+FORCEINLINE
+void *vector_push_at(vector_t *vector, size_t i)
 {
 	return vector_npush_at(vector, 1, i);
 }
 
-FORCEINLINE bool vector_pop_back(vector_t *vector, void *out)
+FORCEINLINE
+bool vector_pop_back(vector_t *vector, void *out)
 {
 	return vector_npop_back(vector, 1, out) == 1;
 }
 
-FORCEINLINE bool vector_pop_front(vector_t *vector, void *out)
+FORCEINLINE
+bool vector_pop_front(vector_t *vector, void *out)
 {
 	return vector_npop_front(vector, 1, out) == 1;
 }
 
-FORCEINLINE bool vector_pop_at(vector_t *vector, size_t idx, void *out)
+FORCEINLINE
+bool vector_pop_at(vector_t *vector, size_t idx, void *out)
 {
 	return vector_npop_at(vector, 1, idx, out) == 1;
 }
 
-FORCEINLINE size_t vector_indexof(vector_t *vector, void *item) {
+FORCEINLINE
+size_t vector_indexof(vector_t *vector, void *item) {
 	size_t i;
 
 	i = 0;

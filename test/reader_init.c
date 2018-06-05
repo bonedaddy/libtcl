@@ -24,6 +24,7 @@ static void test(void);
 
 #include "test.h"
 
+#include "tcl/io.h"
 #include "tcl/reader.h"
 
 static int pipefd[2];

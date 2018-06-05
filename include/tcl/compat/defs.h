@@ -38,6 +38,14 @@
 # include <errno.h>
 #endif
 
+#if defined(OS_WIN) && defined(CC_MSVC)
+# define _WIN32_WINNT 0x0502
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+# include <winsock2.h>
+# include <malloc.h>
+#endif
+
 #if defined(__STDC__) || defined(__cplusplus) || defined(CC_MSVC)
 # if !defined(__const)
 #   define __const const

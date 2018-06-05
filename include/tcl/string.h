@@ -24,7 +24,7 @@
 #ifndef __TCL_STRING_H
 # define __TCL_STRING_H
 
-#include "tcl/conf.h"
+#include "tcl/compat.h"
 
 #include <string.h>
 
@@ -41,7 +41,7 @@ size_t strnlen(const char *s, size_t n);
 #endif
 
 #ifndef HAS_STRLCPY
-size_t strlcpy(char *restrict dst, const char *restrict src, size_t dstsize);
+size_t strlcpy(char *__restrict dst, const char *__restrict src, size_t dstsize);
 #endif
 
 #ifndef HAS_STRNCPY

@@ -16,7 +16,7 @@
 
 macro (tcl_register_suite suite)
   add_custom_target(check_tcl_${suite}
-    COMMAND ${CMAKE_CTEST_COMMAND} -R '^test_tcl_${suite}.*' --timeout 2)
+    COMMAND ${CMAKE_CTEST_COMMAND} -R '^test_tcl_${suite}.*' --timeout 4)
 endmacro ()
 
 macro (tcl_register_test name)
@@ -41,7 +41,6 @@ tcl_register_test(coro_resume_caller)
 tcl_register_test(coro_yield_return_value)
 tcl_register_test(coro_generator)
 
-
 tcl_register_suite(vector)
 tcl_register_test(vector_init)
 tcl_register_test(vector_push_pop)
@@ -57,14 +56,18 @@ tcl_register_test(stack_basic)
 tcl_register_suite(set)
 tcl_register_test(set_init)
 tcl_register_test(set_insert_simple)
-tcl_register_test(set_insert_same)
 tcl_register_test(set_insert_remove)
+if (NOT MSVC OR CMAKE_BUILD_TYPE MATCHES "Release")
+  tcl_register_test(set_insert_same)
+endif ()
 
 tcl_register_suite(map)
 tcl_register_test(map_init)
 tcl_register_test(map_insert_simple)
-tcl_register_test(map_insert_same)
 tcl_register_test(map_insert_remove)
+if (NOT MSVC OR CMAKE_BUILD_TYPE MATCHES "Release")
+  tcl_register_test(map_insert_same)
+endif ()
 
 tcl_register_suite(sema)
 tcl_register_test(sema_init)
@@ -120,5 +123,7 @@ tcl_register_test(alarm_periodic_unregister_processing_queue)
 
 tcl_register_suite(reader)
 tcl_register_test(reader_init)
-tcl_register_test(reader_small_data)
-tcl_register_test(reader_multibyte_data)
+if (NOT MSVC)
+  tcl_register_test(reader_small_data)
+  tcl_register_test(reader_multibyte_data)
+endif ()
