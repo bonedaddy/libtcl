@@ -4,13 +4,13 @@ dist: trusty
 
 install:
   - mkdir -p build/threading && cd build/threading
-  - cmake ..
+  - cmake ../..
   - cmake --build .
-  - cd ..
+  - cd ../..
   - mkdir -p build/fiber && cd build/fiber
-  - cmake -DTCL_THREADING=OFF ..
+  - cmake -DTCL_THREADING=OFF ../..
   - cmake --build .
-  - cd ..
+  - cd ../..
 
 script:
   - cmake --build build/threading --target check
