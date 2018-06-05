@@ -3,11 +3,11 @@ language: c
 dist: trusty
 
 install:
-  - mkdir build/threading && cd build/threading
+  - mkdir -p build/threading && cd build/threading
   - cmake ..
   - cmake --build .
   - cd ..
-  - mkdir build/fiber && cd build/fiber
+  - mkdir -p build/fiber && cd build/fiber
   - cmake -DTCL_THREADING=OFF ..
   - cmake --build .
   - cd ..
