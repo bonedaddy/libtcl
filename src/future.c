@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "osi/future.h"
+#include "tcl/future.h"
 
 int future_init(future_t *future)
 {

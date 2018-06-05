@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "osi/stack.h"
+#include "tcl/stack.h"
 
 FORCEINLINE void stack_init(lifo_t *stack, size_t isize)
 {

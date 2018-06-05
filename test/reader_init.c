@@ -24,7 +24,7 @@ static void test(void);
 
 #include "test.h"
 
-#include "osi/reader.h"
+#include "tcl/reader.h"
 
 static int pipefd[2];
 static sema_t sema;

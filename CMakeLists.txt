@@ -18,19 +18,19 @@ cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 cmake_policy(SET CMP0054 OLD)
 cmake_policy(SET CMP0045 OLD)
 
-project(osi C)
+project(tcl C)
 set(CMAKE_C_STANDARD 99)
 
-set(osi_INC_DIR ${CMAKE_CURRENT_LIST_DIR}/include)
-set(osi_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
-set(osi_TEST_DIR ${CMAKE_CURRENT_LIST_DIR}/test)
+set(tcl_INC_DIR ${CMAKE_CURRENT_LIST_DIR}/include)
+set(tcl_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
+set(tcl_TEST_DIR ${CMAKE_CURRENT_LIST_DIR}/test)
 
-option(OSI_CHECK "Enable testing" ON)
-option(OSI_THREADING "Enable Logging" ON)
-if (CMAKE_BUILD_TYPE MATCHES Release)
-  option(OSI_LOGGING "Enable Logging" OFF)
+option(TCL_CHECK "Enable testing" ON)
+option(TCL_THREADING "Enable Threading" ON)
+if (CMAKE_BUILD_TYPE MATCHES "Release")
+  option(TCL_LOGGING "Enable Logging" ON)
 else ()
-  option(OSI_LOGGING "Enable Logging" OFF)
+  option(TCL_LOGGING "Enable Logging" OFF)
 endif ()
 
 set(CMAKE_REQUIRED_QUIET_OLD ${CMAKE_REQUIRED_QUIET})
@@ -81,59 +81,59 @@ set(CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET_OLD})
 
 message(STATUS "Looking for concurrent method")
 
-if (OSI_THREADING AND (NOT HAS_SYS_EVENTFD_H OR NOT HAS_SYS_EPOLL_H
+if (TCL_THREADING AND (NOT HAS_SYS_EVENTFD_H OR NOT HAS_SYS_EPOLL_H
   OR NOT HAS_PTHREAD_H OR NOT HAS_UNISTD_H OR NOT HAS_SYS_PRCTL_H
   OR NOT HAS_FCNTL_H))
-  set(OSI_THREADING OFF)
+  set(TCL_THREADING OFF)
 endif ()
 
 set(THREAD_LIB)
-if (OSI_THREADING)
+if (TCL_THREADING)
   set(THREADS_PREFER_PTHREAD_FLAG ON)
   find_package(Threads QUIET)
   if (Threads_FOUND)
     set(THREAD_LIB Threads::Threads)
   else ()
-    set(OSI_THREADING OFF)
+    set(TCL_THREADING OFF)
   endif ()
 endif ()
 
-if (OSI_THREADING)
+if (TCL_THREADING)
   message(STATUS "Looking for concurrent method - pthread")
  else ()
   message(STATUS "Looking for concurrent method - fiber")
 endif ()
 
-file(GLOB osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/[a-z_]*.c)
-file(GLOB_RECURSE osi_SRCS ${osi_SRCS} ${osi_SRC_DIR}/*.h)
-file(GLOB_RECURSE osi_HDRS ${osi_HDRS} ${osi_INC_DIR}/osi/*.h)
-set(osi_HDR ${osi_INC_DIR}/osi.h ${CMAKE_BINARY_DIR}/include/osi/conf.h)
+file(GLOB tcl_SRCS ${tcl_SRCS} ${tcl_SRC_DIR}/[a-z_]*.c)
+file(GLOB_RECURSE tcl_SRCS ${tcl_SRCS} ${tcl_SRC_DIR}/*.h)
+file(GLOB_RECURSE tcl_HDRS ${tcl_HDRS} ${tcl_INC_DIR}/tcl/*.h)
+set(tcl_HDR ${tcl_INC_DIR}/tcl.h ${CMAKE_BINARY_DIR}/include/tcl/conf.h)
 
-add_subdirectory(${osi_SRC_DIR}/coro)
+add_subdirectory(${tcl_SRC_DIR}/coro)
 
-configure_file(${osi_INC_DIR}/osi/conf.h.in
-  ${CMAKE_BINARY_DIR}/include/osi/conf.h @ONLY)
+configure_file(${tcl_INC_DIR}/tcl/conf.h.in
+  ${CMAKE_BINARY_DIR}/include/tcl/conf.h @ONLY)
 
-add_library(osi ${osi_SRCS} ${osi_HDRS} ${osi_HDR})
-target_include_directories(osi
-  PUBLIC ${osi_INC_DIR} ${CMAKE_BINARY_DIR}/include
-  PRIVATE ${osi_SRC_DIR})
-target_link_libraries(osi PUBLIC rt ${THREAD_LIB})
+add_library(tcl ${tcl_SRCS} ${tcl_HDRS} ${tcl_HDR})
+target_include_directories(tcl
+  PUBLIC ${tcl_INC_DIR} ${CMAKE_BINARY_DIR}/include
+  PRIVATE ${tcl_SRC_DIR})
+target_link_libraries(tcl PUBLIC rt ${THREAD_LIB})
 
-target_compile_definitions(osi
-  PRIVATE OSI_COMPILE)
+target_compile_definitions(tcl
+  PRIVATE TCL_COMPILE)
 if (MSVC)
-  target_compile_options(osi
+  target_compile_options(tcl
     PUBLIC /MT$<$<CONFIG:Debug>:d> /Oy /Za /W3
     PUBLIC /D_CRT_SECURE_NO_WARNINGS
     PUBLIC /O$<$<CONFIG:Debug>:d>$<$<CONFIG:Release>:x>)
   if (CMAKE_BUILD_TYPE MATCHES Release)
-    target_compile_options(osi PUBLIC /Ox)
+    target_compile_options(tcl PUBLIC /Ox)
   else ()
-    target_compile_options(osi PUBLIC /Od)
+    target_compile_options(tcl PUBLIC /Od)
   endif ()
 else ()
-  target_compile_options(osi
+  target_compile_options(tcl
     PUBLIC -Wall -Werror -Wextra -fomit-frame-pointer
     PUBLIC -Wno-implicit-function-declaration
     PUBLIC -Wno-missing-field-initializers
@@ -145,25 +145,25 @@ else ()
     PRIVATE -Wmissing-declarations -Wfloat-equal -Wbad-function-cast -Wundef
     PRIVATE -Waggregate-return -Wold-style-definition -Wredundant-decls)
   if (CMAKE_BUILD_TYPE MATCHES Release)
-    target_compile_options(osi PUBLIC -O3)
+    target_compile_options(tcl PUBLIC -O3)
   else ()
-    target_compile_options(osi PUBLIC -O0 -g3)
+    target_compile_options(tcl PUBLIC -O0 -g3)
     if (CMAKE_BUILD_TYPE MATCHES San)
-      target_link_libraries(osi
+      target_link_libraries(tcl
         PUBLIC "-fsanitize=address -fno-omit-frame-pointer")
-      target_compile_options(osi PUBLIC "-fsanitize=address")
+      target_compile_options(tcl PUBLIC "-fsanitize=address")
     endif ()
   endif ()
 endif ()
 
-if (OSI_CHECK)
+if (TCL_CHECK)
   enable_testing()
 
   if (NOT TARGET check)
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --timeout 2)
   endif ()
-  add_subdirectory(${osi_TEST_DIR})
+  add_subdirectory(${tcl_TEST_DIR})
 endif ()
 
-install(FILES ${osi_HDRS} DESTINATION include/osi)
-install(FILES ${osi_HDR} DESTINATION include)
+install(FILES ${tcl_HDRS} DESTINATION include/tcl)
+install(FILES ${tcl_HDR} DESTINATION include)

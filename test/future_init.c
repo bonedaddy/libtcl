@@ -16,8 +16,8 @@
 
 #include "test.h"
 
-#include "osi/future.h"
-#include "osi/thread.h"
+#include "tcl/future.h"
+#include "tcl/thread.h"
 
 static const char *pass_back_data0 =
 	"fancy a sandwich? it's a fancy sandwich";

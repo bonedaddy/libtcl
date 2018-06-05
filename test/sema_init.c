@@ -16,8 +16,8 @@
 
 #include "test.h"
 
-#include "osi/sema.h"
-#include "osi/fiber.h"
+#include "tcl/sema.h"
+#include "tcl/fiber.h"
 
 int main(void)
 {

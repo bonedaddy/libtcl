@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "bt_osi_dispatcher"
+#define LOG_TAG "bt_tcl_dispatcher"
 
-#include "osi/log.h"
-#include "osi/dispatcher.h"
+#include "tcl/log.h"
+#include "tcl/dispatcher.h"
 
 void dispatcher_init(dispatcher_t *dispatcher, const char *name)
 {

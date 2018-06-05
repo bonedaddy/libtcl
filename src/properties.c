@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "osi/properties.h"
+#include "tcl/properties.h"
 
 #ifdef HAS_SYS__SYSTEM_PROPERTIES_H
 # include <sys/_system_properties.h>

@@ -16,7 +16,7 @@
 
 #include "test.h"
 
-#include "osi/thread.h"
+#include "tcl/thread.h"
 
 typedef struct {
 	sema_t *sema;

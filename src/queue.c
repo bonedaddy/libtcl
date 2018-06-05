@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "osi/queue.h"
+#include "tcl/queue.h"
 
 FORCEINLINE void queue_init(fifo_t *queue, size_t isize)
 {

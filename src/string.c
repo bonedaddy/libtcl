@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "osi/string.h"
+#include "tcl/string.h"
 
 #ifndef HAS_BZERO
 void bzero(void *ptr, size_t n)

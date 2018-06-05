@@ -16,16 +16,16 @@
 
 #pragma once
 
-#ifndef __OSI_TEST_ALARM_H
-# define __OSI_TEST_ALARM_H
+#ifndef __TCL_TEST_ALARM_H
+# define __TCL_TEST_ALARM_H
 
 #include "test.h"
 
-#include "osi/alarm.h"
-#include "osi/blocking_queue.h"
-#include "osi/sema.h"
-#include "osi/log.h"
-#include "osi/thread.h"
+#include "tcl/alarm.h"
+#include "tcl/blocking_queue.h"
+#include "tcl/sema.h"
+#include "tcl/log.h"
+#include "tcl/thread.h"
 
 #define PTR_TO_INT(p) ((int) ((intptr_t) (p)))
 #define INT_TO_PTR(i) ((void *) ((intptr_t) (i)))
@@ -69,4 +69,4 @@ static inline void msleep(uint64_t ms)
 	usleep((__useconds_t)(ms * 1000));
 }
 
-#endif /* __OSI_TEST_ALARM_H */
+#endif /* __TCL_TEST_ALARM_H */

@@ -17,10 +17,10 @@
 
 #define LOG_TAG "module"
 
-#include "osi/module.h"
-#include "osi/mutex.h"
-#include "osi/map.h"
-#include "osi/log.h"
+#include "tcl/module.h"
+#include "tcl/mutex.h"
+#include "tcl/map.h"
+#include "tcl/log.h"
 
 static bool call_lifecycle_function(module_lifecycle_fn function) {
 	// A NULL lifecycle function means it isn't needed, so assume success
@@ -37,7 +37,7 @@ static bool call_lifecycle_function(module_lifecycle_fn function) {
 }
 
 bool module_init(module_t *module) {
-#ifdef OSI_LOGGING
+#ifdef TCL_LOGGING
 	static int nested = 0;
 #endif
 
@@ -59,7 +59,7 @@ bool module_init(module_t *module) {
 }
 
 bool module_start_up(module_t *module) {
-#ifdef OSI_LOGGING
+#ifdef TCL_LOGGING
 	static int nested = 0;
 #endif
 
@@ -83,7 +83,7 @@ bool module_start_up(module_t *module) {
 }
 
 bool module_shut_down(module_t *module) {
-#ifdef OSI_LOGGING
+#ifdef TCL_LOGGING
 	static int nested = 0;
 #endif
 
@@ -105,7 +105,7 @@ bool module_shut_down(module_t *module) {
 
 
 bool module_clean_up(module_t *module) {
-#ifdef OSI_LOGGING
+#ifdef TCL_LOGGING
 	static int nested = 0;
 #endif
 

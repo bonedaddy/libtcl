@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "osi/ringbuffer.h"
+#include "tcl/ringbuffer.h"
 
 void ringbuffer_init(ringbuffer_t *p, const size_t size)
 {

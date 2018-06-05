@@ -16,7 +16,7 @@
 
 #include "test.h"
 
-#include "osi/stack.h"
+#include "tcl/stack.h"
 
 int main(void)
 {

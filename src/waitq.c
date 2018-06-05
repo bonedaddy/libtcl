@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "osi/waitq.h"
+#include "tcl/waitq.h"
 
 void waitq_init(waitq_t *waitq)
 {

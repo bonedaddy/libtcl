@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-#include "osi/mutex.h"
-#include "osi/fiber.h"
+#include "tcl/mutex.h"
+#include "tcl/fiber.h"
 
 int mutex_init(mutex_t *mutex)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	int st;
 
 	if ((st = pthread_mutex_init(&mutex->mutex, NULL)))
 		return st;
 #else
 	event_init(&mutex->ev, 1, EVENT_SEMAPHORE);
-#endif /* OSI_THREADING */
+#endif /* TCL_THREADING */
 	return 0;
 }
 
 void mutex_destroy(mutex_t *mutex)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	pthread_mutex_destroy(&mutex->mutex);
 #else
 # ifndef NDEBUG
@@ -41,35 +41,35 @@ void mutex_destroy(mutex_t *mutex)
 	assert(event_tryread(&mutex->ev, &val));
 # endif
 	event_destroy(&mutex->ev);
-#endif /* OSI_THREADING */
+#endif /* TCL_THREADING */
 }
 
 void mutex_lock(mutex_t *mutex)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	pthread_mutex_lock(&mutex->mutex);
 #else
 	event_value_t val;
 
 	do event_read(&mutex->ev, &val);
 	while (val != 1);
-#endif /* OSI_THREADING */
+#endif /* TCL_THREADING */
 }
 
 void mutex_unlock(mutex_t *mutex)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	pthread_mutex_unlock(&mutex->mutex);
 #else
 	event_write(&mutex->ev, 1UL);
-#endif /* OSI_THREADING */
+#endif /* TCL_THREADING */
 }
 
 static mutex_t __global_lock;
 
 int mutex_global_init(void)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	int st;
 	pthread_mutexattr_t attr;
 
@@ -81,7 +81,7 @@ int mutex_global_init(void)
 	return 0;
 #else
 	return mutex_init(&__global_lock);
-#endif /* OSI_THREADING */
+#endif /* TCL_THREADING */
 }
 
 void mutex_global_cleanup(void)

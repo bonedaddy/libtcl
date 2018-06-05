@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "osi/fiber.h"
+#include "tcl/fiber.h"
 
 #ifndef FIBER_MAX
 # define FIBER_MAX 256

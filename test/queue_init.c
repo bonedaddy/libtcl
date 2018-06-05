@@ -16,7 +16,7 @@
 
 #include "test.h"
 
-#include "osi/queue.h"
+#include "tcl/queue.h"
 
 int main(void)
 {

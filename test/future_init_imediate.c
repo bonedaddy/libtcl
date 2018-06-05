@@ -16,8 +16,8 @@
 
 #include "test.h"
 
-#include "osi/future.h"
-#include "osi/thread.h"
+#include "tcl/future.h"
+#include "tcl/thread.h"
 
 static const char *pass_back_data1 =
 	"what kind of ice cream truck plays the worst christmas song of all time?";

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "osi/allocator.h"
+#include "tcl/allocator.h"
 
 static const allocator_t __interface = {
 	malloc,

@@ -22,7 +22,7 @@
 #ifndef __CORO_INTERNAL_H
 # define __CORO_INTERNAL_H
 
-#include "osi/coro.h"
+#include "tcl/coro.h"
 
 #if defined(CORO_X86_64) || defined (CORO_X86_32) || \
 	defined (CORO_ARM) || defined (CORO_UCONTEXT)

@@ -16,7 +16,7 @@
 
 #include "test.h"
 
-#include "osi/mutex.h"
+#include "tcl/mutex.h"
 
 int main(void)
 {

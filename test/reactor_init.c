@@ -16,7 +16,7 @@
 
 #include "test.h"
 
-#include "osi/reactor.h"
+#include "tcl/reactor.h"
 
 int main(void)
 {

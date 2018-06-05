@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "osi_thread"
+#define LOG_TAG "tcl_thread"
 
-#include "osi/log.h"
-#include "osi/allocator.h"
-#include "osi/thread.h"
-#include "osi/sema.h"
-#include "osi/string.h"
+#include "tcl/log.h"
+#include "tcl/allocator.h"
+#include "tcl/thread.h"
+#include "tcl/sema.h"
+#include "tcl/string.h"
 
 #define DEFAULT_WORK_QUEUE_CAPACITY 128
 

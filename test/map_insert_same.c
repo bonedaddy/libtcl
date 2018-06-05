@@ -16,7 +16,7 @@
 
 #include "test.h"
 
-#include "osi/map.h"
+#include "tcl/map.h"
 
 static size_t hash_map_fn00(const void *key)
 {

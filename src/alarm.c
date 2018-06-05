@@ -17,9 +17,9 @@
 
 #define LOG_TAG "alarm"
 
-#include "osi/alarm.h"
-#include "osi/log.h"
-#include "osi/task.h"
+#include "tcl/alarm.h"
+#include "tcl/log.h"
+#include "tcl/task.h"
 
 #define THREAD_RT_PRIORITY 1
 #define CALLBACK_THREAD_PRIORITY_HIGH (-19)

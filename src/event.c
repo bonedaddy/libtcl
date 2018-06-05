@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "bt_osi_event"
+#define LOG_TAG "bt_tcl_event"
 
-#include "osi/event.h"
-#include "osi/log.h"
+#include "tcl/event.h"
+#include "tcl/log.h"
 
 int event_init(event_t *event, event_value_t value,
 	unsigned flags)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	if ((event->fd = eventfd((unsigned)value, (int)flags)) < 0)
 		return -1;
 #else
@@ -33,23 +33,23 @@ int event_init(event_t *event, event_value_t value,
 	event->count = value;
 	event->flags = flags;
 	waitq_init(&event->wq);
-#endif /* OSI_THREADING */
+#endif /* TCL_THREADING */
 	return 0;
 }
 
 void event_destroy(event_t *event)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	if (event->fd >= 0)
 		close(event->fd);
 #else
 	waitq_destroy(&event->wq);
-#endif /* OSI_THREADING */
+#endif /* TCL_THREADING */
 }
 
 bool event_tryread(event_t *event, event_value_t *value)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	int flags;
 	bool rc;
 
@@ -72,12 +72,12 @@ bool event_tryread(event_t *event, event_value_t *value)
 	event->count -= ucnt;
 	if (value) *value = ucnt;
 	return true;
-#endif /* OSI_THREADING */
+#endif /* TCL_THREADING */
 }
 
 int event_read(event_t *event, event_value_t *value)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	return eventfd_read(event->fd, value);
 #else
 	int res;
@@ -99,12 +99,12 @@ int event_read(event_t *event, event_value_t *value)
 		fiber_unlock(&event->wq);
 	if (value) *value = ucnt;
 	return res;
-#endif /* OSI_THREADING */
+#endif /* TCL_THREADING */
 }
 
 int event_write(event_t *event, event_value_t value)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	return eventfd_write(event->fd, value);
 #else
 	event_value_t ucnt;
@@ -125,5 +125,5 @@ int event_write(event_t *event, event_value_t value)
 	event->count += ucnt;
 	fiber_unlock(&event->wq);
 	return 0;
-#endif /* OSI_THREADING */
+#endif /* TCL_THREADING */
 }

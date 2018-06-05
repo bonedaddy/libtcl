@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "osi_reactor"
+#define LOG_TAG "tcl_reactor"
 
-#include "osi/reactor.h"
-#include "osi/string.h"
-#include "osi/log.h"
+#include "tcl/reactor.h"
+#include "tcl/string.h"
+#include "tcl/log.h"
 
 #ifndef EFD_SEMAPHORE
 # define EFD_SEMAPHORE (1 << 0)

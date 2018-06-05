@@ -16,7 +16,7 @@
 
 #include "test.h"
 
-#include "osi/reactor.h"
+#include "tcl/reactor.h"
 
 static pthread_t thread;
 static volatile bool thread_running;

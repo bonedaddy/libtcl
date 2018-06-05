@@ -15,7 +15,7 @@
  */
 
 #include "coro/internal.h"
-#include "osi/string.h"
+#include "tcl/string.h"
 
 #ifdef RUNNING_ON_VALGRIND
 # include <valgrind/valgrind.h>

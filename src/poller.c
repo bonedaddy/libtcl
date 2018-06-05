@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "bt_osi_poller"
+#define LOG_TAG "bt_tcl_poller"
 
-#include "osi/poller.h"
-#include "osi/log.h"
+#include "tcl/poller.h"
+#include "tcl/log.h"
 
 int poller_init(poller_t *poller, unsigned size)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	if ((poller->fd = epoll_create((int)size)) < 0)
 		return -1;
 #else
@@ -33,7 +33,7 @@ int poller_init(poller_t *poller, unsigned size)
 
 void poller_destroy(poller_t *poller)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	close(poller->fd);
 #else
 	map_destroy(&poller->events, free);
@@ -42,7 +42,7 @@ void poller_destroy(poller_t *poller)
 
 int poller_add(poller_t *poller, event_t *ev, pollev_t attr)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	struct epoll_event event;
 
 	event.events = attr.events;
@@ -62,7 +62,7 @@ int poller_add(poller_t *poller, event_t *ev, pollev_t attr)
 
 int poller_del(poller_t *poller, event_t *ev)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	return epoll_ctl(poller->fd, EPOLL_CTL_DEL, ev->fd, NULL);
 #else
 	pollev_t *event;
@@ -77,7 +77,7 @@ int poller_del(poller_t *poller, event_t *ev)
 
 int poller_wait(poller_t *poller, pollev_t *events, int size)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	int ret, i;
 	struct epoll_event epoll_events[size];
 

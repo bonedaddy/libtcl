@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-#include "osi/sema.h"
+#include "tcl/sema.h"
 
 int sema_init(sema_t *sema, unsigned value)
 {

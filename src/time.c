@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "bt_osi_time"
+#define LOG_TAG "bt_tcl_time"
 
-#include "osi/time.h"
-#include "osi/log.h"
+#include "tcl/time.h"
+#include "tcl/log.h"
 
 period_ms_t now(void)
 {

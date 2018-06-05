@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-#include <osi.h>
+#include <tcl.h>
 
-void osi_init(void)
+void tcl_init(void)
 {
 	mutex_global_init();
 }
 
-void osi_cleanup(void)
+void tcl_cleanup(void)
 {
 	mutex_global_cleanup();
 	alarm_cleanup();

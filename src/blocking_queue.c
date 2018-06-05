@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-#include "osi/blocking_queue.h"
-#include "osi/reactor.h"
-#include "osi/thread.h"
-#include "osi/string.h"
+#include "tcl/blocking_queue.h"
+#include "tcl/reactor.h"
+#include "tcl/thread.h"
+#include "tcl/string.h"
 
 int blocking_queue_init(blocking_queue_t *queue, unsigned capacity)
 {

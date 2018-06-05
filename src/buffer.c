@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "osi/buffer.h"
+#include "tcl/buffer.h"
 
 buffer_t *buffer_new(size_t size)
 {

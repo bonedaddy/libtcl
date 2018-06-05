@@ -16,7 +16,7 @@
 
 #include "test.h"
 
-#include "osi/coro.h"
+#include "tcl/coro.h"
 
 static void *generator(void *arg)
 {

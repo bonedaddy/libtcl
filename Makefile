@@ -15,7 +15,7 @@
 #
 
 .SILENT:
-.DEFAULT_GOAL := osi
+.DEFAULT_GOAL := tcl
 .PHONY: clean conf debug dev fclean install re reconf san
 
 BUILD_TYPE ?= Release
@@ -31,19 +31,19 @@ ifeq (1,$(VERBOSE))
   CMAKE_G_FLAGS += VERBOSE=1
 endif
 
-ifeq (1,$(OSI_THREADING))
-  CMAKE_FLAGS += -DOSI_THREADING:BOOL=ON
+ifeq (1,$(TCL_THREADING))
+  CMAKE_FLAGS += -DTCL_THREADING:BOOL=ON
 else
-  ifeq (0,$(OSI_THREADING))
-    CMAKE_FLAGS += -DOSI_THREADING:BOOL=OFF
+  ifeq (0,$(TCL_THREADING))
+    CMAKE_FLAGS += -DTCL_THREADING:BOOL=OFF
   endif
 endif
 
-ifeq (1,$(OSI_LOGGING))
-  CMAKE_FLAGS += -DOSI_LOGGING:BOOL=ON
+ifeq (1,$(TCL_LOGGING))
+  CMAKE_FLAGS += -DTCL_LOGGING:BOOL=ON
 else
-   ifeq (0,$(OSI_LOGGING))
-      CMAKE_FLAGS += -DOSI_LOGGING:BOOL=OFF
+   ifeq (0,$(TCL_LOGGING))
+      CMAKE_FLAGS += -DTCL_LOGGING:BOOL=OFF
     endif
 endif
 

@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#define LOG_TAG "osi_task"
+#define LOG_TAG "tcl_task"
 
-#include "osi/log.h"
-#include "osi/task.h"
-#include "osi/sema.h"
+#include "tcl/log.h"
+#include "tcl/task.h"
+#include "tcl/sema.h"
 
 typedef struct {
 	task_t *task;
@@ -79,7 +79,7 @@ static FORCEINLINE int __init(task_t *task, routine_t *work, void *context,
 	task->work = work;
 	task->context = context;
 	task_work = repeat ? __repeat : __spawn;
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	if (pthread_create(&task->pthread, NULL, task_work, &start))
 		return -1;
 #else
@@ -113,7 +113,7 @@ FORCEINLINE bool task_running(task_t *task)
 
 FORCEINLINE int task_setpriority(task_t *task, int priority)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	if (pthread_setschedprio(task->pthread, priority)) {
 		LOG_ERROR("Unable to set thread priority %d, %m", priority);
 		return 0;
@@ -123,7 +123,7 @@ FORCEINLINE int task_setpriority(task_t *task, int priority)
 		LOG_ERROR("Unable to set fiber priority %d, %m", priority);
 		return -1;
 	}
-#endif /* OSI_THREADING */
+#endif /* TCL_THREADING */
 	return 0;
 }
 
@@ -136,17 +136,17 @@ FORCEINLINE void task_join(task_t *task)
 {
 	if (!task->joined) {
 		task_stop(task);
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 		pthread_join(task->pthread, NULL);
 #else
 		fiber_join(task->fiber, NULL);
-#endif /* OSI_THREADING */
+#endif /* TCL_THREADING */
 	}
 }
 
 FORCEINLINE void task_schedule(void)
 {
-#ifdef OSI_THREADING
+#ifdef TCL_THREADING
 	sched_yield();
 #else
 	fiber_yield();

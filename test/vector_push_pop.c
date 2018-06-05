@@ -16,7 +16,7 @@
 
 #include "test.h"
 
-#include "osi/vector.h"
+#include "tcl/vector.h"
 
 int main(void)
 {

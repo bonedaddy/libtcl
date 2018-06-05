@@ -16,7 +16,7 @@
 
 #include "test.h"
 
-#include "osi/set.h"
+#include "tcl/set.h"
 
 static size_t hash_set_fn00(const void *key)
 {

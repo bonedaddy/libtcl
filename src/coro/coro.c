@@ -15,7 +15,7 @@
  */
 
 #include "coro/internal.h"
-#include "osi/string.h"
+#include "tcl/string.h"
 
 #define CORO_FLAG_END 0x00000001
 

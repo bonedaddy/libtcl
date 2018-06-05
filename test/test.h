@@ -16,11 +16,11 @@
 
 #pragma once
 
-#ifndef __OSI_TEST_H
-# define __OSI_TEST_H
+#ifndef __TCL_TEST_H
+# define __TCL_TEST_H
 
-#include "osi/conf.h"
-#include "osi/string.h"
+#include "tcl/conf.h"
+#include "tcl/string.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -60,4 +60,4 @@ int main(void)
 }
 #endif /* TEST */
 
-#endif /* !__OSI_TEST_H */
+#endif /* !__TCL_TEST_H */

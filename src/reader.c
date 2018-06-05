@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "bt_osi_reader"
+#define LOG_TAG "bt_tcl_reader"
 
-#include "osi/log.h"
-#include "osi/reader.h"
+#include "tcl/log.h"
+#include "tcl/reader.h"
 
 static bool __has_byte(const eager_reader_t *reader);
 static void *__inbound_read_loop(void *context);
@@ -214,7 +214,7 @@ static void *__inbound_read_loop(void *context)
 			// the semaphore by the number of bytes we just read
 			event_write(&reader->event, (event_value_t)bytes_read);
 		} else {
-#ifdef OSI_LOGGING
+#ifdef TCL_LOGGING
 			if (bytes_read == 0)
 				LOG_WARN("fd said bytes existed, but none were found.");
 			else
