@@ -234,6 +234,17 @@ __api bool map_indexof(const map_t *map, const void *key, size_t *idx);
  * TODO
  *
  * @param map
+ * @param idx
+ * @return
+ */
+__api bool map_populated(const map_t *map, size_t idx);
+
+/*!@public
+ *
+ * @brief
+ * TODO
+ *
+ * @param map
  * @param key
  * @return
  */
