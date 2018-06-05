@@ -35,12 +35,12 @@
 
 static const double __ac_HASH_UPPER = 0.77;
 
-static size_t CONST PURE __hash(const void *key)
+static size_t CONST __hash(const void *key)
 {
 	return (size_t)key;
 }
 
-static bool CONST PURE __eq(const void *x, const void *y)
+static bool CONST __eq(const void *x, const void *y)
 {
 	return x == y;
 }

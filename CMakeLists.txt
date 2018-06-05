@@ -147,7 +147,7 @@ else ()
     PRIVATE -Wmissing-declarations -Wfloat-equal -Wbad-function-cast -Wundef
     PRIVATE -Waggregate-return -Wold-style-definition -Wredundant-decls)
   if (CMAKE_BUILD_TYPE MATCHES Release)
-    target_compile_options(tcl PUBLIC -O3)
+    target_compile_options(tcl PUBLIC -O2 -g)
   else ()
     target_compile_options(tcl PUBLIC -O0 -g3)
     if (CMAKE_BUILD_TYPE MATCHES San)

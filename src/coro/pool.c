@@ -46,7 +46,7 @@
 # define __CORO_GUARD 0
 #endif
 
-FORCEINLINE PURE CONST
+FORCEINLINE CONST
 static size_t __getpagesize(void)
 {
 #ifdef PAGE_SIZE

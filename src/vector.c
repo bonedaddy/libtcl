@@ -106,7 +106,7 @@ static FORCEINLINE void __vector_alloc(vector_t *vector, size_t n)
 # define ISPOW2(n) (((n) != 0) && (((n) & (~(n) + 1)) == (n)))
 #endif
 
-static FORCEINLINE PURE CONST size_t __pow2_next(size_t n)
+static FORCEINLINE PURE size_t __pow2_next(size_t n)
 {
 	size_t i;
 	size_t j;

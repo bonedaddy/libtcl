@@ -23,7 +23,7 @@
 void dispatcher_init(dispatcher_t *dispatcher, const char *name)
 {
 	map_init(&dispatcher->dispatch_table, NULL, NULL);
-	strncpy(dispatcher->name, name, DISPATCHER_NAME_MAX);
+	strncpy(dispatcher->name, name, DISPATCHER_NAME_MAX - 1);
 }
 
 void dispatcher_destroy(dispatcher_t *dispatcher)

@@ -89,7 +89,7 @@ int thread_init(thread_t *thread, char const *name)
 		return -1;
 	start.thread = thread;
 	start.error = 0;
-	strncpy(thread->name, name, THREAD_NAME_MAX);
+	strncpy(thread->name, name, THREAD_NAME_MAX - 1);
 	blocking_queue_init(&thread->work_queue, DEFAULT_WORK_QUEUE_CAPACITY);
 	reactor_init(&thread->reactor);
 	task_spawn(&thread->task, __run_thread, &start);
