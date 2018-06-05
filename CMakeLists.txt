@@ -158,7 +158,7 @@ else ()
   endif ()
 endif ()
 
-if (TCL_CHECK)
+if (TCL_CHECK AND EXISTS ${tcl_TEST_DIR})
   enable_testing()
 
   if (NOT TARGET check)
