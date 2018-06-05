@@ -20,11 +20,33 @@
 #include "tcl/time.h"
 #include "tcl/log.h"
 
+#ifdef OS_MAC
+# include <mach/clock.h>
+# include <mach/mach.h>
+#endif
+
+static int __gettime(struct timespec *ts)
+{
+#ifdef OS_MAC
+	clock_serv_t cclock;
+	mach_timespec_t mts;
+
+	host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+	if (clock_get_time(cclock, &mts))
+		return -1;
+	mach_port_deallocate(mach_task_self(), cclock);
+	ts->tv_sec = mts.tv_sec;
+	ts->tv_nsec = mts.tv_nsec;
+#else
+	return clock_gettime(CLOCK_REALTIME, ts);
+#endif
+}
+
 period_ms_t now(void)
 {
 	struct timespec ts;
 
-	if (clock_gettime(CLOCK_ID, &ts) == -1) {
+	if (__gettime(&ts) == -1) {
 		LOG_ERROR("Unable to get current time: %m");
 		return 0;
 	}

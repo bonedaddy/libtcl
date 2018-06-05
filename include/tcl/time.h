@@ -27,6 +27,10 @@
 
 #include "tcl/compat.h"
 
+#ifdef HAS_SYS_TIME_H
+# include <sys/time.h>
+#endif
+
 #ifdef HAS_TIME_H
 # include <time.h>
 #endif
@@ -43,8 +47,6 @@ typedef uint64_t period_ms_t;
 period_ms_t now(void);
 
 #define TIMER_INTERVAL_FOR_WAKELOCK_IN_MS 250
-
-#define CLOCK_ID  CLOCK_BOOTTIME
 
 #ifdef KERNEL_MISSING_CLOCK_BOOTTIME_ALARM
 # define CLOCK_ID_ALARM CLOCK_BOOTTIME
