@@ -19,6 +19,7 @@
 
 #include "tcl/time.h"
 #include "tcl/log.h"
+#include "tcl/string.h"
 
 #ifdef OS_MAC
 # include <mach/clock.h>
