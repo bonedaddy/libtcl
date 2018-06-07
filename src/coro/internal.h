@@ -47,9 +47,6 @@ struct coro {
 
 	/*! Windows fiber handle ptr. */
 	LPVOID handle;
-
-	/*! We have to keep the routine until the first `coro_resume'. */
-	routine_t *fn;
 # else
 
 	/*! Stack pointer origin. */

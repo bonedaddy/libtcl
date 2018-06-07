@@ -35,9 +35,10 @@ void __cororelease(coro_t coro)
 	free(coro);
 }
 
-void __coromake(coro_t from, routine_t *fn)
+void __coromake(coro_t coro, routine_t *fn)
 {
-	from->fn = fn;
+	coro->handle = CreateFiberEx(coro->ssize / 2, coro->ssize, 0,
+		(LPFIBER_START_ROUTINE)__coromain, fn);
 }
 
 void __coroswitch(coro_t from, coro_t to)
@@ -48,10 +49,6 @@ void __coroswitch(coro_t from, coro_t to)
 				return;
 			from->handle = GetCurrentFiber();
 		}
-	}
-	if (!to->handle && !(to->handle = CreateFiberEx(to->ssize / 2, to->ssize, 0,
-		(LPFIBER_START_ROUTINE)__coromain, to->fn))) {
-		return;
 	}
 	SwitchToFiber(to->handle);
 }
