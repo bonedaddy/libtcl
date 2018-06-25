@@ -47,6 +47,10 @@ else
     endif
 endif
 
+ifneq (,$(TOOLCHAIN))
+  CMAKE_FLAGS += -DCMAKE_TOOLCHAIN_FILE:PATH=$(TOOLCHAIN)
+endif
+
 $(BUILD_DIR) conf:
 	mkdir -p $(BUILD_DIR); cd $(BUILD_DIR) \
 		&& $(CMAKE) $(CMAKE_FLAGS) $(CURDIR) \

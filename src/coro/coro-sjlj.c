@@ -57,7 +57,7 @@ static void *__pass(coro_t me, void *arg)
 	return saved;
 }
 
-void *__resume(coro_t c, void *arg)
+static void *__resume(coro_t c, void *arg)
 {
 	void *ret;
 

@@ -79,23 +79,3 @@ period_ms_t now(void)
 	}
 	return (period_ms_t) ((ts.tv_sec * 1000LL) + (ts.tv_nsec / 1000000LL));
 }
-
-#ifndef HAS_USLEEP
-int usleep(unsigned usec)
-{
-# ifdef CC_MSVC
-	HANDLE timer;
-	LARGE_INTEGER ft;
-
-	ft.QuadPart = -(int64_t)(10 * usec);
-
-	timer = CreateWaitableTimer(NULL, TRUE, NULL);
-	SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
-	WaitForSingleObject(timer, INFINITE);
-	CloseHandle(timer);
-# else
-#   error "TODO"
-# endif
-	return 0;
-}
-#endif /* !HAS_USLEEP */

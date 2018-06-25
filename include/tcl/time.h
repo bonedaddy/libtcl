@@ -55,9 +55,5 @@ period_ms_t now(void);
 # undef HAS_TIMER
 #endif
 
-#ifndef HAS_USLEEP
-int usleep(unsigned usec);
-#endif /* !HAS_USLEEP */
-
 #endif /* __TCL_TIME_H */
 /*!@} */

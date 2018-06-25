@@ -116,7 +116,6 @@
 
 #cmakedefine CORO_X86_64
 #cmakedefine CORO_X86_32
-#cmakedefine CORO_ARM
 #cmakedefine CORO_UCONTEXT
 #cmakedefine CORO_WIN
 #cmakedefine CORO_SJLJ
