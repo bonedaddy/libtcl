@@ -48,7 +48,9 @@ else
 endif
 
 $(BUILD_DIR) conf:
-	mkdir -p $(BUILD_DIR); cd $(BUILD_DIR) && $(CMAKE) $(CMAKE_FLAGS) $(CURDIR)
+	mkdir -p $(BUILD_DIR); cd $(BUILD_DIR) \
+		&& $(CMAKE) $(CMAKE_FLAGS) $(CURDIR) \
+			|| $(RM) -rf $(BUILD_DIR)
 
 reconf: mrproper conf
 
