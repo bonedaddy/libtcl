@@ -38,7 +38,7 @@ See the [test](https://github.com/tempow/libtcl/blob/master/test) directory
 
 ## Credits
 
-The stuff was originaly written by Google for the fluorid project.
+The stuff was originaly written by Google for the [fluorid](https://android.googlesource.com/platform/system/bt) project in the [osi](https://android.googlesource.com/platform/system/bt/+/android-7.1.2_r36/osi/) directory.
 
 ## Bugs, vulnerabilities and contributions
 
