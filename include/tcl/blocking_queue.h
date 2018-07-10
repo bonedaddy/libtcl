@@ -29,7 +29,7 @@
  * using two semaphores, one to produce the other to consume.
  *
  * This implementation also provide a way to listen push/pop operation on a
- * thread using the reactor pattern, see `blocking_queue_listen' and
+ * worker using the reactor pattern, see `blocking_queue_listen' and
  * `blocking_queue_unlisten' for more information.
  */
 #ifndef __TCL_BLOCKING_QUEUE_H
@@ -39,7 +39,7 @@
 #include "tcl/sema.h"
 #include "tcl/reactor.h"
 
-struct thread;
+struct worker;
 
 /*!@public
  *
@@ -74,7 +74,7 @@ struct blocking_queue {
 	/*! The consumer semaphore, wait on pop, post on push. */
 	sema_t consumer;
 
-	/*! Used when listening operations on a thread, see
+	/*! Used when listening operations on a worker, see
 	 * `blocking_queue_unlisten'.
 	 */
 	reactor_object_t *reactor_event;
@@ -223,11 +223,11 @@ __api void *blocking_queue_tryback(blocking_queue_t *queue);
  * TODO
  *
  * @param queue
- * @param thread
+ * @param worker
  * @param listener
  */
 __api void blocking_queue_listen(blocking_queue_t *queue,
-	struct thread *thread, listener_t *listener);
+	struct worker *worker, listener_t *listener);
 
 /*!@public
  *

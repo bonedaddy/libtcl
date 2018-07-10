@@ -28,7 +28,7 @@
 #include "tcl/blocking_queue.h"
 #include "tcl/list.h"
 #include "tcl/mutex.h"
-#include "tcl/thread.h"
+#include "tcl/worker.h"
 #include "tcl/time.h"
 
 #define ALARM_NAME_MAX 16
@@ -181,13 +181,13 @@ __api void alarm_set(alarm_t *alarm, period_ms_t period, proc_t *cb,
  *
  * @brief
  * Listen `queue' to dispatch all alarms queued on and schedule them on
- * `thread'.
+ * `worker'.
  * This can be done on multiple queues and threads.
  *
  * @param queue  The queue to listen.
- * @param thread The thread o schedule alarm on.
+ * @param worker The worker o schedule alarm on.
  */
-__api void alarm_register(blocking_queue_t *queue, thread_t *thread);
+__api void alarm_register(blocking_queue_t *queue, worker_t *worker);
 
 /*!@public
  *

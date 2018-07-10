@@ -25,7 +25,7 @@
 #include "tcl/blocking_queue.h"
 #include "tcl/sema.h"
 #include "tcl/log.h"
-#include "tcl/thread.h"
+#include "tcl/worker.h"
 
 #define PTR_TO_INT(p) ((int) ((intptr_t) (p)))
 #define INT_TO_PTR(i) ((void *) ((intptr_t) (i)))

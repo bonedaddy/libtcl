@@ -51,7 +51,7 @@ int eager_reader_init(eager_reader_t *ret, int fd_to_read,
 	}
 
 	if (task_repeat(&ret->inbound_read_task, __inbound_read_loop, ret)) {
-		LOG_ERROR("unable to make reading thread.");
+		LOG_ERROR("unable to make reading worker.");
 		goto error;
 	}
 
@@ -80,17 +80,17 @@ void eager_reader_destroy(eager_reader_t *reader)
 	task_destroy(&reader->inbound_read_task);
 }
 
-void eager_reader_register(eager_reader_t *reader, thread_t *thread,
+void eager_reader_register(eager_reader_t *reader, worker_t *worker,
 	eager_reader_cb_t *read_cb, void *context)
 {
 	assert(reader != NULL);
-	assert(thread != NULL);
+	assert(worker != NULL);
 	assert(read_cb != NULL);
 
 	eager_reader_unregister(reader);
 	reader->outbound_read_ready = read_cb;
 	reader->outbound_context = context;
-	reader->outbound_registration = reactor_register(&thread->reactor,
+	reader->outbound_registration = reactor_register(&worker->reactor,
 		&reader->event, reader, __outbound_read_ready, NULL);
 }
 

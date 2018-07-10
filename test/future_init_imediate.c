@@ -17,7 +17,7 @@
 #include "test.h"
 
 #include "tcl/future.h"
-#include "tcl/thread.h"
+#include "tcl/worker.h"
 
 static const char *pass_back_data1 =
 	"what kind of ice cream truck plays the worst christmas song of all time?";

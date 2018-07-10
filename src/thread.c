@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "tcl_thread"
+#define LOG_TAG "tcl_worker"
 
 #include "tcl/log.h"
 #include "tcl/allocator.h"
-#include "tcl/thread.h"
+#include "tcl/worker.h"
 #include "tcl/sema.h"
 #include "tcl/string.h"
 
 #define DEFAULT_WORK_QUEUE_CAPACITY 128
 
 typedef struct {
-	thread_t *thread;
+	worker_t *worker;
 	sema_t start_sem;
 	int error;
 } start_arg_t;
@@ -45,83 +45,83 @@ static void __work_ready(blocking_queue_t *queue)
 	free(item);
 }
 
-static void *__run_thread(void *context)
+static void *__run_worker(void *context)
 {
 	start_arg_t *arg;
-	thread_t *thread;
+	worker_t *worker;
 	work_item_t *item;
 	unsigned count;
 
 	arg = (start_arg_t *)context;
-	thread = arg->thread;
+	worker = arg->worker;
 
-	blocking_queue_listen(&thread->work_queue, thread, __work_ready);
+	blocking_queue_listen(&worker->work_queue, worker, __work_ready);
 	sema_post(&arg->start_sem);
-	LOG_INFO("thread name %s started", thread->name);
-	reactor_start(&thread->reactor);
-	blocking_queue_unlisten(&thread->work_queue);
+	LOG_INFO("worker name %s started", worker->name);
+	reactor_start(&worker->reactor);
+	blocking_queue_unlisten(&worker->work_queue);
 
 	/*
-	 * Make sure we dispatch all queued work items before exiting the thread.
+	 * Make sure we dispatch all queued work items before exiting the worker.
      * This allows a caller to safely tear down by enqueuing a teardown
-     * work item and then joining the thread.
+     * work item and then joining the worker.
 	 */
 	count = 0;
-	while ((item = blocking_queue_trypop(&thread->work_queue))
-		   && count <= blocking_queue_capacity(&thread->work_queue)) {
+	while ((item = blocking_queue_trypop(&worker->work_queue))
+		   && count <= blocking_queue_capacity(&worker->work_queue)) {
 		item->func(item->context);
 		free(item);
 		++count;
 	}
 
-	if (count > blocking_queue_capacity(&thread->work_queue))
+	if (count > blocking_queue_capacity(&worker->work_queue))
 		LOG_DEBUG("Growing event queue on shutdown.");
 
-	LOG_INFO("thread name %s exited", thread->name);
+	LOG_INFO("worker name %s exited", worker->name);
 	return NULL;
 }
 
-int thread_init(thread_t *thread, char const *name)
+int worker_init(worker_t *worker, char const *name)
 {
 	start_arg_t start;
 
 	if (sema_init(&start.start_sem, 0))
 		return -1;
-	start.thread = thread;
+	start.worker = worker;
 	start.error = 0;
-	strncpy(thread->name, name, THREAD_NAME_MAX - 1);
-	blocking_queue_init(&thread->work_queue, DEFAULT_WORK_QUEUE_CAPACITY);
-	reactor_init(&thread->reactor);
-	task_spawn(&thread->task, __run_thread, &start);
+	strncpy(worker->name, name, WORKER_NAME_MAX - 1);
+	blocking_queue_init(&worker->work_queue, DEFAULT_WORK_QUEUE_CAPACITY);
+	reactor_init(&worker->reactor);
+	task_spawn(&worker->task, __run_worker, &start);
 	sema_wait(&start.start_sem);
 	sema_destroy(&start.start_sem);
 	if (start.error) {
-		blocking_queue_destroy(&thread->work_queue, pfree);
-		reactor_destroy(&thread->reactor);
+		blocking_queue_destroy(&worker->work_queue, pfree);
+		reactor_destroy(&worker->reactor);
 	}
 	return 0;
 }
 
-void thread_destroy(thread_t *thread)
+void worker_destroy(worker_t *worker)
 {
-	thread_stop(thread);
-	thread_join(thread);
-	task_destroy(&thread->task);
-	blocking_queue_destroy(&thread->work_queue, pfree);
-	reactor_destroy(&thread->reactor);
+	worker_stop(worker);
+	worker_join(worker);
+	task_destroy(&worker->task);
+	blocking_queue_destroy(&worker->work_queue, pfree);
+	reactor_destroy(&worker->reactor);
 }
 
-int thread_setpriority(thread_t *thread, int priority)
+int worker_setpriority(worker_t *worker, int priority)
 {
-	return task_setpriority(&thread->task, priority);
+	return task_setpriority(&worker->task, priority);
 }
 
-void thread_join(thread_t *thread)
+void worker_join(worker_t *worker)
 {
-	task_join(&thread->task);
+	task_join(&worker->task);
 }
 
-bool thread_post(thread_t *thread, routine_t *work, void *context)
+bool worker_post(worker_t *worker, routine_t *work, void *context)
 {
 	work_item_t *item;
 
@@ -129,11 +129,11 @@ bool thread_post(thread_t *thread, routine_t *work, void *context)
 		return false;
 	item->func = work;
 	item->context = context;
-	blocking_queue_push(&thread->work_queue, item);
+	blocking_queue_push(&worker->work_queue, item);
 	return true;
 }
 
-void thread_stop(thread_t *thread)
+void worker_stop(worker_t *worker)
 {
-	reactor_stop(&thread->reactor);
+	reactor_stop(&worker->reactor);
 }

@@ -17,7 +17,7 @@
 #include "test.h"
 
 #include "tcl/future.h"
-#include "tcl/thread.h"
+#include "tcl/worker.h"
 
 static const char *pass_back_data0 =
 	"fancy a sandwich? it's a fancy sandwich";
@@ -31,14 +31,14 @@ static void *post_to_future(void *context)
 int main(void)
 {
 	future_t future;
-	thread_t thread;
+	worker_t worker;
 
 	ASSERT_EQ(0, future_init(&future));
-	ASSERT_EQ(0, thread_init(&thread, "ZOB"));
+	ASSERT_EQ(0, worker_init(&worker, "ZOB"));
 
-	thread_post(&thread, post_to_future, &future);
+	worker_post(&worker, post_to_future, &future);
 	ASSERT_STREQ(pass_back_data0, future_await(&future));
 
-	thread_destroy(&thread);
+	worker_destroy(&worker);
 	return 0;
 }

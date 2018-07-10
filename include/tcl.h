@@ -46,9 +46,9 @@
 #include "tcl/stack.h"
 #include "tcl/string.h"
 #include "tcl/task.h"
-#include "tcl/thread.h"
 #include "tcl/vector.h"
 #include "tcl/waitq.h"
+#include "tcl/worker.h"
 
 /*!@public
  *

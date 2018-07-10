@@ -22,12 +22,12 @@ int main(void)
 {
 	alarm_t alarms[100];
 	blocking_queue_t queue;
-	thread_t thread;
+	worker_t worker;
 
 	blocking_queue_init(&queue, UINT32_MAX);
-	thread_init(&thread , "timers.test_callback_ordering_on_queue.thread");
+	worker_init(&worker , "timers.test_callback_ordering_on_queue.worker");
 	sema_init(&semaphore, 0);
-	alarm_register(&queue, &thread);
+	alarm_register(&queue, &worker);
 
 	char alarm_name[50];
 
@@ -55,7 +55,7 @@ int main(void)
 
 	alarm_unregister(&queue);
 	blocking_queue_destroy(&queue, NULL);
-	thread_destroy(&thread);
+	worker_destroy(&worker);
 	alarm_cleanup();
 	return 0;
 }

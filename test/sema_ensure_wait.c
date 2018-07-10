@@ -17,7 +17,7 @@
 #include "test.h"
 
 #include "tcl/time.h"
-#include "tcl/thread.h"
+#include "tcl/worker.h"
 
 typedef struct {
 	sema_t *sema;
@@ -39,36 +39,36 @@ static void *sleep_then_increment_counter(void *context) {
 int main(void)
 {
 	sema_t sema;
-	thread_t thread;
+	worker_t worker;
 	dummy_t dummy;
 
 	ASSERT_EQ(0, sema_init(&sema, 0));
-	ASSERT_EQ(0, thread_init(&thread, "SEMA_TEST"));
+	ASSERT_EQ(0, worker_init(&worker, "SEMA_TEST"));
 
 	ASSERT_FALSE(sema_trywait(&sema));
 
 	dummy.sema = &sema;
 	dummy.counter = 0;
 
-	thread_post(&thread, sleep_then_increment_counter, &dummy);
+	worker_post(&worker, sleep_then_increment_counter, &dummy);
 	sema_wait(&sema);
 	ASSERT_EQ(1, dummy.counter);
 
-	thread_post(&thread, sleep_then_increment_counter, &dummy);
+	worker_post(&worker, sleep_then_increment_counter, &dummy);
 	sema_wait(&sema);
 	ASSERT_EQ(2, dummy.counter);
 
-	thread_post(&thread, sleep_then_increment_counter, &dummy);
+	worker_post(&worker, sleep_then_increment_counter, &dummy);
 	sema_wait(&sema);
 	ASSERT_EQ(3, dummy.counter);
 
-	thread_post(&thread, sleep_then_increment_counter, &dummy);
-	thread_post(&thread, sleep_then_increment_counter, &dummy);
+	worker_post(&worker, sleep_then_increment_counter, &dummy);
+	worker_post(&worker, sleep_then_increment_counter, &dummy);
 	sema_wait(&sema);
 	sema_wait(&sema);
 	ASSERT_EQ(5, dummy.counter);
 
 	sema_destroy(&sema);
-	thread_destroy(&thread);
+	worker_destroy(&worker);
 	return 0;
 }

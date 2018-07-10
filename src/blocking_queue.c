@@ -17,7 +17,7 @@
 
 #include "tcl/blocking_queue.h"
 #include "tcl/reactor.h"
-#include "tcl/thread.h"
+#include "tcl/worker.h"
 #include "tcl/string.h"
 
 int blocking_queue_init(blocking_queue_t *queue, unsigned capacity)
@@ -164,12 +164,12 @@ void *blocking_queue_tryback(blocking_queue_t *queue)
 	return item;
 }
 
-void blocking_queue_listen(blocking_queue_t *queue, thread_t *thread,
+void blocking_queue_listen(blocking_queue_t *queue, worker_t *worker,
 	listener_t *listener)
 {
 	blocking_queue_unlisten(queue);
 	queue->reactor_event = reactor_register(
-		&thread->reactor, &queue->consumer.event, queue,
+		&worker->reactor, &queue->consumer.event, queue,
 		(reactor_ready_t *)listener, NULL);
 }
 

@@ -71,7 +71,7 @@ struct reactor {
 	/*! TODO */
 	event_t stopev;
 
-	/*! indicates whether `run_thread' is valid. */
+	/*! indicates whether `run_worker' is valid. */
 	bool is_running;
 
 	/*! TODO */
@@ -148,7 +148,7 @@ __api void reactor_destroy(reactor_t *reactor);
  *
  * @brief
  * Starts the reactor. This function blocks the caller until `reactor_stop' is
- * called from another thread or in a callback. `reactor' may not be NULL.
+ * called from another worker or in a callback. `reactor' may not be NULL.
  *
  * @param reactor The reactor to start.
  * @return        The start status.
@@ -170,7 +170,7 @@ __api reactor_st_t reactor_run_once(reactor_t *reactor);
  *
  * @brief
  * Immediately unblocks the reactor. This function is safe to call from any
- * thread. `reactor' may not be NULL.
+ * worker. `reactor' may not be NULL.
  *
  * @param reactor The reactor to stop.
  */

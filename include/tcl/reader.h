@@ -28,7 +28,7 @@
 #include "tcl/allocator.h"
 #include "tcl/blocking_queue.h"
 #include "tcl/task.h"
-#include "tcl/thread.h"
+#include "tcl/worker.h"
 
 /*!@public
  *
@@ -111,9 +111,9 @@ struct eager_reader {
  * @brief
  * Creates a new eager reader object, which pulls data from |fd_to_read| into
  * buffers of size |buffer_size| allocated using |allocator|, and has an
- * internal read thread named |thread_name|. The returned object must be freed
+ * internal read worker named |worker_name|. The returned object must be freed
  * using |eager_reader_free|. |fd_to_read| must be valid, |buffer_size| and
- * |max_buffer_count| must be greater than zero. |allocator| and |thread_name|
+ * |max_buffer_count| must be greater than zero. |allocator| and |worker_name|
  * may not be NULL.
  * 
  * @param reader 
@@ -146,11 +146,11 @@ __api void eager_reader_destroy(eager_reader_t *reader);
  * |context| may be NULL.
  * 
  * @param reader 
- * @param thread
+ * @param worker
  * @param read_cb 
  * @param context 
  */
-__api void eager_reader_register(eager_reader_t *reader, thread_t *thread,
+__api void eager_reader_register(eager_reader_t *reader, worker_t *worker,
 	eager_reader_cb_t *read_cb, void *context);
 
 /*!@public
@@ -169,7 +169,7 @@ __api void eager_reader_unregister(eager_reader_t *reader);
  * @brief
  * Reads up to |max_size| bytes into |buffer| from currently available bytes.
  * NOT SAFE FOR READING FROM MULTIPLE THREADS
- * but you should probably only be reading from one thread anyway,
+ * but you should probably only be reading from one worker anyway,
  * otherwise the byte stream probably doesn't make sense.
  * 
  * @param reader 
@@ -183,7 +183,7 @@ __api size_t eager_reader_read(eager_reader_t *reader, uint8_t *buffer,
 /*!@public
  * 
  * @brief
- * Set the priority of the reading thread on which the reader is executed.
+ * Set the priority of the reading worker on which the reader is executed.
  * 
  * @param reader   The reader to set the priority for.
  * @param priority The priority to set.

@@ -18,32 +18,32 @@
 
 #include "tcl/reactor.h"
 
-static pthread_t thread;
-static volatile bool thread_running;
+static pthread_t worker;
+static volatile bool worker_running;
 
-static void *reactor_thread(void *ptr)
+static void *reactor_worker(void *ptr)
 {
 	reactor_t *reactor;
 
 	reactor = (reactor_t *)ptr;
-	thread_running = true;
+	worker_running = true;
 	reactor_start(reactor);
-	thread_running = false;
+	worker_running = false;
 	return NULL;
 }
 
-static void spawn_reactor_thread(reactor_t *reactor)
+static void spawn_reactor_worker(reactor_t *reactor)
 {
 	int ret;
 
-	ret = pthread_create(&thread, NULL, reactor_thread, reactor);
+	ret = pthread_create(&worker, NULL, reactor_worker, reactor);
 	(void)ret;
 	ASSERT(ret == 0);
 }
 
-static void join_reactor_thread(void)
+static void join_reactor_worker(void)
 {
-	pthread_join(thread, NULL);
+	pthread_join(worker, NULL);
 }
 
 int main(void)
@@ -51,13 +51,13 @@ int main(void)
 	reactor_t reactor;
 
 	ASSERT_EQ(0, reactor_init(&reactor));
-	spawn_reactor_thread(&reactor);
+	spawn_reactor_worker(&reactor);
 	usleep(50 * 1000);
-	ASSERT_TRUE(thread_running);
+	ASSERT_TRUE(worker_running);
 
 	reactor_stop(&reactor);
-	join_reactor_thread();
-	ASSERT_FALSE(thread_running);
+	join_reactor_worker();
+	ASSERT_FALSE(worker_running);
 
 	reactor_destroy(&reactor);
 	return 0;

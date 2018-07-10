@@ -23,13 +23,13 @@ int main(void)
 {
 	alarm_t alarms[5];
 	blocking_queue_t queue;
-	thread_t thread;
+	worker_t worker;
 
 	sema_init(&semaphore, 0);
 	blocking_queue_init(&queue, UINT32_MAX);
-	thread_init(&thread, "timers.periodic_unregister_processing_queue.thread");
+	worker_init(&worker, "timers.periodic_unregister_processing_queue.worker");
 
-	alarm_register(&queue, &thread);
+	alarm_register(&queue, &worker);
 	char alarm_name[50];
 
 	strcpy(alarm_name, "alarm_test.test_callback_ordering_on_queue[000]");
@@ -75,7 +75,7 @@ int main(void)
 	}
 
 	blocking_queue_destroy(&queue, NULL);
-	thread_destroy(&thread);
+	worker_destroy(&worker);
 	sema_destroy(&semaphore);
 
 	alarm_cleanup();

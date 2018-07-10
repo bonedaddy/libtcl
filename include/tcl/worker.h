@@ -17,36 +17,36 @@
 
 #pragma once
 
-/*!@file tcl/thread.h
+/*!@file tcl/worker.h
  * @author uael
  *
- * @addtogroup tcl.thread @{
+ * @addtogroup tcl.worker @{
  */
-#ifndef __TCL_THREAD_H
-# define __TCL_THREAD_H
+#ifndef __TCL_WORKER_H
+# define __TCL_WORKER_H
 
 #include "tcl/reactor.h"
 #include "tcl/blocking_queue.h"
 #include "tcl/stack.h"
 #include "tcl/task.h"
 
-#define THREAD_NAME_MAX 16
+#define WORKER_NAME_MAX 16
 
 /*!@public
  *
  * @brief
- * The thread structure declaration.
+ * The worker structure declaration.
  */
-typedef struct thread thread_t;
+typedef struct worker worker_t;
 
 /*!@public
  *
  * @brief
- * The thread structure definition.
+ * The worker structure definition.
  */
-struct thread {
+struct worker {
 
-	char name[THREAD_NAME_MAX];
+	char name[WORKER_NAME_MAX];
 
 	blocking_queue_t work_queue;
 
@@ -55,17 +55,17 @@ struct thread {
 	task_t task;
 };
 
-__api int thread_init(thread_t *thread, char const *name);
+__api int worker_init(worker_t *worker, char const *name);
 
-__api void thread_destroy(thread_t *thread);
+__api void worker_destroy(worker_t *worker);
 
-__api int thread_setpriority(thread_t *thread, int priority);
+__api int worker_setpriority(worker_t *worker, int priority);
 
-__api void thread_join(thread_t *thread);
+__api void worker_join(worker_t *worker);
 
-__api bool thread_post(thread_t *thread, routine_t *work, void *context);
+__api bool worker_post(worker_t *worker, routine_t *work, void *context);
 
-__api void thread_stop(thread_t *thread);
+__api void worker_stop(worker_t *worker);
 
-#endif /* __TCL_THREAD_H */
+#endif /* __TCL_WORKER_H */
 /*!@} */

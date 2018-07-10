@@ -88,12 +88,12 @@ if (TCL_THREADING AND (NOT HAS_SYS_EVENTFD_H OR NOT HAS_SYS_EPOLL_H
   set(TCL_THREADING OFF)
 endif ()
 
-set(THREAD_LIB)
+set(WORKER_LIB)
 if (TCL_THREADING)
   set(THREADS_PREFER_PTHREAD_FLAG ON)
   find_package(Threads QUIET)
   if (Threads_FOUND)
-    set(THREAD_LIB Threads::Threads)
+    set(WORKER_LIB Threads::Threads)
   else ()
     set(TCL_THREADING OFF)
   endif ()
@@ -120,7 +120,7 @@ target_include_directories(tcl
   PUBLIC ${tcl_INC_DIR} ${CMAKE_BINARY_DIR}/include
   PRIVATE ${tcl_SRC_DIR})
 
-target_link_libraries(tcl PUBLIC ${THREAD_LIB})
+target_link_libraries(tcl PUBLIC ${WORKER_LIB})
 
 target_compile_definitions(tcl
   PRIVATE TCL_COMPILE)

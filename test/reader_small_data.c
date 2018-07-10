@@ -65,18 +65,18 @@ static void expect_data(eager_reader_t *reader, void *context)
 void test(void)
 {
 	eager_reader_t reader;
-	thread_t read_thread;
+	worker_t read_worker;
 
 	tcl_init();
 	eager_reader_init(&reader, pipefd[0], DFT_ALLOCATOR, 32, UINT_MAX);
-	thread_init(&read_thread, "read");
+	worker_init(&read_worker, "read");
 
-	eager_reader_register(&reader, &read_thread, expect_data, small_data);
+	eager_reader_register(&reader, &read_worker, expect_data, small_data);
 	write(pipefd[1], small_data, strlen(small_data));
 	sema_wait(&sema);
 	eager_reader_unregister(&reader);
 
-	thread_destroy(&read_thread);
+	worker_destroy(&read_worker);
 	eager_reader_destroy(&reader);
 	tcl_cleanup();
 }

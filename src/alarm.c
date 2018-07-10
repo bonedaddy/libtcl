@@ -22,8 +22,8 @@
 #include "tcl/task.h"
 #include "tcl/string.h"
 
-#define THREAD_RT_PRIORITY 1
-#define CALLBACK_THREAD_PRIORITY_HIGH (-19)
+#define WORKER_RT_PRIORITY 1
+#define CALLBACK_WORKER_PRIORITY_HIGH (-19)
 
 static bool __init_started = false;
 static bool __is_ready = false;
@@ -31,7 +31,7 @@ static LIST_HEAD(__alarms);
 static mutex_t __alarms_mutex;
 static bool __dispatcher_active = false;
 static task_t __dispatcher;
-static thread_t __default_callback_thread;
+static worker_t __default_callback_worker;
 static blocking_queue_t __default_callback_queue;
 static sema_t __alarm_expired;
 
@@ -260,18 +260,18 @@ static bool __lazyinit(void)
 #endif
 	if (sema_init(&__alarm_expired, 0))
 		goto error2;
-	if (thread_init(&__default_callback_thread, "alarm_default_callback"))
+	if (worker_init(&__default_callback_worker, "alarm_default_callback"))
 		goto error3;
-	if (thread_setpriority(&__default_callback_thread,
-		CALLBACK_THREAD_PRIORITY_HIGH))
+	if (worker_setpriority(&__default_callback_worker,
+		CALLBACK_WORKER_PRIORITY_HIGH))
 		goto error4;
 	if (blocking_queue_init(&__default_callback_queue, UINT32_MAX))
 		goto error4;
-	alarm_register(&__default_callback_queue, &__default_callback_thread);
+	alarm_register(&__default_callback_queue, &__default_callback_worker);
 	__dispatcher_active = true;
 	if (task_repeat(&__dispatcher, __schedule_loop, NULL))
 		goto error5;
-	if (task_setpriority(&__dispatcher, CALLBACK_THREAD_PRIORITY_HIGH))
+	if (task_setpriority(&__dispatcher, CALLBACK_WORKER_PRIORITY_HIGH))
 		goto error6;
 	__is_ready = true;
 	mutex_unlock(&__alarms_mutex);
@@ -282,7 +282,7 @@ error5:
 	__dispatcher_active = false;
 	blocking_queue_destroy(&__default_callback_queue, NULL);
 error4:
-	thread_destroy(&__default_callback_thread);
+	worker_destroy(&__default_callback_worker);
 error3:
 	sema_destroy(&__alarm_expired);
 error2:
@@ -384,9 +384,9 @@ void alarm_set(alarm_t *alarm, period_ms_t period, proc_t *cb, void *data)
 }
 
 FORCEINLINE
-void alarm_register(blocking_queue_t *queue, thread_t *thread)
+void alarm_register(blocking_queue_t *queue, worker_t *worker)
 {
-	blocking_queue_listen(queue, thread, __dispatch_ready);
+	blocking_queue_listen(queue, worker, __dispatch_ready);
 }
 
 void alarm_unregister(blocking_queue_t *queue)
@@ -419,7 +419,7 @@ void alarm_cleanup(void)
 	task_destroy(&__dispatcher);
 	mutex_lock(&__alarms_mutex);
 	blocking_queue_destroy(&__default_callback_queue, NULL);
-	thread_destroy(&__default_callback_thread);
+	worker_destroy(&__default_callback_worker);
 #ifdef HAS_TIMER
 	if (timer_delete(__wakeup_timer))
 		LOG_ERROR("timer_delete wakeup_timer %s", strerror(errno));

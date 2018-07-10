@@ -18,9 +18,9 @@
 
 #include "tcl/reactor.h"
 
-static pthread_t thread;
+static pthread_t worker;
 
-static void *reactor_thread(void *ptr)
+static void *reactor_worker(void *ptr)
 {
 	reactor_t *reactor;
 
@@ -29,18 +29,18 @@ static void *reactor_thread(void *ptr)
 	return NULL;
 }
 
-static void spawn_reactor_thread(reactor_t *reactor)
+static void spawn_reactor_worker(reactor_t *reactor)
 {
 	int ret;
 
-	ret = pthread_create(&thread, NULL, reactor_thread, reactor);
+	ret = pthread_create(&worker, NULL, reactor_worker, reactor);
 	(void)ret;
 	ASSERT_EQ(0, ret);
 }
 
-static void join_reactor_thread(void)
+static void join_reactor_worker(void)
 {
-	pthread_join(thread, NULL);
+	pthread_join(worker, NULL);
 }
 
 typedef struct {
@@ -67,9 +67,9 @@ int main(void)
 	event_init(&ev, 0, 0);
 	arg.reactor = &reactor;
 	arg.object = reactor_register(&reactor, &ev, &arg, unregister_cb, NULL);
-	spawn_reactor_thread(&reactor);
+	spawn_reactor_worker(&reactor);
 	event_write(&ev, 1);
-	join_reactor_thread();
+	join_reactor_worker();
 	event_destroy(&ev);
 	reactor_destroy(&reactor);
 	return 0;
